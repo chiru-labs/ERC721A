@@ -17,8 +17,6 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  *
  * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
  *
- * Assumes the number of issuable tokens (collection size) is capped and fits in a uint128.
- *
  * Does not support burning tokens to address(0).
  */
 contract ERC721A is
@@ -43,7 +41,6 @@ contract ERC721A is
 
   uint256 private currentIndex = 0;
 
-  uint256 internal immutable collectionSize;
   uint256 internal immutable maxBatchSize;
 
   // Token name
@@ -68,23 +65,16 @@ contract ERC721A is
   /**
    * @dev
    * `maxBatchSize` refers to how much a minter can mint at a time.
-   * `collectionSize_` refers to how many tokens are in the collection.
    */
   constructor(
     string memory name_,
     string memory symbol_,
-    uint256 maxBatchSize_,
-    uint256 collectionSize_
+    uint256 maxBatchSize_
   ) {
-    require(
-      collectionSize_ > 0,
-      "ERC721A: collection must have a nonzero supply"
-    );
     require(maxBatchSize_ > 0, "ERC721A: max batch size must be nonzero");
     _name = name_;
     _symbol = symbol_;
     maxBatchSize = maxBatchSize_;
-    collectionSize = collectionSize_;
   }
 
   /**
@@ -104,7 +94,7 @@ contract ERC721A is
 
   /**
    * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
-   * This read function is O(collectionSize). If calling from a separate contract, be sure to test gas first.
+   * This read function is O(totalSupply). If calling from a separate contract, be sure to test gas first.
    * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
    */
   function tokenOfOwnerByIndex(address owner, uint256 index)
@@ -344,7 +334,6 @@ contract ERC721A is
    *
    * Requirements:
    *
-   * - there must be `quantity` tokens remaining unminted in the total collection.
    * - `to` cannot be the zero address.
    * - `quantity` cannot be larger than the max batch size.
    *
@@ -465,8 +454,8 @@ contract ERC721A is
     uint256 oldNextOwnerToSet = nextOwnerToExplicitlySet;
     require(quantity > 0, "quantity must be nonzero");
     uint256 endIndex = oldNextOwnerToSet + quantity - 1;
-    if (endIndex > collectionSize - 1) {
-      endIndex = collectionSize - 1;
+    if (endIndex > currentIndex - 1) {
+      endIndex = currentIndex - 1;
     }
     // We know if the last one in the group exists, all in the group exist, due to serial ordering.
     require(_exists(endIndex), "not enough minted yet for this cleanup");
@@ -555,3 +544,4 @@ contract ERC721A is
     uint256 quantity
   ) internal virtual {}
 }
+
