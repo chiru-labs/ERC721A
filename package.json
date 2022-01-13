@@ -1,0 +1,28 @@
+{
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.4",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^4.4.2",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.5.3",
+    "hardhat": "^2.8.2"
+  },
+  "name": "chirulabs-solidity",
+  "version": "1.0.0",
+  "description": "Smart Contract library for Solidity",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiru-labs/ERC721A.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chiru-labs/ERC721A/issues"
+  },
+  "homepage": "https://github.com/chiru-labs/ERC721A#readme"
+}
