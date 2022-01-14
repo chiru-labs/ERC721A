@@ -43,6 +43,8 @@ contract ERC721A is
   uint256 private currentIndex = 0;
 
   uint256 internal immutable maxBatchSize;
+  
+  address private burned = address(1);
 
   // Token name
   string private _name;
@@ -324,6 +326,25 @@ contract ERC721A is
    */
   function _exists(uint256 tokenId) internal view returns (bool) {
     return tokenId < currentIndex;
+  }
+  
+  function _safeBurn(uint256 tokenId) internal {
+    _safeBurn(tokenId);
+  }
+
+  /**
+   * @dev Burns a certain token from id.
+   *
+   * Emits a {Transfer} event.
+   */
+  function _safeBurn(
+    uint256 tokenId,
+    bytes memory _data
+  ) internal {
+    TokenOwnership memory prevOwnership = ownershipOf(tokenId);
+    _addressData[prevOwnership.addr].balance -= 1;
+    _ownerships[tokenId] = TokenOwnership(burned, uint64(block.timestamp));
+    emit Transfer(prevOwnership.addr, burned, tokenId);
   }
 
   function _safeMint(address to, uint256 quantity) internal {
