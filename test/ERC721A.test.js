@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 describe('ERC721A', function () {
   before(async function () {
-    this.ERC721A = await ethers.getContractFactory('ERC721A');
+    this.ERC721A = await ethers.getContractFactory('ERC721AMock');
   });
 
   beforeEach(async function () {
@@ -14,4 +14,9 @@ describe('ERC721A', function () {
     let supply = await this.erc721a.totalSupply();
     expect(supply).to.equal(0);
   });
+
+  it('checks token existence', async function () {
+    let exists = await this.erc721a.exists(1);
+    expect(exists).to.be.false;
+  })
 });
