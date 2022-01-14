@@ -1,4 +1,7 @@
 const { expect } = require('chai');
+const { constants, expectRevert } = require('@openzeppelin/test-helpers');
+const { ZERO_ADDRESS } = constants;
+
 
 describe('ERC721A', function () {
   before(async function () {
@@ -10,13 +13,53 @@ describe('ERC721A', function () {
     await this.erc721a.deployed();
   });
 
-  it('retrieves totalSupply', async function () {
-    let supply = await this.erc721a.totalSupply();
-    expect(supply).to.equal(0);
+  context('with no minted tokens', async function () {
+    it('has 0 totalSupply', async function () {
+      const supply = await this.erc721a.totalSupply();
+      expect(supply).to.equal(0);
+    });
   });
 
-  it('checks token existence', async function () {
-    let exists = await this.erc721a.exists(1);
-    expect(exists).to.be.false;
-  })
+  context('with minted tokens', async function () {
+    beforeEach(async function () {
+      const [owner, addr1, addr2, addr3] = await ethers.getSigners();
+      this.owner = owner;
+      this.addr1 = addr1;
+      this.addr2 = addr2;
+      this.addr3 = addr3;
+      await this.erc721a['safeMint(address,uint256)'](addr1.address, 1);
+      await this.erc721a['safeMint(address,uint256)'](addr2.address, 2);
+      await this.erc721a['safeMint(address,uint256)'](addr3.address, 3);
+    });
+
+    describe('exists', async function () {
+      it('verifies valid tokens', async function () {
+        for (let tokenId = 0; tokenId < 6; tokenId++) {
+          let exists = await this.erc721a.exists(tokenId);
+          expect(exists).to.be.true;
+        }
+      });
+
+      it('verifies invalid tokens', async function () {
+        const exists = await this.erc721a.exists(6);
+        expect(exists).to.be.false;
+      });
+    });
+
+    describe('balanceOf', async function () {
+      it('returns the amount for a given address', async function () {
+        expect(await this.erc721a.balanceOf(this.owner.address)).to.equal('0');
+        expect(await this.erc721a.balanceOf(this.addr1.address)).to.equal('1');
+        expect(await this.erc721a.balanceOf(this.addr2.address)).to.equal('2');
+        expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal('3');
+      });
+
+      it('throws an exception for the 0 address', async function () {
+        await expectRevert(
+          this.erc721a.balanceOf(ZERO_ADDRESS), 'ERC721A: balance query for the zero address',
+        );
+      });
+    });
+
+  });
 });

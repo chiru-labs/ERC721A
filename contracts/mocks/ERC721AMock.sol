@@ -21,15 +21,15 @@ contract ERC721AMock is ERC721A {
         return _exists(tokenId);
     }
 
-    function safeMint(address to, uint256 tokenId) public {
-        _safeMint(to, tokenId);
+    function safeMint(address to, uint256 quantity) public {
+        _safeMint(to, quantity);
     }
 
     function safeMint(
         address to,
-        uint256 tokenId,
+        uint256 quantity,
         bytes memory _data
     ) public {
-        _safeMint(to, tokenId, _data);
+        _safeMint(to, quantity, _data);
     }
 }
