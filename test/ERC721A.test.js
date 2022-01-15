@@ -73,13 +73,42 @@ describe('ERC721A', function () {
     describe('ownerOf', async function () {
       it('returns the right owner', async function () {
         expect(await this.erc721a.ownerOf(0)).to.equal(this.addr1.address);
-        expect(await this.erc721a.ownerOf(2)).to.equal(this.addr2.address);
+        expect(await this.erc721a.ownerOf(1)).to.equal(this.addr2.address);
         expect(await this.erc721a.ownerOf(5)).to.equal(this.addr3.address);
       });
 
       it('reverts for an invalid token', async function () {
         await expectRevert(
           this.erc721a.ownerOf(10), 'ERC721A: owner query for nonexistent token',
+        );
+      });
+    });
+
+    describe('approval logic', async function () {
+      const tokenId = 0;
+      const tokenId2 = 1;
+
+      it('approves successfully', async function () {
+        await this.erc721a.connect(this.addr1).approve(this.addr2.address, tokenId);
+        const approval = await this.erc721a.getApproved(tokenId);
+        expect(approval).to.equal(this.addr2.address);
+      });
+
+      it('rejects an invalid token owner', async function () {
+        await expectRevert(
+          this.erc721a.connect(this.addr1).approve(this.addr2.address, tokenId2), 'ERC721A: approval to current owner'
+        );
+      });
+
+      it('rejects an unapproved caller', async function () {
+        await expectRevert(
+          this.erc721a.approve(this.addr2.address, tokenId), 'ERC721A: approve caller is not owner nor approved for all'
+        );
+      });
+
+      it('does not get approved for invalid tokens', async function () {
+        await expectRevert(
+          this.erc721a.getApproved(10), 'ERC721A: approved query for nonexistent token'
         );
       });
     });
