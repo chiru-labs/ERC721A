@@ -13,6 +13,10 @@ contract ERC721AMock is ERC721A {
         uint256 maxBatchSize_
     ) ERC721A(name_, symbol_, maxBatchSize_) {}
 
+    function numberMinted(address owner) public view returns (uint256) {
+        return _numberMinted(owner);
+    }
+
     function baseURI() public view returns (string memory) {
         return _baseURI();
     }
