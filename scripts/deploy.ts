@@ -15,7 +15,7 @@ async function main() {
 
   // We get the contract to deploy
   const Contract = await ethers.getContractFactory("ERC721A");
-  const contract = await Greeter.deploy();
+  const contract = await Contract.deploy();
 
   await contract.deployed();
 
