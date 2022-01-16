@@ -84,11 +84,11 @@ describe('ERC721A', function () {
       });
     });
 
-    describe('approval logic', async function () {
+    describe('approve', async function () {
       const tokenId = 0;
       const tokenId2 = 1;
 
-      it('approves successfully', async function () {
+      it('sets approval for the target address', async function () {
         await this.erc721a.connect(this.addr1).approve(this.addr2.address, tokenId);
         const approval = await this.erc721a.getApproved(tokenId);
         expect(approval).to.equal(this.addr2.address);
@@ -112,5 +112,23 @@ describe('ERC721A', function () {
         );
       });
     });
+
+    describe('setApprovalForAll', async function () {
+      it('sets approval for all properly', async function () {
+        const approvalEvent = await this.erc721a.setApprovalForAll(this.addr1.address, true);
+        await expect(approvalEvent)
+          .to.emit(this.erc721a, "ApprovalForAll")
+          .withArgs(this.owner.address, this.addr1.address, true);
+        expect(await this.erc721a.isApprovedForAll(this.owner.address, this.addr1.address)).to.be.true;
+      });
+
+      it('sets rejects approvals for non msg senders', async function () {
+        await expectRevert(
+          this.erc721a.connect(this.addr1).setApprovalForAll(this.addr1.address, true),
+          'ERC721A: approve to caller'
+        );
+      });
+    });
+
   });
 });
