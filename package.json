@@ -1,0 +1,35 @@
+{
+  "name": "erc721a",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chiru-labs/ERC721A.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chiru-labs/ERC721A/issues"
+  },
+  "homepage": "https://github.com/chiru-labs/ERC721A#readme",
+  "devDependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.0.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/test-helpers": "^0.5.15",
+    "@typechain/ethers-v5": "^9.0.0",
+    "@typechain/hardhat": "^4.0.0",
+    "dotenv": "^12.0.4",
+    "hardhat-gas-reporter": "^1.0.7",
+    "solidity-coverage": "^0.7.17",
+    "ts-node": "^10.4.0",
+    "typechain": "^7.0.0",
+    "typescript": "^4.5.4",
+    "@nomiclabs/hardhat-ethers": "^2.0.4",
+    "@openzeppelin/contracts": "^4.4.2",
+    "hardhat": "^2.8.2"
+  }
+}
