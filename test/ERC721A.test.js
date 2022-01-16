@@ -61,15 +61,6 @@ describe('ERC721A', function () {
       });
     });
 
-    describe('_numberMinted', async function () {
-      it('returns the amount for a given address', async function () {
-        expect(await this.erc721a.numberMinted(this.owner.address)).to.equal('0');
-        expect(await this.erc721a.numberMinted(this.addr1.address)).to.equal('1');
-        expect(await this.erc721a.numberMinted(this.addr2.address)).to.equal('2');
-        expect(await this.erc721a.numberMinted(this.addr3.address)).to.equal('3');
-      });
-    });
-
     describe('ownerOf', async function () {
       it('returns the right owner', async function () {
         expect(await this.erc721a.ownerOf(0)).to.equal(this.addr1.address);
