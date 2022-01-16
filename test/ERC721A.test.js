@@ -4,11 +4,8 @@ const { ZERO_ADDRESS } = constants;
 
 
 describe('ERC721A', function () {
-  before(async function () {
-    this.ERC721A = await ethers.getContractFactory('ERC721AMock');
-  });
-
   beforeEach(async function () {
+    this.ERC721A = await ethers.getContractFactory('ERC721AMock');
     this.erc721a = await this.ERC721A.deploy("Azuki", "AZUKI", 5);
     await this.erc721a.deployed();
   });
@@ -115,8 +112,8 @@ describe('ERC721A', function () {
 
     describe('setApprovalForAll', async function () {
       it('sets approval for all properly', async function () {
-        const approvalEvent = await this.erc721a.setApprovalForAll(this.addr1.address, true);
-        await expect(approvalEvent)
+        const approvalTx = await this.erc721a.setApprovalForAll(this.addr1.address, true);
+        await expect(approvalTx)
           .to.emit(this.erc721a, "ApprovalForAll")
           .withArgs(this.owner.address, this.addr1.address, true);
         expect(await this.erc721a.isApprovedForAll(this.owner.address, this.addr1.address)).to.be.true;
@@ -130,5 +127,50 @@ describe('ERC721A', function () {
       });
     });
 
+    function createTransfersSuite(name, tests) {
+      describe(name, async function () {
+        before(async function () {
+          console.log(this.addr1.address)
+          console.log(this.addr2.address)
+          await this.erc721a.connect(this.addr1).setApprovalForAll(this.addr2.address, true);
+          await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.addr2.address, 0);
+        });
+        tests();
+      })
+    }
+
+    createTransfersSuite('transfers', function () {
+      const tokenId = 0;
+
+      it('transfers the ownership of the given token ID to the given address', async function () {
+        expect(await this.erc721a.ownerOf(tokenId)).to.be.equal(this.addr2.address);
+      });
+
+      it('emits a Transfer event', async function () {
+        await expect(transferTx)
+          .to.emit(this.erc721a, "Transfer")
+          .withArgs(from, receiver, tokenId);
+      });
+
+      it('clears the approval for the token ID', async function () {
+        expect(await this.erc721a.getApproved(tokenId)).to.be.equal(ZERO_ADDRESS);
+      });
+
+      it('emits an Approval event', async function () {
+        await expect(transferTx)
+          .to.emit(this.erc721a, "Approval")
+          .withArgs(from, ZERO_ADDRESS, tokenId);
+      });
+
+      it('adjusts owners balances', async function () {
+        expect(await this.erc721a.balanceOf(from)).to.be.equal(0);
+      });
+
+      it('adjusts owners tokens by index', async function () {
+        expect(await this.erc721a.tokenOfOwnerByIndex(receiver, 0)).to.be.bignumber.equal(tokenId);
+        expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.bignumber.not.equal(tokenId);
+      });
+      
+    });
   });
 });
