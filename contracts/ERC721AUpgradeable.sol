@@ -71,7 +71,7 @@ contract ERC721AUpgradeable is
     string memory name_,
     string memory symbol_,
     uint256 maxBatchSize_
-  ) public initializer {
+  ) public virtual initializer {
     require(maxBatchSize_ > 0, "ERC721AUpgradeable: max batch size must be nonzero");
     _name = name_;
     _symbol = symbol_;
