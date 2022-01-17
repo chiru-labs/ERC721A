@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Creators: locationtba.eth, 2pmflow.eth, cygaar.eth
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";

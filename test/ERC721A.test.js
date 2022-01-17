@@ -2,10 +2,14 @@ const { expect } = require('chai');
 const { constants, expectRevert } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
+const RECEIVER_MAGIC_VALUE = '0x150b7a02';
+const GAS_MAGIC_VALUE = 20000;
+
 
 describe('ERC721A', function () {
   beforeEach(async function () {
     this.ERC721A = await ethers.getContractFactory('ERC721AMock');
+    this.ERC721Receiver = await ethers.getContractFactory('ERC721ReceiverMock');
     this.erc721a = await this.ERC721A.deploy("Azuki", "AZUKI", 5);
     await this.erc721a.deployed();
   });
@@ -127,61 +131,61 @@ describe('ERC721A', function () {
       });
     });
 
-    context('test transfer functionality', function() {
+    context('test transfer functionality', function () {
       const testSuccessfulTransfer = function (transferFn) {
         const tokenId = 1;
         let from;
         let to;
-        let transferTx;
-  
+
         beforeEach(async function () {
           const sender = this.addr2;
           from = sender.address;
-          to = this.addr3.address;
+          this.receiver = await this.ERC721Receiver.deploy(RECEIVER_MAGIC_VALUE);
+          to = this.receiver.address;
           await this.erc721a.connect(sender).setApprovalForAll(to, true);
-          transferTx = await this.erc721a.connect(sender)[transferFn](from, to, tokenId);
+          this.transferTx = await this.erc721a.connect(sender)[transferFn](from, to, tokenId);
         });
-  
+
         it('transfers the ownership of the given token ID to the given address', async function () {
           expect(await this.erc721a.ownerOf(tokenId)).to.be.equal(to);
         });
-  
+
         it('emits a Transfer event', async function () {
-          await expect(transferTx)
+          await expect(this.transferTx)
             .to.emit(this.erc721a, "Transfer")
             .withArgs(from, to, tokenId);
         });
-  
+
         it('clears the approval for the token ID', async function () {
           expect(await this.erc721a.getApproved(tokenId)).to.be.equal(ZERO_ADDRESS);
         });
-  
+
         it('emits an Approval event', async function () {
-          await expect(transferTx)
+          await expect(this.transferTx)
             .to.emit(this.erc721a, "Approval")
             .withArgs(from, ZERO_ADDRESS, tokenId);
         });
-  
+
         it('adjusts owners balances', async function () {
           expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
         });
-  
+
         it('adjusts owners tokens by index', async function () {
           expect(await this.erc721a.tokenOfOwnerByIndex(to, 0)).to.be.equal(tokenId);
           expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
         });
       };
-  
+
       const testUnsuccessfulTransfer = function (transferFn) {
         const tokenId = 1;
-  
+
         it('rejects unapproved transfer', async function () {
           await expectRevert(
             this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, this.addr1.address, tokenId),
             'ERC721A: transfer caller is not owner nor approved',
           )
         });
-  
+
         it('rejects transfer from incorrect owner', async function () {
           await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
           await expectRevert(
@@ -189,7 +193,7 @@ describe('ERC721A', function () {
             'ERC721A: transfer from incorrect owner',
           )
         });
-  
+
         it('rejects transfer to zero address', async function () {
           await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
           await expectRevert(
@@ -198,22 +202,28 @@ describe('ERC721A', function () {
           )
         });
       }
-  
+
       context("successful transfers", function () {
         describe('transferFrom', function () {
           testSuccessfulTransfer('transferFrom');
         });
-  
+
         describe('safeTransferFrom', function () {
           testSuccessfulTransfer('safeTransferFrom(address,address,uint256)');
+
+          it('validates ERC721Received', async function () {
+            await expect(this.transferTx)
+              .to.emit(this.receiver, "Received")
+              .withArgs(this.addr2.address, this.addr2.address, 1, "0x", GAS_MAGIC_VALUE);
+          });
         });
       });
-  
+
       context("unsuccessful transfers", function () {
         describe('transferFrom', function () {
           testUnsuccessfulTransfer('transferFrom');
         });
-  
+
         describe('safeTransferFrom', function () {
           testUnsuccessfulTransfer('safeTransferFrom(address,address,uint256)');
         });
@@ -227,14 +237,32 @@ describe('ERC721A', function () {
       this.owner = owner;
       this.addr1 = addr1;
       this.addr2 = addr2;
+      this.receiver = await this.ERC721Receiver.deploy(RECEIVER_MAGIC_VALUE);
     });
 
     describe("safeMint", function () {
       it('successfully mints a single token', async function () {
-        const mintTx = await this.erc721a['safeMint(address,uint256)'](this.addr1.address, 1);
+        const mintTx = await this.erc721a['safeMint(address,uint256)'](this.receiver.address, 1);
         await expect(mintTx)
           .to.emit(this.erc721a, "Transfer")
-          .withArgs(ZERO_ADDRESS, this.addr1.address, 0);
+          .withArgs(ZERO_ADDRESS, this.receiver.address, 0);
+
+        await expect(mintTx)
+          .to.emit(this.receiver, "Received")
+          .withArgs(this.owner.address, ZERO_ADDRESS, 0, "0x", GAS_MAGIC_VALUE);
+      });
+
+      it('successfully mints multiple tokens', async function () {
+        const mintTx = await this.erc721a['safeMint(address,uint256)'](this.receiver.address, 5);
+        for (let tokenId = 0; tokenId < 5; tokenId++) {
+          await expect(mintTx)
+            .to.emit(this.erc721a, "Transfer")
+            .withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
+
+          await expect(mintTx)
+            .to.emit(this.receiver, "Received")
+            .withArgs(this.owner.address, ZERO_ADDRESS, 0, "0x", GAS_MAGIC_VALUE);
+        }
       });
     });
   });
