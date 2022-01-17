@@ -127,96 +127,99 @@ describe('ERC721A', function () {
       });
     });
 
-    const testSuccessfulTransfer = function (transferFn) {
-      const tokenId = 1;
-      let from;
-      let to;
-      let transferTx;
-
-      beforeEach(async function () {
-        const sender = this.addr2;
-        from = sender.address;
-        to = this.addr3.address;
-        await this.erc721a.connect(sender).setApprovalForAll(to, true);
-        transferTx = await this.erc721a.connect(sender)[transferFn](from, to, tokenId);
+    context('test transfer functionality', function() {
+      const testSuccessfulTransfer = function (transferFn) {
+        const tokenId = 1;
+        let from;
+        let to;
+        let transferTx;
+  
+        beforeEach(async function () {
+          const sender = this.addr2;
+          from = sender.address;
+          to = this.addr3.address;
+          await this.erc721a.connect(sender).setApprovalForAll(to, true);
+          transferTx = await this.erc721a.connect(sender)[transferFn](from, to, tokenId);
+        });
+  
+        it('transfers the ownership of the given token ID to the given address', async function () {
+          expect(await this.erc721a.ownerOf(tokenId)).to.be.equal(to);
+        });
+  
+        it('emits a Transfer event', async function () {
+          await expect(transferTx)
+            .to.emit(this.erc721a, "Transfer")
+            .withArgs(from, to, tokenId);
+        });
+  
+        it('clears the approval for the token ID', async function () {
+          expect(await this.erc721a.getApproved(tokenId)).to.be.equal(ZERO_ADDRESS);
+        });
+  
+        it('emits an Approval event', async function () {
+          await expect(transferTx)
+            .to.emit(this.erc721a, "Approval")
+            .withArgs(from, ZERO_ADDRESS, tokenId);
+        });
+  
+        it('adjusts owners balances', async function () {
+          expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
+        });
+  
+        it('adjusts owners tokens by index', async function () {
+          expect(await this.erc721a.tokenOfOwnerByIndex(to, 0)).to.be.equal(tokenId);
+          expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
+        });
+      };
+  
+      const testUnsuccessfulTransfer = function (transferFn) {
+        const tokenId = 1;
+  
+        it('rejects unapproved transfer', async function () {
+          await expectRevert(
+            this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, this.addr1.address, tokenId),
+            'ERC721A: transfer caller is not owner nor approved',
+          )
+        });
+  
+        it('rejects transfer from incorrect owner', async function () {
+          await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
+          await expectRevert(
+            this.erc721a.connect(this.addr1)[transferFn](this.addr3.address, this.addr1.address, tokenId),
+            'ERC721A: transfer from incorrect owner',
+          )
+        });
+  
+        it('rejects transfer to zero address', async function () {
+          await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
+          await expectRevert(
+            this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, ZERO_ADDRESS, tokenId),
+            'ERC721A: transfer to the zero address',
+          )
+        });
+      }
+  
+      context("successful transfers", function () {
+        describe('transferFrom', function () {
+          testSuccessfulTransfer('transferFrom');
+        });
+  
+        describe('safeTransferFrom', function () {
+          testSuccessfulTransfer('safeTransferFrom(address,address,uint256)');
+        });
       });
-
-      it('transfers the ownership of the given token ID to the given address', async function () {
-        expect(await this.erc721a.ownerOf(tokenId)).to.be.equal(to);
-      });
-
-      it('emits a Transfer event', async function () {
-        await expect(transferTx)
-          .to.emit(this.erc721a, "Transfer")
-          .withArgs(from, to, tokenId);
-      });
-
-      it('clears the approval for the token ID', async function () {
-        expect(await this.erc721a.getApproved(tokenId)).to.be.equal(ZERO_ADDRESS);
-      });
-
-      it('emits an Approval event', async function () {
-        await expect(transferTx)
-          .to.emit(this.erc721a, "Approval")
-          .withArgs(from, ZERO_ADDRESS, tokenId);
-      });
-
-      it('adjusts owners balances', async function () {
-        expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
-      });
-
-      it('adjusts owners tokens by index', async function () {
-        expect(await this.erc721a.tokenOfOwnerByIndex(to, 0)).to.be.equal(tokenId);
-        expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
-      });
-    };
-
-    const testUnsuccessfulTransfer = function (transferFn) {
-      const tokenId = 1;
-
-      it('rejects unapproved transfer', async function () {
-        await expectRevert(
-          this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, this.addr1.address, tokenId),
-          'ERC721A: transfer caller is not owner nor approved',
-        )
-      });
-
-      it('rejects transfer from incorrect owner', async function () {
-        await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
-        await expectRevert(
-          this.erc721a.connect(this.addr1)[transferFn](this.addr3.address, this.addr1.address, tokenId),
-          'ERC721A: transfer from incorrect owner',
-        )
-      });
-
-      it('rejects transfer to zero address', async function () {
-        await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
-        await expectRevert(
-          this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, ZERO_ADDRESS, tokenId),
-          'ERC721A: transfer to the zero address',
-        )
-      });
-    }
-
-    context("successful transfers", function () {
-      describe('transferFrom', function () {
-        testSuccessfulTransfer('transferFrom');
-      });
-
-      describe('safeTransferFrom', function () {
-        testSuccessfulTransfer('safeTransferFrom(address,address,uint256)');
+  
+      context("unsuccessful transfers", function () {
+        describe('transferFrom', function () {
+          testUnsuccessfulTransfer('transferFrom');
+        });
+  
+        describe('safeTransferFrom', function () {
+          testUnsuccessfulTransfer('safeTransferFrom(address,address,uint256)');
+        });
       });
     });
 
-    context("unsuccessful transfers", function () {
-      describe('transferFrom', function () {
-        testUnsuccessfulTransfer('transferFrom');
-      });
-
-      describe('safeTransferFrom', function () {
-        testUnsuccessfulTransfer('safeTransferFrom(address,address,uint256)');
-      });
-    });
 
   });
 });
