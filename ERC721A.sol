@@ -350,6 +350,7 @@ contract ERC721A is
     // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
     require(!_exists(startTokenId), "ERC721A: token already minted");
     require(quantity <= maxBatchSize, "ERC721A: quantity to mint too high");
+    require(startTokenId + quantity < collectionSize, "ERC721A: would exceed max supply");
 
     _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
