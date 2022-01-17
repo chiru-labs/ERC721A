@@ -219,7 +219,23 @@ describe('ERC721A', function () {
         });
       });
     });
+  });
 
+  context('mint', async function () {
+    beforeEach(async function () {
+      const [owner, addr1, addr2] = await ethers.getSigners();
+      this.owner = owner;
+      this.addr1 = addr1;
+      this.addr2 = addr2;
+    });
 
+    describe("safeMint", function () {
+      it('successfully mints a single token', async function () {
+        const mintTx = await this.erc721a['safeMint(address,uint256)'](this.addr1.address, 1);
+        await expect(mintTx)
+          .to.emit(this.erc721a, "Transfer")
+          .withArgs(ZERO_ADDRESS, this.addr1.address, 0);
+      });
+    });
   });
 });
