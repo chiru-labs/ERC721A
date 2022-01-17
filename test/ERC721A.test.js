@@ -246,10 +246,10 @@ describe('ERC721A', function () {
         await expect(mintTx)
           .to.emit(this.erc721a, "Transfer")
           .withArgs(ZERO_ADDRESS, this.receiver.address, 0);
-
         await expect(mintTx)
           .to.emit(this.receiver, "Received")
           .withArgs(this.owner.address, ZERO_ADDRESS, 0, "0x", GAS_MAGIC_VALUE);
+        expect(await this.erc721a.ownerOf(0)).to.equal(this.receiver.address);
       });
 
       it('successfully mints multiple tokens', async function () {
@@ -258,11 +258,23 @@ describe('ERC721A', function () {
           await expect(mintTx)
             .to.emit(this.erc721a, "Transfer")
             .withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
-
           await expect(mintTx)
             .to.emit(this.receiver, "Received")
             .withArgs(this.owner.address, ZERO_ADDRESS, 0, "0x", GAS_MAGIC_VALUE);
+          expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.receiver.address);
         }
+      });
+
+      it('rejects mints to the zero address', async function () {
+        await expectRevert(
+          this.erc721a['safeMint(address,uint256)'](ZERO_ADDRESS, 1), 'ERC721A: mint to the zero address'
+        );
+      });
+
+      it('rejects quantity > maxBatchSize', async function () {
+        await expectRevert(
+          this.erc721a['safeMint(address,uint256)'](this.receiver.address, 6), 'ERC721A: quantity to mint too high'
+        );
       });
     });
   });
