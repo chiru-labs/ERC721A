@@ -127,23 +127,22 @@ describe('ERC721A', function () {
       });
     });
 
-    function createTransfersSuite(name, tests) {
-      describe(name, async function () {
-        before(async function () {
-          console.log(this.addr1.address)
-          console.log(this.addr2.address)
-          await this.erc721a.connect(this.addr1).setApprovalForAll(this.addr2.address, true);
-          await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.addr2.address, 0);
-        });
-        tests();
-      })
-    }
+    context('transfers', function () {
+      const tokenId = 1;
+      let from;
+      let receiver;
+      let transferTx;
 
-    createTransfersSuite('transfers', function () {
-      const tokenId = 0;
+      beforeEach(async function () {
+        const sender = this.addr2;
+        from = sender.address;
+        receiver = this.addr3.address;
+        await this.erc721a.connect(sender).setApprovalForAll(receiver, true);
+        transferTx = await this.erc721a.connect(sender).transferFrom(from, receiver, tokenId);
+      });
 
       it('transfers the ownership of the given token ID to the given address', async function () {
-        expect(await this.erc721a.ownerOf(tokenId)).to.be.equal(this.addr2.address);
+        expect(await this.erc721a.ownerOf(tokenId)).to.be.equal(receiver);
       });
 
       it('emits a Transfer event', async function () {
@@ -163,14 +162,14 @@ describe('ERC721A', function () {
       });
 
       it('adjusts owners balances', async function () {
-        expect(await this.erc721a.balanceOf(from)).to.be.equal(0);
+        expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
       });
 
       it('adjusts owners tokens by index', async function () {
-        expect(await this.erc721a.tokenOfOwnerByIndex(receiver, 0)).to.be.bignumber.equal(tokenId);
-        expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.bignumber.not.equal(tokenId);
+        expect(await this.erc721a.tokenOfOwnerByIndex(receiver, 0)).to.be.equal(tokenId);
+        expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
       });
-      
+
     });
   });
 });
