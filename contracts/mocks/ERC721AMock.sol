@@ -9,7 +9,6 @@ import "../ERC721A.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract ERC721AMock is ERC721A {
-
     constructor(
         string memory name_,
         string memory symbol_,
