@@ -1,23 +1,30 @@
 {
+  "name": "chirulabs-solidity",
+  "version": "0.0.1",
+  "description": "Chiru Labs' smart contract library for Solidity",
+  "files": [
+    "/contracts/**/*.sol",
+    "/build/contracts/*.json",
+    "!/contracts/mocks/**/*"
+  ],
+  "scripts": {
+    "test": "mocha",
+    "lint:sol:fix": "prettier --write \"contracts/**/*.sol\""
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.4.2"
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/contracts": "^4.4.2",
     "@openzeppelin/test-helpers": "^0.5.15",
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.3",
     "hardhat": "^2.8.2",
+    "hardhat-gas-reporter": "^1.0.7",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19"
-  },
-  "name": "chirulabs-solidity",
-  "version": "1.0.0",
-  "description": "Smart Contract library for Solidity",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha",
-    "lint:sol:fix": "prettier --write \"contracts/**/*.sol\""
   },
   "repository": {
     "type": "git",
