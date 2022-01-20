@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Creators: locationtba.eth, 2pmflow.eth
+// Creator: Chiru Labs
 
 pragma solidity ^0.8.0;
 

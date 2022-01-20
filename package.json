@@ -1,7 +1,7 @@
 {
-  "name": "chirulabs-solidity",
+  "name": "erc721a",
   "version": "0.0.1",
-  "description": "Chiru Labs' smart contract library for Solidity",
+  "description": "ERC721A contract for Solidity",
   "files": [
     "/contracts/**/*.sol",
     "/build/contracts/*.json",
@@ -35,7 +35,7 @@
     "type": "git",
     "url": "git+https://github.com/chiru-labs/ERC721A.git"
   },
-  "author": "",
+  "author": "chiru-labs",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/chiru-labs/ERC721A/issues"
