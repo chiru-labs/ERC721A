@@ -27,7 +27,6 @@ To find other projects that are using ERC721A, please visit [erc721a.org](erc721
 
 **Chiru Labs is not liable for any outcomes as a result of using ERC721A.**
 
-<br>
 
 
 <!-- Installation -->
@@ -37,7 +36,6 @@ To find other projects that are using ERC721A, please visit [erc721a.org](erc721
 npm install --save-dev erc721a
 ```
 
-<br>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -55,7 +53,6 @@ contract Azuki is ERC721A {
 }
 ```
 
-<br>
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -70,7 +67,6 @@ contract Azuki is ERC721A {
 See the [open issues](https://github.com/chiru-labs/ERC721A/issues) for a full list of proposed features (and known issues).
 
 
-<br>
 
 
 <!-- CONTRIBUTING -->
@@ -87,14 +83,12 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<br>
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-<br>
 
 <!-- CONTACT -->
 ## Contact
