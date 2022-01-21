@@ -213,31 +213,6 @@ contract ERC721AUpgradeable is
   }
 
   /**
-   * @dev See {IERC721-approve}.
-   */
-  function approve(address to, uint256 tokenId) public override(ERC721Upgradeable, IERC721Upgradeable) {
-    address owner = ERC721AUpgradeable.ownerOf(tokenId);
-    require(to != owner, "ERC721AUpgradeable: approval to current owner");
-
-    require(
-      _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-      "ERC721AUpgradeable: approve caller is not owner nor approved for all"
-    );
-
-    _approve(to, tokenId, owner);
-  }
-
-  /**
-   * @dev See {IERC721-setApprovalForAll}.
-   */
-  function setApprovalForAll(address operator, bool approved) public override(ERC721Upgradeable, IERC721Upgradeable) {
-    require(operator != _msgSender(), "ERC721AUpgradeable: approve to caller");
-
-    _operatorApprovals[_msgSender()][operator] = approved;
-    emit ApprovalForAll(_msgSender(), operator, approved);
-  }
-
-  /**
    * @dev See {IERC721-transferFrom}.
    */
   function transferFrom(
