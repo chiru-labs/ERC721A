@@ -56,9 +56,7 @@ describe('ERC721A', function () {
       });
 
       it('throws an exception for the 0 address', async function () {
-        await expectRevert(
-          this.erc721a.balanceOf(ZERO_ADDRESS), 'ERC721A: balance query for the zero address',
-        );
+        await expect(this.erc721a.balanceOf(ZERO_ADDRESS)).to.be.revertedWith('ERC721A: balance query for the zero address');
       });
     });
 
@@ -79,9 +77,7 @@ describe('ERC721A', function () {
       });
 
       it('reverts for an invalid token', async function () {
-        await expectRevert(
-          this.erc721a.ownerOf(10), 'ERC721A: owner query for nonexistent token',
-        );
+        await expect(this.erc721a.ownerOf(10)).to.be.revertedWith('ERC721A: owner query for nonexistent token');
       });
     });
 
@@ -96,21 +92,15 @@ describe('ERC721A', function () {
       });
 
       it('rejects an invalid token owner', async function () {
-        await expectRevert(
-          this.erc721a.connect(this.addr1).approve(this.addr2.address, tokenId2), 'ERC721A: approval to current owner'
-        );
+        await expect(this.erc721a.connect(this.addr1).approve(this.addr2.address, tokenId2)).to.be.revertedWith('ERC721A: approval to current owner');
       });
 
       it('rejects an unapproved caller', async function () {
-        await expectRevert(
-          this.erc721a.approve(this.addr2.address, tokenId), 'ERC721A: approve caller is not owner nor approved for all'
-        );
+        await expect(this.erc721a.approve(this.addr2.address, tokenId)).to.be.revertedWith('ERC721A: approve caller is not owner nor approved for all');
       });
 
       it('does not get approved for invalid tokens', async function () {
-        await expectRevert(
-          this.erc721a.getApproved(10), 'ERC721A: approved query for nonexistent token'
-        );
+        await expect(this.erc721a.getApproved(10)).to.be.revertedWith('ERC721A: approved query for nonexistent token');
       });
     });
 
@@ -124,10 +114,7 @@ describe('ERC721A', function () {
       });
 
       it('sets rejects approvals for non msg senders', async function () {
-        await expectRevert(
-          this.erc721a.connect(this.addr1).setApprovalForAll(this.addr1.address, true),
-          'ERC721A: approve to caller'
-        );
+        await expect( this.erc721a.connect(this.addr1).setApprovalForAll(this.addr1.address, true)).to.be.revertedWith('ERC721A: approve to caller');
       });
     });
 
