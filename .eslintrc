@@ -11,5 +11,13 @@
   },
   "globals": {
     "ethers": "readonly"
+  },
+  "rules": {
+    "max-len": [
+      "error",
+      {
+        "code": 120
+      }
+    ]
   }
 }
