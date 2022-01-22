@@ -1,4 +1,4 @@
-name: Run Tests
+name: ERC721A CI
 
 on:
   push:
@@ -23,4 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - run: npm run build --if-present
-      - run: npm test
+      - name: Run linter
+        run: npm run lint
+      - name: Run tests
+        run: npm test
