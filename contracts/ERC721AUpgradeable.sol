@@ -4,12 +4,12 @@
 
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
 
@@ -22,10 +22,7 @@ import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeabl
  * Does not support burning tokens to address(0).
  */
 contract ERC721AUpgradeable is
-  ContextUpgradeable,
-  ERC165Upgradeable,
-  IERC721Upgradeable,
-  IERC721MetadataUpgradeable,
+  ERC721Upgradeable,
   IERC721EnumerableUpgradeable
 {
   using AddressUpgradeable for address;
@@ -74,12 +71,9 @@ contract ERC721AUpgradeable is
     uint256 maxBatchSize_
   ) public virtual initializer {
     require(maxBatchSize_ > 0, "ERC721AUpgradeable: max batch size must be nonzero");
-    _name = name_;
-    _symbol = symbol_;
     maxBatchSize = maxBatchSize_;
 
-	 __ERC165_init_unchained();
-	 __Context_init_unchained();
+	 __ERC721_init(name_, symbol_);
   }
 
   /**
@@ -134,12 +128,10 @@ contract ERC721AUpgradeable is
     public
     view
     virtual
-    override(ERC165Upgradeable, IERC165Upgradeable)
+    override(ERC721Upgradeable, IERC165Upgradeable)
     returns (bool)
   {
     return
-      interfaceId == type(IERC721Upgradeable).interfaceId ||
-      interfaceId == type(IERC721MetadataUpgradeable).interfaceId ||
       interfaceId == type(IERC721EnumerableUpgradeable).interfaceId ||
       super.supportsInterface(interfaceId);
   }
@@ -147,7 +139,7 @@ contract ERC721AUpgradeable is
   /**
    * @dev See {IERC721-balanceOf}.
    */
-  function balanceOf(address owner) public view override returns (uint256) {
+  function balanceOf(address owner) public view override(ERC721Upgradeable, IERC721Upgradeable) returns (uint256) {
     require(owner != address(0), "ERC721AUpgradeable: balance query for the zero address");
     return uint256(_addressData[owner].balance);
   }
@@ -185,22 +177,8 @@ contract ERC721AUpgradeable is
   /**
    * @dev See {IERC721-ownerOf}.
    */
-  function ownerOf(uint256 tokenId) public view override returns (address) {
+  function ownerOf(uint256 tokenId) public view override(ERC721Upgradeable, IERC721Upgradeable) returns (address) {
     return ownershipOf(tokenId).addr;
-  }
-
-  /**
-   * @dev See {IERC721Metadata-name}.
-   */
-  function name() public view virtual override returns (string memory) {
-    return _name;
-  }
-
-  /**
-   * @dev See {IERC721Metadata-symbol}.
-   */
-  function symbol() public view virtual override returns (string memory) {
-    return _symbol;
   }
 
   /**
@@ -230,7 +208,7 @@ contract ERC721AUpgradeable is
    * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
    * by default, can be overriden in child contracts.
    */
-  function _baseURI() internal view virtual returns (string memory) {
+  function _baseURI() internal view virtual override returns (string memory) {
     return "";
   }
 
@@ -241,7 +219,7 @@ contract ERC721AUpgradeable is
     address from,
     address to,
     uint256 tokenId
-  ) public override {
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) {
     _transfer(from, to, tokenId);
   }
 
@@ -252,7 +230,7 @@ contract ERC721AUpgradeable is
     address from,
     address to,
     uint256 tokenId
-  ) public override {
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) {
     safeTransferFrom(from, to, tokenId, "");
   }
 
@@ -264,10 +242,10 @@ contract ERC721AUpgradeable is
     address to,
     uint256 tokenId,
     bytes memory _data
-  ) public override {
+  ) public override(ERC721Upgradeable, IERC721Upgradeable) {
     _transfer(from, to, tokenId);
     require(
-      _checkOnERC721Received(from, to, tokenId, _data),
+      _checkOnERC721AReceived(from, to, tokenId, _data),
       "ERC721AUpgradeable: transfer to non ERC721Receiver implementer"
     );
   }
@@ -279,11 +257,11 @@ contract ERC721AUpgradeable is
    *
    * Tokens start existing when they are minted (`_mint`),
    */
-  function _exists(uint256 tokenId) internal view returns (bool) {
+  function _exists(uint256 tokenId) internal view virtual override(ERC721Upgradeable) returns (bool) {
     return tokenId < currentIndex;
   }
 
-  function _safeMint(address to, uint256 quantity) internal {
+  function _safeMint(address to, uint256 quantity) internal virtual override(ERC721Upgradeable) {
     _safeMint(to, quantity, "");
   }
 
@@ -301,7 +279,7 @@ contract ERC721AUpgradeable is
     address to,
     uint256 quantity,
     bytes memory _data
-  ) internal {
+  ) internal virtual override(ERC721Upgradeable) {
     uint256 startTokenId = currentIndex;
     require(to != address(0), "ERC721AUpgradeable: mint to the zero address");
     // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
@@ -322,7 +300,7 @@ contract ERC721AUpgradeable is
     for (uint256 i = 0; i < quantity; i++) {
       emit Transfer(address(0), to, updatedIndex);
       require(
-        _checkOnERC721Received(address(0), to, updatedIndex, _data),
+        _checkOnERC721AReceived(address(0), to, updatedIndex, _data),
         "ERC721AUpgradeable: transfer to non ERC721Receiver implementer"
       );
       updatedIndex++;
@@ -346,7 +324,7 @@ contract ERC721AUpgradeable is
     address from,
     address to,
     uint256 tokenId
-  ) private {
+  ) internal virtual override {
     TokenOwnership memory prevOwnership = ownershipOf(tokenId);
 
     bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
@@ -429,6 +407,7 @@ contract ERC721AUpgradeable is
     nextOwnerToExplicitlySet = endIndex + 1;
   }
 
+
   /**
    * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
    * The call is not executed if the target address is not a contract.
@@ -439,7 +418,7 @@ contract ERC721AUpgradeable is
    * @param _data bytes optional data to send along with the call
    * @return bool whether the call correctly returned the expected magic value
    */
-  function _checkOnERC721Received(
+  function _checkOnERC721AReceived(
     address from,
     address to,
     uint256 tokenId,
@@ -463,6 +442,7 @@ contract ERC721AUpgradeable is
       return true;
     }
   }
+
 
   /**
    * @dev Hook that is called before a set of serially-ordered token ids are about to be transferred. This includes minting.
