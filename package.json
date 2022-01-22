@@ -1,6 +1,6 @@
 {
   "name": "erc721a",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "ERC721A contract for Solidity",
   "files": [
     "/contracts/**/*.sol",
