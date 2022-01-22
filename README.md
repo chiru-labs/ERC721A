@@ -57,17 +57,11 @@ contract Azuki is ERC721A {
 ## Roadmap
 
 - [] Setup CI pipeline to automatically publish new npm versions
-
 - [] Add burn function
-
 - [] Add flexibility for the first token id to not start at 0
-
-- [] Move \_setOwnersExplicit to an extension
-
+- [] Move `_setOwnersExplicit` to an extension
 - [] Add more documentation on benefits of using ERC721A
-
 - [] Increase test coverage
-
 - [] Add CI pipeline
 
 See the [open issues](https://github.com/chiru-labs/ERC721A/issues) for a full list of proposed features (and known issues).
@@ -83,13 +77,9 @@ If you have a suggestion that would make this better, please fork the repo and c
 Don't forget to give the project a star! Thanks again!
 
 1. Fork the Project
-
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
-
 5. Open a Pull Request
 
 <!-- ROADMAP -->
@@ -97,9 +87,7 @@ Don't forget to give the project a star! Thanks again!
 ### Running tests locally
 
 1. `npm install`
-
 2. `npm node`
-
 3. `npm test`
 
 <!-- LICENSE -->
@@ -113,9 +101,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## Contact
 
 - 2pm.flow (owner) - [@2pmflow](https://twitter.com/2pmflow)
-
 - location tba (owner) - [@locationtba](https://twitter.com/locationtba)
-
 - cygaar (maintainer) - [@cygaar_dev](https://twitter.com/cygaar_dev)
 
 Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-labs/ERC721A)
@@ -132,6 +118,6 @@ Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-l
 [stars-url]: https://github.com/chiru-labs/ERC721A/stargazers
 [issues-shield]: https://img.shields.io/github/issues/chiru-labs/ERC721A.svg?style=for-the-badge
 [issues-url]: https://github.com/chiru-labs/ERC721A/issues
-[license-shield]: https://img.shields.io/github/license/chiru-labs/ERC721A.svg?style=for-the-badge
-[license-url]: https://github.com/chiru-labs/ERC721A/blob/master/LICENSE.txt
+[license-shield]: https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge
+[license-url]: https://github.com/chiru-labs/ERC721A/blob/main/LICENSE.txt
 [product-screenshot]: images/screenshot.png
