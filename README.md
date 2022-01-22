@@ -56,6 +56,8 @@ contract Azuki is ERC721A {
 
 ## Roadmap
 
+- [] Setup CI pipeline to automatically publish new npm versions
+
 - [] Add burn function
 
 - [] Add flexibility for the first token id to not start at 0
