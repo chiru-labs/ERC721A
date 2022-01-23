@@ -1,5 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
-require('@nomiclabs/hardhat-ethers');
+require("@nomiclabs/hardhat-ethers");
 
 if (process.env.REPORT_GAS) {
   require("hardhat-gas-reporter");
@@ -11,6 +11,8 @@ if (process.env.REPORT_GAS) {
 module.exports = {
   solidity: "0.8.4",
   gasReporter: {
-    currency: 'USD',
-  }
+    currency: "USD",
+    gasPrice: 100,
+    showTimeSpent: true,
+  },
 };
