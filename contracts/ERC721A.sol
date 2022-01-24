@@ -307,7 +307,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(to != address(0), "ERC721A: mint to the zero address");
         // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
         require(!_exists(startTokenId), "ERC721A: token already minted");
-        require(quantity <= maxBatchSize, "ERC721A: quantity to mint too high");
+        currentIndex += quantity;
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
@@ -316,20 +316,32 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             addressData.balance + uint128(quantity),
             addressData.numberMinted + uint128(quantity)
         );
-        _ownerships[startTokenId] = TokenOwnership(to, uint64(block.timestamp));
 
-        uint256 updatedIndex = startTokenId;
+        // Recording ownerships in increments of maxBatchSize.
+        uint256 remainingTokens = quantity;
+        uint256 ownershipTokenId = startTokenId;
 
-        for (uint256 i = 0; i < quantity; i++) {
-            emit Transfer(address(0), to, updatedIndex);
-            require(
-                _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                "ERC721A: transfer to non ERC721Receiver implementer"
-            );
-            updatedIndex++;
+        while (remainingTokens > 0) {
+            if (remainingTokens > maxBatchSize) {
+                _ownerships[ownershipTokenId] = TokenOwnership(to, uint64(block.timestamp));
+                ownershipTokenId += maxBatchSize;
+                remainingTokens -= maxBatchSize;
+                continue;
+            }
+
+            // Last batch
+            _ownerships[ownershipTokenId] = TokenOwnership(to, uint64(block.timestamp));
+            remainingTokens = 0;
         }
 
-        currentIndex = updatedIndex;
+        for (uint256 i = startTokenId; i < startTokenId + quantity; i++) {
+            emit Transfer(address(0), to, i);
+            require(
+                _checkOnERC721Received(address(0), to, i, _data),
+                "ERC721A: transfer to non ERC721Receiver implementer"
+            );
+        }
+
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
