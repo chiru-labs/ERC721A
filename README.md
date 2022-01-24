@@ -14,7 +14,7 @@ The [Azuki](https://twitter.com/azukizen) team created ERC721A for its sale on 1
 
 ![Gas Savings](https://pbs.twimg.com/media/FIdILKpVQAEQ_5U?format=jpg&name=medium)
 
-For more information on how ERC721A works under the hood, please visit our [blog](https://www.azuki.com/erc721a). To find other projects that are using ERC721A, please visit [erc721a.org](https://www.erc721a.org).
+For more information on how ERC721A works under the hood, please visit our [blog](https://www.azuki.com/erc721a). To find other projects that are using ERC721A, please visit [erc721a.org](https://www.erc721a.org) and our [curated projects list](https://github.com/chiru-labs/ERC721A/blob/main/projects.md).
 
 **Chiru Labs is not liable for any outcomes as a result of using ERC721A.** DYOR.
 
