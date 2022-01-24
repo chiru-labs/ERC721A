@@ -50,7 +50,7 @@ contract ERC721A is
   // Mapping from token ID to approved address
   mapping(uint256 => address) private _tokenApprovals;
 
-  // Mapping from owner to operator approvals
+  // mapping from owner to operator approvals
   mapping(address => mapping(address => bool)) private _operatorApprovals;
 
   /**

@@ -52,6 +52,9 @@ contract ERC721AUpgradeable is
   // Mapping from token ID to approved address
   mapping(uint256 => address) private _tokenApprovals;
 
+  // mapping from owner to operator approvals
+  mapping(address => mapping(address => bool)) private _operatorApprovals;
+
   /**
    * @dev
    * `maxBatchSize` refers to how much a minter can mint at a time.
@@ -358,6 +361,48 @@ contract ERC721AUpgradeable is
     _afterTokenTransfers(from, to, tokenId, 1);
   }
 
+  // Approval functions need to be here instead of using the ones from the openzeppelin implementation, as the approved list is private
+  /**
+   * @dev See {IERC721-approve}.
+	*/
+  function approve(address to, uint256 tokenId) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    address owner = ERC721AUpgradeable.ownerOf(tokenId);
+    require(to != owner, "ERC721AUpgradeable: approval to current owner");
+
+    require(
+      _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+      "ERC721AUpgradeable: approve caller is not owner nor approved for all"
+    );
+
+    _approve(to, tokenId, owner);
+  }
+
+  /**
+   * @dev See {IERC721-getApproved}.
+   */
+  function getApproved(uint256 tokenId) public view override(ERC721Upgradeable, IERC721Upgradeable) returns (address) {
+    require(_exists(tokenId), "ERC721AUpgradeable: approved query for nonexistent token");
+
+    return _tokenApprovals[tokenId];
+	}
+
+  /**
+   * @dev See {IERC721-setApprovalForAll}.
+   */
+  function setApprovalForAll(address operator, bool approved) public override(ERC721Upgradeable, IERC721Upgradeable) {
+    require(operator != _msgSender(), "ERC721AUpgradeable: approve to caller");
+
+    _operatorApprovals[_msgSender()][operator] = approved;
+    emit ApprovalForAll(_msgSender(), operator, approved);
+  }
+
+  /**
+	* @dev See {IERC721-isApprovedForAll}.
+	*/
+  function isApprovedForAll(address owner, address operator) public view virtual override(ERC721Upgradeable, IERC721Upgradeable) returns (bool) {
+    return _operatorApprovals[owner][operator];
+  }
+
   /**
    * @dev Approve `to` to operate on `tokenId`
    *
@@ -371,6 +416,7 @@ contract ERC721AUpgradeable is
     _tokenApprovals[tokenId] = to;
     emit Approval(owner, to, tokenId);
   }
+
 
   uint256 public nextOwnerToExplicitlySet = 0;
 
