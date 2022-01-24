@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Creators: locationtba.eth, 2pmflow.eth
-// Made upgradeable by: mrmcgoats.eth
+// Made upgradeable by: mrmcgoats.eth for Xenum Technology (xenum.io)
 
 pragma solidity ^0.8.0;
 
@@ -56,11 +56,11 @@ contract ERC721AUpgradeable is
    * @dev
    * `maxBatchSize` refers to how much a minter can mint at a time.
    */
-  function initialize(
+  function __ERC721A_init(
     string memory name_,
     string memory symbol_,
     uint256 maxBatchSize_
-  ) public virtual initializer {
+  ) public virtual onlyInitializing {
     require(maxBatchSize_ > 0, "ERC721AUpgradeable: max batch size must be nonzero");
     maxBatchSize = maxBatchSize_;
 

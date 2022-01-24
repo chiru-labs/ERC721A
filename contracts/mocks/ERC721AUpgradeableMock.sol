@@ -11,8 +11,12 @@ contract ERC721AUpgradeableMock is ERC721AUpgradeable {
         string memory name_,
         string memory symbol_,
         uint256 maxBatchSize_
-    ) public virtual override initializer {
-		 super.initialize(name_, symbol_, maxBatchSize_);
+    ) public initializer {
+		 __ERC721A_init(name_, symbol_, maxBatchSize_);
+    }
+    
+    function numberMinted(address owner) public view returns (uint256) {
+        return _numberMinted(owner);
     }
 
     function baseURI() public view returns (string memory) {
