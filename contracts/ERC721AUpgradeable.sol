@@ -42,12 +42,6 @@ contract ERC721AUpgradeable is
 
   uint256 internal maxBatchSize; // Treat as immutable. Cannot set to immutable in upgradeable contracts
 
-  // Token name
-  string private _name;
-
-  // Token symbol
-  string private _symbol;
-
   // Mapping from token ID to ownership details
   // An empty struct value does not necessarily mean the token is unowned. See ownershipOf implementation for details.
   mapping(uint256 => TokenOwnership) private _ownerships;
@@ -57,9 +51,6 @@ contract ERC721AUpgradeable is
 
   // Mapping from token ID to approved address
   mapping(uint256 => address) private _tokenApprovals;
-
-  // Mapping from owner to operator approvals
-  mapping(address => mapping(address => bool)) private _operatorApprovals;
 
   /**
    * @dev

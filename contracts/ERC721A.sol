@@ -3,9 +3,8 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
@@ -21,10 +20,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  * Does not support burning tokens to address(0).
  */
 contract ERC721A is
-  Context,
-  ERC165,
-  IERC721,
-  IERC721Metadata,
+  ERC721,
   IERC721Enumerable
 {
   using Address for address;
@@ -43,12 +39,6 @@ contract ERC721A is
   uint256 private currentIndex = 0;
 
   uint256 internal immutable maxBatchSize;
-
-  // Token name
-  string private _name;
-
-  // Token symbol
-  string private _symbol;
 
   // Mapping from token ID to ownership details
   // An empty struct value does not necessarily mean the token is unowned. See ownershipOf implementation for details.
@@ -71,10 +61,8 @@ contract ERC721A is
     string memory name_,
     string memory symbol_,
     uint256 maxBatchSize_
-  ) {
+  ) ERC721(name_, symbol_) {
     require(maxBatchSize_ > 0, "ERC721A: max batch size must be nonzero");
-    _name = name_;
-    _symbol = symbol_;
     maxBatchSize = maxBatchSize_;
   }
 
@@ -130,11 +118,10 @@ contract ERC721A is
     public
     view
     virtual
-    override(ERC165, IERC165)
+    override(ERC721, IERC165)
     returns (bool)
   {
     return
-      interfaceId == type(IERC721).interfaceId ||
       interfaceId == type(IERC721Metadata).interfaceId ||
       interfaceId == type(IERC721Enumerable).interfaceId ||
       super.supportsInterface(interfaceId);
@@ -143,7 +130,7 @@ contract ERC721A is
   /**
    * @dev See {IERC721-balanceOf}.
    */
-  function balanceOf(address owner) public view override returns (uint256) {
+  function balanceOf(address owner) public view override(ERC721, IERC721) returns (uint256) {
     require(owner != address(0), "ERC721A: balance query for the zero address");
     return uint256(_addressData[owner].balance);
   }
@@ -181,22 +168,8 @@ contract ERC721A is
   /**
    * @dev See {IERC721-ownerOf}.
    */
-  function ownerOf(uint256 tokenId) public view override returns (address) {
+  function ownerOf(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
     return ownershipOf(tokenId).addr;
-  }
-
-  /**
-   * @dev See {IERC721Metadata-name}.
-   */
-  function name() public view virtual override returns (string memory) {
-    return _name;
-  }
-
-  /**
-   * @dev See {IERC721Metadata-symbol}.
-   */
-  function symbol() public view virtual override returns (string memory) {
-    return _symbol;
   }
 
   /**
@@ -226,55 +199,8 @@ contract ERC721A is
    * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
    * by default, can be overriden in child contracts.
    */
-  function _baseURI() internal view virtual returns (string memory) {
+  function _baseURI() internal view virtual override returns (string memory) {
     return "";
-  }
-
-  /**
-   * @dev See {IERC721-approve}.
-   */
-  function approve(address to, uint256 tokenId) public override {
-    address owner = ERC721A.ownerOf(tokenId);
-    require(to != owner, "ERC721A: approval to current owner");
-
-    require(
-      _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-      "ERC721A: approve caller is not owner nor approved for all"
-    );
-
-    _approve(to, tokenId, owner);
-  }
-
-  /**
-   * @dev See {IERC721-getApproved}.
-   */
-  function getApproved(uint256 tokenId) public view override returns (address) {
-    require(_exists(tokenId), "ERC721A: approved query for nonexistent token");
-
-    return _tokenApprovals[tokenId];
-  }
-
-  /**
-   * @dev See {IERC721-setApprovalForAll}.
-   */
-  function setApprovalForAll(address operator, bool approved) public override {
-    require(operator != _msgSender(), "ERC721A: approve to caller");
-
-    _operatorApprovals[_msgSender()][operator] = approved;
-    emit ApprovalForAll(_msgSender(), operator, approved);
-  }
-
-  /**
-   * @dev See {IERC721-isApprovedForAll}.
-   */
-  function isApprovedForAll(address owner, address operator)
-    public
-    view
-    virtual
-    override
-    returns (bool)
-  {
-    return _operatorApprovals[owner][operator];
   }
 
   /**
@@ -284,7 +210,7 @@ contract ERC721A is
     address from,
     address to,
     uint256 tokenId
-  ) public override {
+  ) public override(ERC721, IERC721) {
     _transfer(from, to, tokenId);
   }
 
@@ -295,7 +221,7 @@ contract ERC721A is
     address from,
     address to,
     uint256 tokenId
-  ) public override {
+  ) public override(ERC721, IERC721) {
     safeTransferFrom(from, to, tokenId, "");
   }
 
@@ -307,10 +233,10 @@ contract ERC721A is
     address to,
     uint256 tokenId,
     bytes memory _data
-  ) public override {
+  ) public override(ERC721, IERC721) {
     _transfer(from, to, tokenId);
     require(
-      _checkOnERC721Received(from, to, tokenId, _data),
+      _checkOnERC721AReceived(from, to, tokenId, _data),
       "ERC721A: transfer to non ERC721Receiver implementer"
     );
   }
@@ -322,11 +248,11 @@ contract ERC721A is
    *
    * Tokens start existing when they are minted (`_mint`),
    */
-  function _exists(uint256 tokenId) internal view returns (bool) {
+  function _exists(uint256 tokenId) internal virtual override view returns (bool) {
     return tokenId < currentIndex;
   }
 
-  function _safeMint(address to, uint256 quantity) internal {
+  function _safeMint(address to, uint256 quantity) internal virtual override {
     _safeMint(to, quantity, "");
   }
 
@@ -344,7 +270,7 @@ contract ERC721A is
     address to,
     uint256 quantity,
     bytes memory _data
-  ) internal {
+  ) internal virtual override {
     uint256 startTokenId = currentIndex;
     require(to != address(0), "ERC721A: mint to the zero address");
     // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
@@ -365,7 +291,7 @@ contract ERC721A is
     for (uint256 i = 0; i < quantity; i++) {
       emit Transfer(address(0), to, updatedIndex);
       require(
-        _checkOnERC721Received(address(0), to, updatedIndex, _data),
+        _checkOnERC721AReceived(address(0), to, updatedIndex, _data),
         "ERC721A: transfer to non ERC721Receiver implementer"
       );
       updatedIndex++;
@@ -389,7 +315,7 @@ contract ERC721A is
     address from,
     address to,
     uint256 tokenId
-  ) private {
+  ) internal virtual override {
     TokenOwnership memory prevOwnership = ownershipOf(tokenId);
 
     bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
@@ -430,6 +356,48 @@ contract ERC721A is
 
     emit Transfer(from, to, tokenId);
     _afterTokenTransfers(from, to, tokenId, 1);
+  }
+
+  // Approval functions need to be here instead of using the ones from the openzeppelin implementation, as the approved list is private
+   /**
+	* @dev See {IERC721-approve}.
+	*/
+	function approve(address to, uint256 tokenId) public override(ERC721, IERC721) {
+	  address owner = ERC721A.ownerOf(tokenId);
+	  require(to != owner, "ERC721A: approval to current owner");
+
+	  require(
+			_msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+			"ERC721A: approve caller is not owner nor approved for all"
+	  );
+
+	  _approve(to, tokenId, owner);
+	}
+
+  /**
+   * @dev See {IERC721-getApproved}.
+   */
+	function getApproved(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
+	  require(_exists(tokenId), "ERC721A: approved query for nonexistent token");
+
+	  return _tokenApprovals[tokenId];
+	}
+
+  /**
+   * @dev See {IERC721-setApprovalForAll}.
+   */
+  function setApprovalForAll(address operator, bool approved) public override(ERC721, IERC721) {
+    require(operator != _msgSender(), "ERC721A: approve to caller");
+
+    _operatorApprovals[_msgSender()][operator] = approved;
+    emit ApprovalForAll(_msgSender(), operator, approved);
+  }
+
+  /**
+	* @dev See {IERC721-isApprovedForAll}.
+	*/
+  function isApprovedForAll(address owner, address operator) public view virtual override(ERC721, IERC721) returns (bool) {
+    return _operatorApprovals[owner][operator];
   }
 
   /**
@@ -482,7 +450,7 @@ contract ERC721A is
    * @param _data bytes optional data to send along with the call
    * @return bool whether the call correctly returned the expected magic value
    */
-  function _checkOnERC721Received(
+  function _checkOnERC721AReceived(
     address from,
     address to,
     uint256 tokenId,
