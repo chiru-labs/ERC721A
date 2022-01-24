@@ -317,23 +317,17 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             addressData.numberMinted + uint128(quantity)
         );
 
-        // Recording ownerships in increments of maxBatchSize.
-        uint256 remainingTokens = quantity;
-        uint256 ownershipTokenId = startTokenId;
-
-        while (remainingTokens > 0) {
-            if (remainingTokens > maxBatchSize) {
-                _ownerships[ownershipTokenId] = TokenOwnership(to, uint64(block.timestamp));
-                ownershipTokenId += maxBatchSize;
-                remainingTokens -= maxBatchSize;
-                continue;
-            }
-
-            // Last batch
-            _ownerships[ownershipTokenId] = TokenOwnership(to, uint64(block.timestamp));
-            remainingTokens = 0;
+        uint256 batches = quantity / maxBatchSize;
+        if (quantity % maxBatchSize != 0) {
+            batches += 1;
         }
 
+        // Recording ownerships in increments of maxBatchSize.
+        for (uint256 i = 0; i < batches; i++) {
+            _ownerships[startTokenId + maxBatchSize * i] = TokenOwnership(to, uint64(block.timestamp));
+        }
+
+        // Dispatching all events sequentially
         for (uint256 i = startTokenId; i < startTokenId + quantity; i++) {
             emit Transfer(address(0), to, i);
             require(
