@@ -7,4 +7,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - The Lost Glitches | Etherscan | [Twitter](https://twitter.com/TheLostGlitches)
 - Standard Protocol | Etherscan | [Twitter](https://twitter.com/standardweb3)
 - Kitty Crypto Gang | Etherscan | [Twitter](https://twitter.com/KittyCryptoGang)
-- X Rabbits Club | Etherscan | [Twitter](https://twitter.com/XRabbitsClub)
+- [X Rabbits Club](https://xrabbits.club/) | [Etherscan](https://etherscan.io/address/0x534d37c630b7e4d2a6c1e064f3a2632739e9ee04) | [Twitter](https://twitter.com/XRabbitsClub)
