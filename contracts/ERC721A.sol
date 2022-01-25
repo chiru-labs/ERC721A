@@ -6,7 +6,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -20,7 +19,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  *
  * Does not support burning tokens to address(0).
  */
-contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
+contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     using Address for address;
     using Strings for uint256;
 
@@ -75,41 +74,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
      */
-    function totalSupply() public view override returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return currentIndex;
-    }
-
-    /**
-     * @dev See {IERC721Enumerable-tokenByIndex}.
-     */
-    function tokenByIndex(uint256 index) public view override returns (uint256) {
-        require(index < totalSupply(), "ERC721A: global index out of bounds");
-        return index;
-    }
-
-    /**
-     * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
-     * This read function is O(totalSupply). If calling from a separate contract, be sure to test gas first.
-     * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
-     */
-    function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
-        require(index < balanceOf(owner), "ERC721A: owner index out of bounds");
-        uint256 numMintedSoFar = totalSupply();
-        uint256 tokenIdsIdx = 0;
-        address currOwnershipAddr = address(0);
-        for (uint256 i = 0; i < numMintedSoFar; i++) {
-            TokenOwnership memory ownership = _ownerships[i];
-            if (ownership.addr != address(0)) {
-                currOwnershipAddr = ownership.addr;
-            }
-            if (currOwnershipAddr == owner) {
-                if (tokenIdsIdx == index) {
-                    return i;
-                }
-                tokenIdsIdx++;
-            }
-        }
-        revert("ERC721A: unable to get token of owner by index");
     }
 
     /**
@@ -119,7 +85,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         return
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
-            interfaceId == type(IERC721Enumerable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
