@@ -8,3 +8,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Standard Protocol](https://standard.tech/) | Etherscan | [Twitter](https://twitter.com/standardweb3)
 - [Kitty Crypto Gang](https://www.kittycryptogang.com/) | Etherscan | [Twitter](https://twitter.com/KittyCryptoGang)
 - [X Rabbits Club](https://xrabbits.club/) | [Etherscan](https://etherscan.io/address/0x534d37c630b7e4d2a6c1e064f3a2632739e9ee04) | [Twitter](https://twitter.com/XRabbitsClub)
+- [WhaleTogether](https://whaletogether.com/) | Etherscan | [Twitter](https://twitter.com/WhaleTogether)
