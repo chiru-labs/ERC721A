@@ -6,15 +6,14 @@ pragma solidity ^0.8.0;
 import "../ERC721AUpgradeable.sol";
 
 contract ERC721AUpgradeableMock is ERC721AUpgradeable {
-
     function initialize(
         string memory name_,
         string memory symbol_,
         uint256 maxBatchSize_
     ) public initializer {
-		 __ERC721A_init(name_, symbol_, maxBatchSize_);
+        __ERC721A_init(name_, symbol_, maxBatchSize_);
     }
-    
+
     function numberMinted(address owner) public view returns (uint256) {
         return _numberMinted(owner);
     }
