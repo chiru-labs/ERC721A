@@ -24,8 +24,6 @@
     "@openzeppelin/contracts": "^4.4.2",
     "@openzeppelin/contracts-upgradeable": "^4.4.2",
     "@openzeppelin/test-helpers": "^0.5.15",
-    "@typechain/ethers-v5": "^9.0.0",
-    "@typechain/hardhat": "^4.0.0",
     "chai": "^4.3.4",
     "dotenv": "^12.0.4",
     "eslint": "^8.7.0",
@@ -37,10 +35,7 @@
     "hardhat-gas-reporter": "^1.0.7",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
-    "solidity-coverage": "^0.7.18",
-    "ts-node": "^10.4.0",
-    "typechain": "^7.0.0",
-    "typescript": "^4.5.4"
+    "solidity-coverage": "^0.7.18"
   },
   "repository": {
     "type": "git",
