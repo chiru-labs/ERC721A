@@ -11,3 +11,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [WhaleTogether](https://whaletogether.com/) | Etherscan | [Twitter](https://twitter.com/WhaleTogether)
 - [Pixel Piracy](https://pixelpiracy.io/) | [Etherscan](https://etherscan.io/address/0x1af1f96e6cbf2a038b056acac1603170f9967cb5) | [Twitter](https://twitter.com/pixelpiracynft)
 - [Dastardly Ducks](https://www.dastardlyducks.com) | [Etherscan](https://etherscan.io/address/0x5472896e283ebcb13924c659c9db594aa9dc05a4#code) | [Twitter](https://www.twitter.com/dastardlyducks)
+- [Miss Metaverse NFT](https://www.missmetaverse.io/) | Etherscan | [Twitter](https://twitter.com/MissMetaNFT)
