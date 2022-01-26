@@ -34,7 +34,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint128 numberMinted;
     }
 
-    uint256 private currentIndex = 0;
+    uint256 internal currentIndex = 0;
 
     uint256 internal immutable maxBatchSize;
 
