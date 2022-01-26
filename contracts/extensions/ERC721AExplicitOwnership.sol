@@ -10,10 +10,6 @@ abstract contract ERC721AExplicitOwnership is ERC721A {
     uint256 private currentIndex = 0;
     uint256 public nextOwnerToExplicitlySet = 0;
 
-    // Mapping from token ID to ownership details
-    // An empty struct value does not necessarily mean the token is unowned. See ownershipOf implementation for details.
-    mapping(uint256 => TokenOwnership) private _ownerships;
-
     /**
      * @dev Explicitly set `owners` to eliminate loops in future calls of ownerOf().
      */
