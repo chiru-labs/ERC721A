@@ -36,7 +36,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint128 numberMinted;
     }
 
-    uint256 private currentIndex = 0;
+    uint256 internal currentIndex = 0;
 
     uint256 internal immutable maxBatchSize;
 
@@ -48,7 +48,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
     // Mapping from token ID to ownership details
     // An empty struct value does not necessarily mean the token is unowned. See ownershipOf implementation for details.
-    mapping(uint256 => TokenOwnership) private _ownerships;
+    mapping(uint256 => TokenOwnership) internal _ownerships;
 
     // Mapping owner address to address data
     mapping(address => AddressData) private _addressData;
@@ -400,29 +400,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     ) private {
         _tokenApprovals[tokenId] = to;
         emit Approval(owner, to, tokenId);
-    }
-
-    uint256 public nextOwnerToExplicitlySet = 0;
-
-    /**
-     * @dev Explicitly set `owners` to eliminate loops in future calls of ownerOf().
-     */
-    function _setOwnersExplicit(uint256 quantity) internal {
-        uint256 oldNextOwnerToSet = nextOwnerToExplicitlySet;
-        require(quantity > 0, 'quantity must be nonzero');
-        uint256 endIndex = oldNextOwnerToSet + quantity - 1;
-        if (endIndex > currentIndex - 1) {
-            endIndex = currentIndex - 1;
-        }
-        // We know if the last one in the group exists, all in the group exist, due to serial ordering.
-        require(_exists(endIndex), 'not enough minted yet for this cleanup');
-        for (uint256 i = oldNextOwnerToSet; i <= endIndex; i++) {
-            if (_ownerships[i].addr == address(0)) {
-                TokenOwnership memory ownership = ownershipOf(i);
-                _ownerships[i] = TokenOwnership(ownership.addr, ownership.startTimestamp);
-            }
-        }
-        nextOwnerToExplicitlySet = endIndex + 1;
     }
 
     /**
