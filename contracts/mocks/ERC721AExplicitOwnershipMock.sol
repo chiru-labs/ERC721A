@@ -12,7 +12,15 @@ contract ERC721AExplicitOwnershipMock is ERC721AExplicitOwnership {
         uint256 maxBatchSize_
     ) ERC721A(name_, symbol_, maxBatchSize_) {}
 
+    function safeMint(address to, uint256 quantity) public {
+        _safeMint(to, quantity);
+    }
+
     function setOwnersExplicit(uint256 quantity) public {
         _setOwnersExplicit(quantity);
+    }
+
+    function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
+        return _ownerships[index];
     }
 }
