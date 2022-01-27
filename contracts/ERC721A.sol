@@ -19,6 +19,8 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
  *
  * Does not support burning tokens to address(0).
+ *
+ * Assumes that an owner cannot have more than the 2**128 (max value of uint128) of supply
  */
 contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using Address for address;
@@ -364,8 +366,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         // Clear approvals from the previous owner
         _approve(address(0), tokenId, prevOwnership.addr);
 
-        _addressData[from].balance -= 1;
-        _addressData[to].balance += 1;
+        // Underflow of the sender's balance is impossible because we check for
+        // ownership above and the recipient's balance can't realistically overflow.
+        unchecked {
+            _addressData[from].balance -= 1;
+            _addressData[to].balance += 1;
+        }
+
         _ownerships[tokenId] = TokenOwnership(to, uint64(block.timestamp));
 
         // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
