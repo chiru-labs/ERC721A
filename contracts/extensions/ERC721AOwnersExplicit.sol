@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../ERC721A.sol";
+import '../ERC721A.sol';
 
 abstract contract ERC721AOwnersExplicit is ERC721A {
     uint256 public nextOwnerToExplicitlySet = 0;
@@ -12,9 +12,9 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
      * @dev Explicitly set `owners` to eliminate loops in future calls of ownerOf().
      */
     function _setOwnersExplicit(uint256 quantity) internal {
-        require(quantity > 0, "quantity must be nonzero");
-        require(currentIndex > 0, "no tokens minted yet");
-        require(nextOwnerToExplicitlySet < currentIndex, "all ownerships have been set");
+        require(quantity > 0, 'quantity must be nonzero');
+        require(currentIndex > 0, 'no tokens minted yet');
+        require(nextOwnerToExplicitlySet < currentIndex, 'all ownerships have been set');
 
         uint256 oldNextOwnerToSet = nextOwnerToExplicitlySet;
         uint256 endIndex = oldNextOwnerToSet + quantity - 1;

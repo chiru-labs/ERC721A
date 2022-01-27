@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../extensions/ERC721AOwnersExplicit.sol";
+import '../extensions/ERC721AOwnersExplicit.sol';
 
 contract ERC721AOwnersExplicitMock is ERC721AOwnersExplicit {
     constructor(
