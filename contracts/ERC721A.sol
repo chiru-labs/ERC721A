@@ -19,6 +19,8 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
  *
  * Does not support burning tokens to address(0).
+ *
+ * Assumes that an owner cannot have more than the 2**128 (max value of uint128) of supply
  */
 contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using Address for address;
