@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 
 import "../ERC721A.sol";
 
-abstract contract ERC721AExplicitOwnership is ERC721A {
+abstract contract ERC721AOwnersExplicit is ERC721A {
     uint256 public nextOwnerToExplicitlySet = 0;
 
     /**

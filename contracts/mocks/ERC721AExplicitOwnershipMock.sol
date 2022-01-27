@@ -3,9 +3,9 @@
 
 pragma solidity ^0.8.0;
 
-import "../extensions/ERC721AExplicitOwnership.sol";
+import "../extensions/ERC721AOwnersExplicit.sol";
 
-contract ERC721AExplicitOwnershipMock is ERC721AExplicitOwnership {
+contract ERC721AOwnersExplicitMock is ERC721AOwnersExplicit {
     constructor(
         string memory name_,
         string memory symbol_,

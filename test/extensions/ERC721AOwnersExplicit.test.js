@@ -3,10 +3,10 @@ const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
 
-describe('ERC721AExplicitOwnership', function () {
+describe('ERC721AOwnersExplicit', function () {
   beforeEach(async function () {
-    this.ERC721AExplicitOwnership = await ethers.getContractFactory('ERC721AExplicitOwnershipMock');
-    this.token = await this.ERC721AExplicitOwnership.deploy('Azuki', 'AZUKI', 5);
+    this.ERC721AOwnersExplicit = await ethers.getContractFactory('ERC721AOwnersExplicitMock');
+    this.token = await this.ERC721AOwnersExplicit.deploy('Azuki', 'AZUKI', 5);
     await this.token.deployed();
   });
 
@@ -25,7 +25,7 @@ describe('ERC721AExplicitOwnership', function () {
       this.addr1 = addr1;
       this.addr2 = addr2;
       this.addr3 = addr3;
-      // After the follow mints, our ownership array will look like this:
+      // After the following mints, our ownership array will look like this:
       // | 1 | 2 | Empty | 3 | Empty | Empty |
       await this.token['safeMint(address,uint256)'](addr1.address, 1);
       await this.token['safeMint(address,uint256)'](addr2.address, 2);
