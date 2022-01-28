@@ -9,11 +9,7 @@ import '../ERC721A.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 
 contract ERC721AMock is ERC721A {
-    constructor(
-        string memory name_,
-        string memory symbol_,
-        uint256 maxBatchSize_
-    ) ERC721A(name_, symbol_, maxBatchSize_) {}
+    constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
 
     function numberMinted(address owner) public view returns (uint256) {
         return _numberMinted(owner);
