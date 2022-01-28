@@ -4,6 +4,7 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 
 - [Azuki](https://www.azuki.com/) | [Etherscan](https://etherscan.io/address/0xed5af388653567af2f388e6224dc7c4b3241c544) | [Twitter](https://twitter.com/AzukiZen) 
 - [Cereal Club](https://www.cerealclub.io/) | Etherscan | [Twitter](https://twitter.com/cerealclubnft)
+- [Cyclops Class Reunion](https://www.cyclopsnft.xyz/) | Etherscan | [Twitter](https://twitter.com/CyclopsCR)
 - [The Lost Glitches](https://playlostglitches.com/) | [Etherscan](https://etherscan.io/address/0x8460bb8eb1251a923a31486af9567e500fc2f43f) | [Twitter](https://twitter.com/TheLostGlitches)
 - [Standard Protocol](https://standard.tech/) | Etherscan | [Twitter](https://twitter.com/standardweb3)
 - [Kitty Crypto Gang](https://www.kittycryptogang.com/) | Etherscan | [Twitter](https://twitter.com/KittyCryptoGang)
