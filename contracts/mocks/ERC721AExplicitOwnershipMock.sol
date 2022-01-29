@@ -6,11 +6,7 @@ pragma solidity ^0.8.0;
 import '../extensions/ERC721AOwnersExplicit.sol';
 
 contract ERC721AOwnersExplicitMock is ERC721AOwnersExplicit {
-    constructor(
-        string memory name_,
-        string memory symbol_,
-        uint256 maxBatchSize_
-    ) ERC721A(name_, symbol_, maxBatchSize_) {}
+    constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
 
     function safeMint(address to, uint256 quantity) public {
         _safeMint(to, quantity);

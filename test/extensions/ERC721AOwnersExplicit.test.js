@@ -2,19 +2,16 @@ const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
-
 describe('ERC721AOwnersExplicit', function () {
   beforeEach(async function () {
     this.ERC721AOwnersExplicit = await ethers.getContractFactory('ERC721AOwnersExplicitMock');
-    this.token = await this.ERC721AOwnersExplicit.deploy('Azuki', 'AZUKI', 5);
+    this.token = await this.ERC721AOwnersExplicit.deploy('Azuki', 'AZUKI');
     await this.token.deployed();
   });
 
   context('with no minted tokens', async function () {
     it('does not have enough tokens minted', async function () {
-      await expect(
-        this.token.setOwnersExplicit(1)
-      ).to.be.revertedWith('no tokens minted yet');
+      await expect(this.token.setOwnersExplicit(1)).to.be.revertedWith('no tokens minted yet');
     });
   });
 
@@ -34,9 +31,7 @@ describe('ERC721AOwnersExplicit', function () {
 
     describe('setOwnersExplicit', async function () {
       it('rejects 0 quantity', async function () {
-        await expect(
-          this.token.setOwnersExplicit(0)
-        ).to.be.revertedWith('quantity must be nonzero');
+        await expect(this.token.setOwnersExplicit(0)).to.be.revertedWith('quantity must be nonzero');
       });
 
       it('handles single increment properly', async function () {
@@ -83,9 +78,7 @@ describe('ERC721AOwnersExplicit', function () {
 
       it('rejects after all ownerships have been set', async function () {
         await this.token.setOwnersExplicit(6);
-        await expect(
-          this.token.setOwnersExplicit(1)
-        ).to.be.revertedWith('all ownerships have been set');
+        await expect(this.token.setOwnersExplicit(1)).to.be.revertedWith('all ownerships have been set');
       });
     });
   });

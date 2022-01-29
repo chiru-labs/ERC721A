@@ -9,7 +9,7 @@ describe('ERC721A', function () {
   beforeEach(async function () {
     this.ERC721A = await ethers.getContractFactory('ERC721AMock');
     this.ERC721Receiver = await ethers.getContractFactory('ERC721ReceiverMock');
-    this.erc721a = await this.ERC721A.deploy('Azuki', 'AZUKI', 5);
+    this.erc721a = await this.ERC721A.deploy('Azuki', 'AZUKI');
     await this.erc721a.deployed();
   });
 
@@ -251,12 +251,6 @@ describe('ERC721A', function () {
       it('rejects mints to the zero address', async function () {
         await expect(this.erc721a['safeMint(address,uint256)'](ZERO_ADDRESS, 1)).to.be.revertedWith(
           'ERC721A: mint to the zero address'
-        );
-      });
-
-      it('rejects quantity > maxBatchSize', async function () {
-        await expect(this.erc721a['safeMint(address,uint256)'](this.receiver.address, 6)).to.be.revertedWith(
-          'ERC721A: quantity to mint too high'
         );
       });
 
