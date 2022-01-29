@@ -14,3 +14,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Miss Metaverse NFT](https://www.missmetaverse.io/) | Etherscan | [Twitter](https://twitter.com/MissMetaNFT)
 - StarCatchers | Etherscan | [Twitter](https://twitter.com/StarcatchersNFT/)
 - [Lives of Asuna](https://livesofasuna.com/) | [Etherscan](https://etherscan.io/address/0xaf615b61448691fc3e4c61ae4f015d6e77b6cca8) | [Twitter](https://twitter.com/LivesOfAsuna)
+- [Rich Sad Cat](https://richsadcat.xyz/) | [Etherscan](https://etherscan.io/address/0x8dCCd0ac948d4dd262fBD0e679c3d54677F56B34) | [Twitter](https://twitter.com/richsadcatnft)
