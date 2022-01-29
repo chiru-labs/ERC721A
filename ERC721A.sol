@@ -329,7 +329,7 @@ contract ERC721A is
   }
   
   function _safeBurn(uint256 tokenId) internal {
-    _safeBurn(tokenId);
+    _safeBurn(tokenId, "");
   }
 
   /**
