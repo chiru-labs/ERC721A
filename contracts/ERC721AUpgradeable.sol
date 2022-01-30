@@ -3,14 +3,14 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/utils/Context.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
-import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol';
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -22,9 +22,16 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  *
  * Assumes that an owner cannot have more than the 2**128 - 1 (max value of uint128) of supply
  */
-contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
-    using Address for address;
-    using Strings for uint256;
+contract ERC721AUpgradeable is
+    Initializable,
+    ContextUpgradeable,
+    ERC165Upgradeable,
+    IERC721Upgradeable,
+    IERC721MetadataUpgradeable,
+    IERC721EnumerableUpgradeable
+{
+    using AddressUpgradeable for address;
+    using StringsUpgradeable for uint256;
 
     struct TokenOwnership {
         address addr;
@@ -57,7 +64,16 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-    constructor(string memory name_, string memory symbol_) {
+    /**
+     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
+     */
+    function __ERC721A_init(string memory name_, string memory symbol_) internal onlyInitializing {
+        __Context_init_unchained();
+        __ERC165_init_unchained();
+        __ERC721A_init_unchained(name_, symbol_);
+    }
+
+    function __ERC721A_init_unchained(string memory name_, string memory symbol_) internal onlyInitializing {
         _name = name_;
         _symbol = symbol_;
     }
@@ -73,7 +89,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721Enumerable-tokenByIndex}.
      */
     function tokenByIndex(uint256 index) public view override returns (uint256) {
-        require(index < totalSupply(), 'ERC721A: global index out of bounds');
+        require(index < totalSupply(), 'ERC721AUpgradeable: global index out of bounds');
         return index;
     }
 
@@ -83,7 +99,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
      */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
-        require(index < balanceOf(owner), 'ERC721A: owner index out of bounds');
+        require(index < balanceOf(owner), 'ERC721AUpgradeable: owner index out of bounds');
         uint256 numMintedSoFar = totalSupply();
         uint256 tokenIdsIdx = 0;
         address currOwnershipAddr = address(0);
@@ -99,17 +115,23 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 tokenIdsIdx++;
             }
         }
-        revert('ERC721A: unable to get token of owner by index');
+        revert('ERC721AUpgradeable: unable to get token of owner by index');
     }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC165Upgradeable, IERC165Upgradeable)
+        returns (bool)
+    {
         return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
-            interfaceId == type(IERC721Enumerable).interfaceId ||
+            interfaceId == type(IERC721Upgradeable).interfaceId ||
+            interfaceId == type(IERC721MetadataUpgradeable).interfaceId ||
+            interfaceId == type(IERC721EnumerableUpgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -117,17 +139,17 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        require(owner != address(0), 'ERC721A: balance query for the zero address');
+        require(owner != address(0), 'ERC721AUpgradeable: balance query for the zero address');
         return uint256(_addressData[owner].balance);
     }
 
     function _numberMinted(address owner) internal view returns (uint256) {
-        require(owner != address(0), 'ERC721A: number minted query for the zero address');
+        require(owner != address(0), 'ERC721AUpgradeable: number minted query for the zero address');
         return uint256(_addressData[owner].numberMinted);
     }
 
     function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
-        require(_exists(tokenId), 'ERC721A: owner query for nonexistent token');
+        require(_exists(tokenId), 'ERC721AUpgradeable: owner query for nonexistent token');
 
         for (uint256 curr = tokenId; ; curr--) {
             TokenOwnership memory ownership = _ownerships[curr];
@@ -136,7 +158,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             }
         }
 
-        revert('ERC721A: unable to determine the owner of token');
+        revert('ERC721AUpgradeable: unable to determine the owner of token');
     }
 
     /**
@@ -183,12 +205,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public override {
-        address owner = ERC721A.ownerOf(tokenId);
-        require(to != owner, 'ERC721A: approval to current owner');
+        address owner = ERC721AUpgradeable.ownerOf(tokenId);
+        require(to != owner, 'ERC721AUpgradeable: approval to current owner');
 
         require(
             _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-            'ERC721A: approve caller is not owner nor approved for all'
+            'ERC721AUpgradeable: approve caller is not owner nor approved for all'
         );
 
         _approve(to, tokenId, owner);
@@ -198,7 +220,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721-getApproved}.
      */
     function getApproved(uint256 tokenId) public view override returns (address) {
-        require(_exists(tokenId), 'ERC721A: approved query for nonexistent token');
+        require(_exists(tokenId), 'ERC721AUpgradeable: approved query for nonexistent token');
 
         return _tokenApprovals[tokenId];
     }
@@ -207,7 +229,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public override {
-        require(operator != _msgSender(), 'ERC721A: approve to caller');
+        require(operator != _msgSender(), 'ERC721AUpgradeable: approve to caller');
 
         _operatorApprovals[_msgSender()][operator] = approved;
         emit ApprovalForAll(_msgSender(), operator, approved);
@@ -254,7 +276,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         _transfer(from, to, tokenId);
         require(
             _checkOnERC721Received(from, to, tokenId, _data),
-            'ERC721A: transfer to non ERC721Receiver implementer'
+            'ERC721AUpgradeable: transfer to non ERC721Receiver implementer'
         );
     }
 
@@ -289,10 +311,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         bytes memory _data
     ) internal {
         uint256 startTokenId = currentIndex;
-        require(to != address(0), 'ERC721A: mint to the zero address');
+        require(to != address(0), 'ERC721AUpgradeable: mint to the zero address');
         // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
-        require(!_exists(startTokenId), 'ERC721A: token already minted');
-        require(quantity > 0, 'ERC721A: quantity must be greater than 0');
+        require(!_exists(startTokenId), 'ERC721AUpgradeable: token already minted');
+        require(quantity > 0, 'ERC721AUpgradeable: quantity must be greater than 0');
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
@@ -309,7 +331,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             emit Transfer(address(0), to, updatedIndex);
             require(
                 _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                'ERC721A: transfer to non ERC721Receiver implementer'
+                'ERC721AUpgradeable: transfer to non ERC721Receiver implementer'
             );
             updatedIndex++;
         }
@@ -339,10 +361,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             getApproved(tokenId) == _msgSender() ||
             isApprovedForAll(prevOwnership.addr, _msgSender()));
 
-        require(isApprovedOrOwner, 'ERC721A: transfer caller is not owner nor approved');
+        require(isApprovedOrOwner, 'ERC721AUpgradeable: transfer caller is not owner nor approved');
 
-        require(prevOwnership.addr == from, 'ERC721A: transfer from incorrect owner');
-        require(to != address(0), 'ERC721A: transfer to the zero address');
+        require(prevOwnership.addr == from, 'ERC721AUpgradeable: transfer from incorrect owner');
+        require(to != address(0), 'ERC721AUpgradeable: transfer to the zero address');
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
@@ -402,11 +424,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         bytes memory _data
     ) private returns (bool) {
         if (to.isContract()) {
-            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
-                return retval == IERC721Receiver(to).onERC721Received.selector;
+            try IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (
+                bytes4 retval
+            ) {
+                return retval == IERC721ReceiverUpgradeable(to).onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
-                    revert('ERC721A: transfer to non ERC721Receiver implementer');
+                    revert('ERC721AUpgradeable: transfer to non ERC721Receiver implementer');
                 } else {
                     assembly {
                         revert(add(32, reason), mload(reason))
