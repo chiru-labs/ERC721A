@@ -254,9 +254,9 @@ describe('ERC721A', function () {
         );
       });
 
-      it('requires quantity to be greater 0', async function () {
+      it('requires quantity to be greater than 0', async function () {
         await expect(this.erc721a['safeMint(address,uint256)'](this.owner.address, 0)).to.be.revertedWith(
-          'ERC721A: quantity must be greater 0'
+          'ERC721A: quantity must be greater than 0'
         );
       });
     });

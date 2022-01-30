@@ -6,10 +6,20 @@ require('dotenv').config();
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: '0.8.11',
+  solidity: {
+    version: '0.8.11',
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 800,
+      },
+    },
+  },
   gasReporter: {
     enabled: process.env.REPORT_GAS,
-    currency: 'USD',
     coinmarketcap: process.env.COINMARKETCAP_KEY || '',
+    currency: 'USD',
+    gasPrice: 100,
+    showTimeSpent: true,
   },
 };
