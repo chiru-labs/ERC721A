@@ -279,7 +279,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Requirements:
      *
      * - `to` cannot be the zero address.
-     * - `quantity` cannot be larger than the max batch size.
+     * - `quantity` must be greater than 0.
      *
      * Emits a {Transfer} event.
      */
@@ -292,7 +292,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(to != address(0), 'ERC721A: mint to the zero address');
         // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
         require(!_exists(startTokenId), 'ERC721A: token already minted');
-        require(quantity > 0, 'ERC721A: quantity must be greater 0');
+        require(quantity > 0, 'ERC721A: quantity must be greater than 0');
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
