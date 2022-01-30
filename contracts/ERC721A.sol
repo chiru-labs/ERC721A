@@ -279,7 +279,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Requirements:
      *
      * - `to` cannot be the zero address.
-     * - `quantity` cannot be larger than the max batch size.
+     * - `quantity` must be greater 0.
      *
      * Emits a {Transfer} event.
      */
