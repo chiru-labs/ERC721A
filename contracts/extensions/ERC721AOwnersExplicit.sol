@@ -14,12 +14,13 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
     function _setOwnersExplicit(uint256 quantity) internal {
         require(quantity != 0, 'quantity must be nonzero');
         require(currentIndex != 0, 'no tokens minted yet');
-        require(nextOwnerToExplicitlySet < currentIndex, 'all ownerships have been set');
+        uint256 _nextOwnerToExplicitlySet = nextOwnerToExplicitlySet;
+        require(_nextOwnerToExplicitlySet < currentIndex, 'all ownerships have been set');
 
         // Index underflow is impossible.
         // Counter or index overflow is incredibly unrealistic.
         unchecked {
-            uint256 oldNextOwnerToSet = nextOwnerToExplicitlySet;
+            uint256 oldNextOwnerToSet = _nextOwnerToExplicitlySet;
             uint256 endIndex = oldNextOwnerToSet + quantity - 1;
 
             // Set the end index to be the last token index
