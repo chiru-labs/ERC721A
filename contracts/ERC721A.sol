@@ -176,7 +176,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(_exists(tokenId), 'ERC721Metadata: URI query for nonexistent token');
 
         string memory baseURI = _baseURI();
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
+        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
     }
 
     /**
@@ -299,7 +299,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     ) internal {
         uint256 startTokenId = currentIndex;
         require(to != address(0), 'ERC721A: mint to the zero address');
-        require(quantity > 0, 'ERC721A: quantity must be greater than 0');
+        require(quantity != 0, 'ERC721A: quantity must be greater than 0');
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
