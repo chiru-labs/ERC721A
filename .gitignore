@@ -6,3 +6,6 @@ coverage.json
 #Hardhat files
 cache
 artifacts
+
+#Openzeppelin
+.openzeppelin

@@ -41,7 +41,7 @@ contract ERC721AUpgradeable is
     uint128 numberMinted;
   }
 
-  uint256 private currentIndex = 0;
+  uint256 private currentIndex; // = 0
 
   uint256 internal maxBatchSize; // Treat as immutable. Cannot set to immutable in upgradeable contracts
 
@@ -450,7 +450,7 @@ contract ERC721AUpgradeable is
     emit Approval(owner, to, tokenId);
   }
 
-  uint256 public nextOwnerToExplicitlySet = 0;
+  uint256 public nextOwnerToExplicitlySet; // = 0;
 
   /**
    * @dev Explicitly set `owners` to eliminate loops in future calls of ownerOf().
