@@ -36,7 +36,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint128 numberMinted;
     }
 
-    uint256 internal currentIndex = 0;
+    uint256 internal currentIndex;
 
     // Token name
     string private _name;
@@ -85,12 +85,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
         require(index < balanceOf(owner), 'ERC721A: owner index out of bounds');
         uint256 numMintedSoFar = totalSupply();
-        uint256 tokenIdsIdx = 0;
-        address currOwnershipAddr = address(0);
+        uint256 tokenIdsIdx;
+        address currOwnershipAddr;
 
         // Counter overflow is incredibly unrealistic.
         unchecked {
-            for (uint256 i = 0; i < numMintedSoFar; i++) {
+            for (uint256 i; i < numMintedSoFar; i++) {
                 TokenOwnership memory ownership = _ownerships[i];
                 if (ownership.addr != address(0)) {
                     currOwnershipAddr = ownership.addr;
@@ -313,7 +313,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
             uint256 updatedIndex = startTokenId;
 
-            for (uint256 i = 0; i < quantity; i++) {
+            for (uint256 i; i < quantity; i++) {
                 emit Transfer(address(0), to, updatedIndex);
                 require(
                     _checkOnERC721Received(address(0), to, updatedIndex, _data),
