@@ -296,12 +296,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        AddressData memory addressData = _addressData[to];
-        _addressData[to] = AddressData(
-            addressData.balance + uint128(quantity),
-            addressData.numberMinted + uint128(quantity)
-        );
-        _ownerships[startTokenId] = TokenOwnership(to, uint64(block.timestamp));
+        _addressData[to].balance += uint128(quantity);
+        _addressData[to].numberMinted += uint128(quantity);
+
+        _ownerships[startTokenId].addr = to;
+        _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
         uint256 updatedIndex = startTokenId;
 
@@ -356,14 +355,16 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             _addressData[to].balance += 1;
         }
 
-        _ownerships[tokenId] = TokenOwnership(to, uint64(block.timestamp));
+        _ownerships[tokenId].addr = to;
+        _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
 
         // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
         // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
         uint256 nextTokenId = tokenId + 1;
         if (_ownerships[nextTokenId].addr == address(0)) {
             if (_exists(nextTokenId)) {
-                _ownerships[nextTokenId] = TokenOwnership(prevOwnership.addr, prevOwnership.startTimestamp);
+                _ownerships[nextTokenId].addr = prevOwnership.addr;
+                _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
             }
         }
 
