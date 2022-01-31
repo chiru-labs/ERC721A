@@ -355,14 +355,16 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             _addressData[to].balance += 1;
         }
 
-        _ownerships[tokenId] = TokenOwnership(to, uint64(block.timestamp));
+        _ownerships[tokenId].addr = to;
+        _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
 
         // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
         // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
         uint256 nextTokenId = tokenId + 1;
         if (_ownerships[nextTokenId].addr == address(0)) {
             if (_exists(nextTokenId)) {
-                _ownerships[nextTokenId] = TokenOwnership(prevOwnership.addr, prevOwnership.startTimestamp);
+                _ownerships[nextTokenId].addr = prevOwnership.addr;
+                _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
             }
         }
 
