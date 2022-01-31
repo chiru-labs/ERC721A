@@ -296,12 +296,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        AddressData memory addressData = _addressData[to];
-        _addressData[to] = AddressData(
-            addressData.balance + uint128(quantity),
-            addressData.numberMinted + uint128(quantity)
-        );
-        _ownerships[startTokenId] = TokenOwnership(to, uint64(block.timestamp));
+		_addressData[to].balance += uint128(quantity);
+		_addressData[to].numberMinted += uint128(quantity);
+
+		_ownerships[startTokenId].addr = to;
+		_ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
         uint256 updatedIndex = startTokenId;
 
