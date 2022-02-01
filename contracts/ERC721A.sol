@@ -292,9 +292,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint256 quantity,
         bytes memory _data
     ) internal {
-        uint256 startTokenId = _mintHelper(to, quantity);
+        uint256 firstTokenMinted = _mintHelper(to, quantity);
 
-        uint256 updatedIndex = startTokenId;
+        uint256 updatedIndex = firstTokenMinted;
         for (uint256 i = 0; i < quantity; i++) {
             emit Transfer(address(0), to, updatedIndex);
             require(
@@ -305,7 +305,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         }
 
         currentIndex = updatedIndex;
-        _afterTokenTransfers(address(0), to, startTokenId, quantity);
+        _afterTokenTransfers(address(0), to, firstTokenMinted, quantity);
     }
 
     /**
@@ -319,18 +319,28 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Emits a {Transfer} event.
      */
     function _mint(address to, uint256 quantity) internal {
-        uint256 startTokenId = _mintHelper(to, quantity);
+        uint256 firstTokenMinted = _mintHelper(to, quantity);
 
-        uint256 updatedIndex = startTokenId;
+        uint256 updatedIndex = firstTokenMinted;
         for (uint256 i = 0; i < quantity; i++) {
             emit Transfer(address(0), to, updatedIndex);
             updatedIndex++;
         }
 
         currentIndex = updatedIndex;
-        _afterTokenTransfers(address(0), to, startTokenId, quantity);
+        _afterTokenTransfers(address(0), to, firstTokenMinted, quantity);
     }
 
+    /**
+     * @dev Helper function for minting batch tokens.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
+     *
+     * Returns the token id of the first token minted
+     */
     function _mintHelper(address to, uint256 quantity) internal returns (uint256) {
         uint256 startTokenId = currentIndex;
         require(to != address(0), 'ERC721A: mint to the zero address');
