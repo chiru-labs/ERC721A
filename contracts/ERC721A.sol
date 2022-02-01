@@ -80,7 +80,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * This method must be called before any mints (e.g. in the consturctor).
      */
     function _initOneIndexed() internal {
-        require(!_exists(0), "ERC721A: 0 index already occupied.");
+        require(currentIndex == 0, "ERC721A: 0 index already occupied.");
         currentIndex = 1;
         totalBurned = 1;
         _ownerships[0].burned = true;
