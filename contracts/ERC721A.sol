@@ -18,25 +18,38 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  *
  * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
  *
- * Does not support burning tokens to address(0).
- *
- * Assumes that an owner cannot have more than the 2**128 - 1 (max value of uint128) of supply
+ * Assumes that an owner cannot have more than the 2**64 - 1 (max value of uint64) of supply
  */
 contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using Address for address;
     using Strings for uint256;
 
+    // Compiler will pack this into a single 256bit word.
     struct TokenOwnership {
+        // The address of the owner.
         address addr;
+        // Keeps track of the start time of ownership with minimal overhead for tokenomics.
         uint64 startTimestamp;
+        // Whether the token has been burned.
+        bool burned;
     }
 
+    // Compiler will pack this into a single 256bit word.
     struct AddressData {
-        uint128 balance;
-        uint128 numberMinted;
+        // Realistically, 2**64-1 is more than enough.
+        uint64 balance;
+        // Keeps track of mint count with minimal overhead for tokenomics.
+        uint64 numberMinted;
+        // Keeps track of burn count with minimal overhead for tokenomics.
+        uint64 numberBurned;
+        // For miscellaneous variables (e.g. number preSale minted). 
+        // Please pack into 64 bits.
+        uint64 aux;
     }
 
     uint256 internal currentIndex = 0;
+
+    uint256 internal totalBurned = 0;
 
     // Token name
     string private _name;
@@ -63,18 +76,42 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     /**
+     * @dev Skips the zero index.
+     * This method must be called before any mints (e.g. in the consturctor).
+     */
+    function _initOneIndexed() internal {
+        require(!_exists(0), "ERC721A: 0 index already occupied.");
+        currentIndex = 1;
+        totalBurned = 1;
+        _ownerships[0].burned = true;
+    }
+
+    /**
      * @dev See {IERC721Enumerable-totalSupply}.
      */
     function totalSupply() public view override returns (uint256) {
-        return currentIndex;
+        return currentIndex - totalBurned;
     }
 
     /**
      * @dev See {IERC721Enumerable-tokenByIndex}.
+     * This read function is O(totalSupply). If calling from a separate contract, be sure to test gas first.
+     * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
      */
     function tokenByIndex(uint256 index) public view override returns (uint256) {
-        require(index < totalSupply(), 'ERC721A: global index out of bounds');
-        return index;
+        uint256 numMintedSoFar = currentIndex;
+        uint256 tokenIdsIdx = 0;
+        for (uint256 i = 0; i < numMintedSoFar; i++) {
+            TokenOwnership memory ownership = _ownerships[i];
+            if (!ownership.burned) {
+                if (tokenIdsIdx == index) {
+                    return i;
+                }
+                tokenIdsIdx++;
+            }
+        }
+        require(false, 'ERC721A: global index out of bounds');
+        return 0;
     }
 
     /**
@@ -84,13 +121,16 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
         require(index < balanceOf(owner), 'ERC721A: owner index out of bounds');
-        uint256 numMintedSoFar = totalSupply();
+        uint256 numMintedSoFar = currentIndex;
         uint256 tokenIdsIdx = 0;
         address currOwnershipAddr = address(0);
         for (uint256 i = 0; i < numMintedSoFar; i++) {
             TokenOwnership memory ownership = _ownerships[i];
             if (ownership.addr != address(0)) {
                 currOwnershipAddr = ownership.addr;
+            }
+            if (ownership.burned) {
+                currOwnershipAddr = address(0);
             }
             if (currOwnershipAddr == owner) {
                 if (tokenIdsIdx == index) {
@@ -126,6 +166,21 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         return uint256(_addressData[owner].numberMinted);
     }
 
+    function _numberBurned(address owner) internal view returns (uint256) {
+        require(owner != address(0), 'ERC721A: number burned query for the zero address');
+        return uint256(_addressData[owner].numberBurned);
+    }
+
+    function _getAux(address owner) internal view returns (uint64) {
+        require(owner != address(0), 'ERC721A: aux query for the zero address');
+        return _addressData[owner].aux;
+    }
+
+    function _setAux(address owner, uint64 aux) internal {
+        require(owner != address(0), 'ERC721A: aux query for the zero address');
+        _addressData[owner].aux = aux;
+    }
+
     /**
      * Gas spent here starts off proportional to the maximum mint batch size.
      * It gradually moves to O(1) as tokens get transferred around in the collection over time.
@@ -135,7 +190,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         for (uint256 curr = tokenId; ; curr--) {
             TokenOwnership memory ownership = _ownerships[curr];
-            if (ownership.addr != address(0)) {
+            if (ownership.addr != address(0) && !ownership.burned) {
                 return ownership;
             }
         }
@@ -270,7 +325,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return tokenId < currentIndex;
+        return tokenId < currentIndex && !_ownerships[tokenId].burned;
     }
 
     function _safeMint(address to, uint256 quantity) internal {
@@ -319,8 +374,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        _addressData[to].balance += uint128(quantity);
-        _addressData[to].numberMinted += uint128(quantity);
+        _addressData[to].balance += uint64(quantity);
+        _addressData[to].numberMinted += uint64(quantity);
 
         _ownerships[startTokenId].addr = to;
         _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
@@ -395,6 +450,71 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         emit Transfer(from, to, tokenId);
         _afterTokenTransfers(from, to, tokenId, 1);
+    }
+
+    /**
+     * @dev Destroys `tokenId`.
+     * The approval is cleared when the token is burned.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _burn(uint256 tokenId) internal virtual {
+        TokenOwnership memory prevOwnership = ownershipOf(tokenId);
+
+        _beforeTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
+
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId, prevOwnership.addr);
+
+        // Underflow of the sender's balance is impossible because we check for
+        // ownership above and the recipient's balance can't realistically overflow.
+        unchecked {
+            _addressData[prevOwnership.addr].balance -= 1;
+            _addressData[prevOwnership.addr].numberBurned += 1;
+        }
+
+        // Keep track of who burnt the token, and when is it burned.
+        _ownerships[tokenId].addr = prevOwnership.addr;
+        _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+        _ownerships[tokenId].burned = true; 
+
+        // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
+        // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+        uint256 nextTokenId = tokenId + 1;
+        if (_ownerships[nextTokenId].addr == address(0)) {
+            if (_exists(nextTokenId)) {
+                _ownerships[nextTokenId].addr = prevOwnership.addr;
+                _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+            }
+        }
+
+        emit Transfer(prevOwnership.addr, address(0), tokenId);
+        _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
+
+        totalBurned++;
+    }
+
+    /**
+     * @dev Burns `tokenId`. See {ERC721A-_burn}.
+     *
+     * Requirements:
+     *
+     * - The caller must own `tokenId` or be an approved operator.
+     */
+    function burn(uint256 tokenId) public virtual {
+        TokenOwnership memory prevOwnership = ownershipOf(tokenId);
+
+        bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
+            getApproved(tokenId) == _msgSender() ||
+            isApprovedForAll(prevOwnership.addr, _msgSender()));
+
+        require(isApprovedOrOwner, 'ERC721A: caller is not owner nor approved');
+
+        _burn(tokenId);
     }
 
     /**

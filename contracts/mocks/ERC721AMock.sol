@@ -42,4 +42,8 @@ contract ERC721AMock is ERC721A {
     ) public {
         _mint(to, quantity, _data, safe);
     }
+
+    function initOneIndexed() public {
+        _initOneIndexed();
+    }
 }
