@@ -20,6 +20,8 @@
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts-upgradeable": "^4.4.2",
+    "@openzeppelin/hardhat-upgrades": "^1.14.0",
     "@openzeppelin/test-helpers": "^0.5.15",
     "chai": "^4.3.4",
     "eslint": "^8.7.0",
