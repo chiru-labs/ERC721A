@@ -20,15 +20,14 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
         // Index underflow is impossible.
         // Counter or index overflow is incredibly unrealistic.
         unchecked {
-            uint256 oldNextOwnerToSet = _nextOwnerToExplicitlySet;
-            uint256 endIndex = oldNextOwnerToSet + quantity - 1;
+            uint256 endIndex = _nextOwnerToExplicitlySet + quantity - 1;
 
             // Set the end index to be the last token index
             if (endIndex + 1 > currentIndex) {
                 endIndex = currentIndex - 1;
             }
 
-            for (uint256 i = oldNextOwnerToSet; i <= endIndex; i++) {
+            for (uint256 i = _nextOwnerToExplicitlySet; i <= endIndex; i++) {
                 if (_ownerships[i].addr == address(0)) {
                     TokenOwnership memory ownership = ownershipOf(i);
                     _ownerships[i].addr = ownership.addr;
