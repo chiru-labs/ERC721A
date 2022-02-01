@@ -285,6 +285,24 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     /**
+     * @dev Safely mints `quantity` tokens and transfers them to `to`.
+     *
+     * Requirements:
+     *
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
+     * - `quantity` must be greater than 0.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _safeMint(
+        address to,
+        uint256 quantity,
+        bytes memory _data
+    ) internal {
+        _mint(to, quantity, _data, true);
+    }
+
+    /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
      * Requirements:
@@ -294,10 +312,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      *
      * Emits a {Transfer} event.
      */
-    function _safeMint(
+    function _mint(
         address to,
         uint256 quantity,
-        bytes memory _data
+        bytes memory _data,
+        bool safe
     ) internal {
         uint256 startTokenId = currentIndex;
         require(to != address(0), 'ERC721A: mint to the zero address');
@@ -317,16 +336,17 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
             uint256 updatedIndex = startTokenId;
 
-            for (uint256 i; i < quantity; i++) {
+            for (uint256 i = 0; i < quantity; i++) {
                 emit Transfer(address(0), to, updatedIndex);
-                require(
-                    _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                    'ERC721A: transfer to non ERC721Receiver implementer'
-                );
+                if (safe) {
+                    require(
+                        _checkOnERC721Received(address(0), to, updatedIndex, _data),
+                        'ERC721A: transfer to non ERC721Receiver implementer'
+                    );
+                }
+
                 updatedIndex++;
             }
-
-            currentIndex = updatedIndex;
         }
 
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
