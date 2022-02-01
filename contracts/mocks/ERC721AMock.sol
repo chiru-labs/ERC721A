@@ -4,9 +4,8 @@
 pragma solidity ^0.8.0;
 
 import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
-import '../ERC721A.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
+import '../ERC721A.sol';
 
 contract ERC721AMock is ERC721A {
     constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
