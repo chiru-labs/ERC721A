@@ -189,7 +189,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         for (uint256 curr = tokenId; ; curr--) {
             TokenOwnership memory ownership = _ownerships[curr];
-            if (ownership.addr != address(0) && !ownership.burned) {
+            if (ownership.addr != address(0)) {
                 return ownership;
             }
         }

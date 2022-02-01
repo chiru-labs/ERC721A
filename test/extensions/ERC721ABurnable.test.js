@@ -73,6 +73,25 @@ describe('ERC721ABurnable', function () {
         'ERC721A: global index out of bounds'
       )
     });
+
+    it('adjusts ownerOf', async function () {
+      for (let i = 0; i < 10; ++i) {
+        if (i == 5) {
+          await expect(this.token.ownerOf(i)).to.be.revertedWith(
+            'ERC721A: owner query for nonexistent token'
+          )
+        } else {
+          expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
+        }
+      }
+      await expect(this.token.ownerOf(10)).to.be.revertedWith(
+        'ERC721A: owner query for nonexistent token'
+      )
+      await this.token.connect(this.addr1).burn(9);
+      await expect(this.token.ownerOf(9)).to.be.revertedWith(
+        'ERC721A: owner query for nonexistent token'
+      )
+    });
   });
 
   describe('one-indexed', function () {
@@ -142,6 +161,28 @@ describe('ERC721ABurnable', function () {
       }
       await expect(this.token.tokenByIndex(n)).to.be.revertedWith(
         'ERC721A: global index out of bounds'
+      )
+    });
+
+    it('adjusts ownerOf', async function () {
+      await expect(this.token.ownerOf(0)).to.be.revertedWith(
+        'ERC721A: owner query for nonexistent token'
+      )
+      for (let i = 0; i < 10; ++i) {
+        if (i == 5) {
+          await expect(this.token.ownerOf(i+1)).to.be.revertedWith(
+            'ERC721A: owner query for nonexistent token'
+          )
+        } else {
+          expect(await this.token.ownerOf(i+1)).to.be.equal(this.addr1.address);  
+        }
+      }
+      await expect(this.token.ownerOf(10+1)).to.be.revertedWith(
+        'ERC721A: owner query for nonexistent token'
+      )
+      await this.token.connect(this.addr1).burn(9+1);
+      await expect(this.token.ownerOf(9+1)).to.be.revertedWith(
+        'ERC721A: owner query for nonexistent token'
       )
     });
   });

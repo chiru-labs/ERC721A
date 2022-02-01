@@ -30,8 +30,16 @@ describe('ERC721ABurnableOwnersExplicit', function () {
         expect(owner[0]).to.not.equal(ZERO_ADDRESS);
         if (tokenId == 0 || tokenId == 4) {
           expect(owner[2]).to.equal(true);
+          await expect(this.token.ownerOf(tokenId)).to.be.revertedWith(
+            'ERC721A: owner query for nonexistent token'
+          )
         } else {
           expect(owner[2]).to.equal(false);
+          if (tokenId < 1+2) {
+            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr2.address);  
+          } else {
+            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr3.address);  
+          }
         }
       }
     })
@@ -59,8 +67,16 @@ describe('ERC721ABurnableOwnersExplicit', function () {
         expect(owner[0]).to.not.equal(ZERO_ADDRESS);
         if (tokenId == 0+1 || tokenId == 4+1) {
           expect(owner[2]).to.equal(true);
+          await expect(this.token.ownerOf(tokenId)).to.be.revertedWith(
+            'ERC721A: owner query for nonexistent token'
+          )
         } else {
           expect(owner[2]).to.equal(false);
+          if (tokenId <= 1+2) {
+            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr2.address);  
+          } else {
+            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr3.address);  
+          }
         }
       }
     })
