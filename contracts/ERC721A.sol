@@ -110,8 +110,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 tokenIdsIdx++;
             }
         }
-        require(false, 'ERC721A: global index out of bounds');
-        return 0;
+        revert('ERC721A: global index out of bounds');
     }
 
     /**
@@ -496,25 +495,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
         totalBurned++;
-    }
-
-    /**
-     * @dev Burns `tokenId`. See {ERC721A-_burn}.
-     *
-     * Requirements:
-     *
-     * - The caller must own `tokenId` or be an approved operator.
-     */
-    function burn(uint256 tokenId) public virtual {
-        TokenOwnership memory prevOwnership = ownershipOf(tokenId);
-
-        bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
-            getApproved(tokenId) == _msgSender() ||
-            isApprovedForAll(prevOwnership.addr, _msgSender()));
-
-        require(isApprovedOrOwner, 'ERC721A: caller is not owner nor approved');
-
-        _burn(tokenId);
     }
 
     /**
