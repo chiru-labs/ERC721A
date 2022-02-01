@@ -77,7 +77,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
     /**
      * @dev Skips the zero index.
-     * This method must be called before any mints (e.g. in the consturctor).
+     * This method must be called before any mints (e.g. in the constructor).
      */
     function _initOneIndexed() internal {
         require(currentIndex == 0, "ERC721A: 0 index already occupied.");
@@ -170,31 +170,28 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         return uint256(_addressData[owner].numberBurned);
     }
 
-    function _getAux(address owner) internal view returns (uint64) {
-        require(owner != address(0), 'ERC721A: aux query for the zero address');
-        return _addressData[owner].aux;
-    }
-
-    function _setAux(address owner, uint64 aux) internal {
-        require(owner != address(0), 'ERC721A: aux query for the zero address');
-        _addressData[owner].aux = aux;
-    }
-
     /**
      * Gas spent here starts off proportional to the maximum mint batch size.
      * It gradually moves to O(1) as tokens get transferred around in the collection over time.
      */
     function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
-        require(_exists(tokenId), 'ERC721A: owner query for nonexistent token');
-
-        for (uint256 curr = tokenId; ; curr--) {
+        uint256 curr = tokenId;
+        if (curr < currentIndex) {
             TokenOwnership memory ownership = _ownerships[curr];
-            if (ownership.addr != address(0)) {
-                return ownership;
+            if (!ownership.burned) {
+                if (ownership.addr != address(0)) {
+                    return ownership;
+                }
+                while (curr > 0) {
+                    curr--;
+                    ownership = _ownerships[curr];
+                    if (ownership.addr != address(0)) {
+                        return ownership;
+                    }
+                }
             }
         }
-
-        revert('ERC721A: unable to determine the owner of token');
+        revert('ERC721A: owner query for nonexistent token');
     }
 
     /**
@@ -368,7 +365,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint256 startTokenId = currentIndex;
         require(to != address(0), 'ERC721A: mint to the zero address');
         // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
-        require(!_exists(startTokenId), 'ERC721A: token already minted');
+        // require(!_exists(startTokenId), 'ERC721A: token already minted');
         require(quantity > 0, 'ERC721A: quantity must be greater than 0');
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
