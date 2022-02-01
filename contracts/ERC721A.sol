@@ -292,20 +292,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint256 quantity,
         bytes memory _data
     ) internal {
-        uint256 firstTokenMinted = _mintHelper(to, quantity);
-
-        uint256 updatedIndex = firstTokenMinted;
-        for (uint256 i = 0; i < quantity; i++) {
-            emit Transfer(address(0), to, updatedIndex);
-            require(
-                _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                'ERC721A: transfer to non ERC721Receiver implementer'
-            );
-            updatedIndex++;
-        }
-
-        currentIndex = updatedIndex;
-        _afterTokenTransfers(address(0), to, firstTokenMinted, quantity);
+        _mint(to, quantity, _data, true);
     }
 
     /**
@@ -318,30 +305,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 quantity) internal {
-        uint256 firstTokenMinted = _mintHelper(to, quantity);
-
-        uint256 updatedIndex = firstTokenMinted;
-        for (uint256 i = 0; i < quantity; i++) {
-            emit Transfer(address(0), to, updatedIndex);
-            updatedIndex++;
-        }
-
-        currentIndex = updatedIndex;
-        _afterTokenTransfers(address(0), to, firstTokenMinted, quantity);
-    }
-
-    /**
-     * @dev Helper function for minting batch tokens.
-     *
-     * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     * - `quantity` must be greater than 0.
-     *
-     * Returns the token id of the first token minted
-     */
-    function _mintHelper(address to, uint256 quantity) internal returns (uint256) {
+    function _mint(
+        address to,
+        uint256 quantity,
+        bytes memory _data,
+        bool safe
+    ) internal {
         uint256 startTokenId = currentIndex;
         require(to != address(0), 'ERC721A: mint to the zero address');
         // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
@@ -356,7 +325,21 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         _ownerships[startTokenId].addr = to;
         _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
-        return startTokenId;
+        uint256 updatedIndex = startTokenId;
+
+        for (uint256 i = 0; i < quantity; i++) {
+            emit Transfer(address(0), to, updatedIndex);
+            if (safe) {
+                require(
+                    _checkOnERC721Received(address(0), to, updatedIndex, _data),
+                    'ERC721A: transfer to non ERC721Receiver implementer'
+                );
+            }
+            updatedIndex++;
+        }
+
+        currentIndex = updatedIndex;
+        _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
     /**

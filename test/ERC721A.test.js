@@ -269,15 +269,17 @@ describe('ERC721A', function () {
     });
 
     describe('mint', function () {
+      const data = '0x42';
+
       it('successfully mints a single token', async function () {
-        const mintTx = await this.erc721a['mint(address,uint256)'](this.receiver.address, 1);
+        const mintTx = await this.erc721a.mint(this.receiver.address, 1, data, false);
         await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 0);
         await expect(mintTx).to.not.emit(this.receiver, 'Received')
         expect(await this.erc721a.ownerOf(0)).to.equal(this.receiver.address);
       });
 
       it('successfully mints multiple tokens', async function () {
-        const mintTx = await this.erc721a['mint(address,uint256)'](this.receiver.address, 5);
+        const mintTx = await this.erc721a.mint(this.receiver.address, 5, data, false);
         for (let tokenId = 0; tokenId < 5; tokenId++) {
           await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
           await expect(mintTx).to.not.emit(this.receiver, 'Received')
@@ -287,18 +289,18 @@ describe('ERC721A', function () {
 
       it('does not revert for non-receivers', async function () {
         const nonReceiver = this.erc721a;
-        await this.erc721a['mint(address,uint256)'](nonReceiver.address, 1);
+        await this.erc721a.mint(nonReceiver.address, 1, data, false);
         expect(await this.erc721a.ownerOf(0)).to.equal(nonReceiver.address);
       });
 
       it('rejects mints to the zero address', async function () {
-        await expect(this.erc721a['mint(address,uint256)'](ZERO_ADDRESS, 1)).to.be.revertedWith(
+        await expect(this.erc721a.mint(ZERO_ADDRESS, 1, data, false)).to.be.revertedWith(
           'ERC721A: mint to the zero address'
         );
       });
 
       it('requires quantity to be greater than 0', async function () {
-        await expect(this.erc721a['mint(address,uint256)'](this.owner.address, 0)).to.be.revertedWith(
+        await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith(
           'ERC721A: quantity must be greater than 0'
         );
       });
