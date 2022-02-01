@@ -12,7 +12,7 @@ import '@openzeppelin/contracts/utils/Context.sol';
  */
 abstract contract ERC721ABurnable is Context, ERC721A {
 
-	/**
+    /**
      * @dev Burns `tokenId`. See {ERC721A-_burn}.
      *
      * Requirements:
