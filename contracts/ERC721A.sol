@@ -42,9 +42,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint64 numberMinted;
         // Keeps track of burn count with minimal overhead for tokenomics.
         uint64 numberBurned;
-        // For miscellaneous variables (e.g. number preSale minted). 
-        // Please pack into 64 bits.
-        uint64 aux;
     }
 
     uint256 internal currentIndex = 0;
