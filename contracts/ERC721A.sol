@@ -20,7 +20,7 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  *
  * Does not support burning tokens to address(0).
  *
- * Assumes that an owner cannot have more than the 2**128 (max value of uint128) of supply
+ * Assumes that an owner cannot have more than the 2**128 - 1 (max value of uint128) of supply
  */
 contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using Address for address;
@@ -126,6 +126,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         return uint256(_addressData[owner].numberMinted);
     }
 
+    /**
+     * Gas spent here starts off proportional to the maximum mint batch size.
+     * It gradually moves to O(1) as tokens get transferred around in the collection over time.
+     */
     function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
         require(_exists(tokenId), 'ERC721A: owner query for nonexistent token');
 
@@ -274,12 +278,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     /**
-     * @dev Mints `quantity` tokens and transfers them to `to`.
+     * @dev Safely mints `quantity` tokens and transfers them to `to`.
      *
      * Requirements:
      *
-     * - `to` cannot be the zero address.
-     * - `quantity` cannot be larger than the max batch size.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
+     * - `quantity` must be greater than 0.
      *
      * Emits a {Transfer} event.
      */
@@ -288,29 +292,49 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint256 quantity,
         bytes memory _data
     ) internal {
+        _mint(to, quantity, _data, true);
+    }
+
+    /**
+     * @dev Mints `quantity` tokens and transfers them to `to`.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _mint(
+        address to,
+        uint256 quantity,
+        bytes memory _data,
+        bool safe
+    ) internal {
         uint256 startTokenId = currentIndex;
         require(to != address(0), 'ERC721A: mint to the zero address');
         // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
         require(!_exists(startTokenId), 'ERC721A: token already minted');
-        require(quantity > 0, 'ERC721A: quantity must be greater 0');
+        require(quantity > 0, 'ERC721A: quantity must be greater than 0');
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        AddressData memory addressData = _addressData[to];
-        _addressData[to] = AddressData(
-            addressData.balance + uint128(quantity),
-            addressData.numberMinted + uint128(quantity)
-        );
-        _ownerships[startTokenId] = TokenOwnership(to, uint64(block.timestamp));
+        _addressData[to].balance += uint128(quantity);
+        _addressData[to].numberMinted += uint128(quantity);
+
+        _ownerships[startTokenId].addr = to;
+        _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
         uint256 updatedIndex = startTokenId;
 
         for (uint256 i = 0; i < quantity; i++) {
             emit Transfer(address(0), to, updatedIndex);
-            require(
-                _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                'ERC721A: transfer to non ERC721Receiver implementer'
-            );
+            if (safe) {
+                require(
+                    _checkOnERC721Received(address(0), to, updatedIndex, _data),
+                    'ERC721A: transfer to non ERC721Receiver implementer'
+                );
+            }
             updatedIndex++;
         }
 
@@ -356,14 +380,16 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             _addressData[to].balance += 1;
         }
 
-        _ownerships[tokenId] = TokenOwnership(to, uint64(block.timestamp));
+        _ownerships[tokenId].addr = to;
+        _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
 
         // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
         // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
         uint256 nextTokenId = tokenId + 1;
         if (_ownerships[nextTokenId].addr == address(0)) {
             if (_exists(nextTokenId)) {
-                _ownerships[nextTokenId] = TokenOwnership(prevOwnership.addr, prevOwnership.startTimestamp);
+                _ownerships[nextTokenId].addr = prevOwnership.addr;
+                _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
             }
         }
 
