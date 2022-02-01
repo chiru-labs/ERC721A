@@ -138,10 +138,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
         require(_exists(tokenId), 'ERC721A: owner query for nonexistent token');
 
-        for (uint256 curr = tokenId; ; curr--) {
-            TokenOwnership memory ownership = _ownerships[curr];
-            if (ownership.addr != address(0)) {
-                return ownership;
+        unchecked {
+            for (uint256 curr = tokenId; curr >= 0; curr--) {
+                TokenOwnership memory ownership = _ownerships[curr];
+                if (ownership.addr != address(0)) {
+                    return ownership;
+                }
             }
         }
 
