@@ -306,7 +306,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
-        // balance or numberMinted overflow if current value of either + quantity > 3.4e38 (2**128)
+        // balance or numberMinted overflows if current balance or numberMinted + quantity > 3.4e38 (2**128)
         // updatedIndex overflows if currentIndex + quantity > 1.56e77 (2**256)
         unchecked {
             _addressData[to].balance += uint128(quantity);
