@@ -88,7 +88,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint256 tokenIdsIdx;
         address currOwnershipAddr;
 
-        // Counter overflow is incredibly unrealistic.
+        // Counter overflow is impossible as the loop breaks when uint256 i is equal to another uint256 numMintedSoFar.
         unchecked {
             for (uint256 i; i < numMintedSoFar; i++) {
                 TokenOwnership memory ownership = _ownerships[i];
@@ -303,7 +303,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        // Balance, number minted and counter overflow is incredibly unrealistic.
+        // Overflows are incredibly unrealistic.
+        // balance or numberMinted overflows if current balance or numberMinted + quantity > 3.4e38 (2**128)
+        // updatedIndex overflows if currentIndex + amount > 1.56e77 (2**256)
         unchecked {
             _addressData[to].balance += uint128(quantity);
             _addressData[to].numberMinted += uint128(quantity);
@@ -361,7 +363,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
