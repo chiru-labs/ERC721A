@@ -336,7 +336,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
             uint256 updatedIndex = startTokenId;
 
-            for (uint256 i = 0; i < quantity; i++) {
+            for (uint256 i; i < quantity; i++) {
                 emit Transfer(address(0), to, updatedIndex);
                 if (safe) {
                     require(
@@ -347,6 +347,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
                 updatedIndex++;
             }
+
+            currentIndex = updatedIndex;
         }
 
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
