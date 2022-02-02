@@ -36,7 +36,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint128 numberMinted;
     }
 
-    uint256 internal currentIndex = 0;
+    uint256 internal currentIndex;
 
     // Token name
     string private _name;
@@ -85,20 +85,25 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
         require(index < balanceOf(owner), 'ERC721A: owner index out of bounds');
         uint256 numMintedSoFar = totalSupply();
-        uint256 tokenIdsIdx = 0;
-        address currOwnershipAddr = address(0);
-        for (uint256 i = 0; i < numMintedSoFar; i++) {
-            TokenOwnership memory ownership = _ownerships[i];
-            if (ownership.addr != address(0)) {
-                currOwnershipAddr = ownership.addr;
-            }
-            if (currOwnershipAddr == owner) {
-                if (tokenIdsIdx == index) {
-                    return i;
+        uint256 tokenIdsIdx;
+        address currOwnershipAddr;
+
+        // Counter overflow is impossible as the loop breaks when uint256 i is equal to another uint256 numMintedSoFar.
+        unchecked {
+            for (uint256 i; i < numMintedSoFar; i++) {
+                TokenOwnership memory ownership = _ownerships[i];
+                if (ownership.addr != address(0)) {
+                    currOwnershipAddr = ownership.addr;
                 }
-                tokenIdsIdx++;
+                if (currOwnershipAddr == owner) {
+                    if (tokenIdsIdx == index) {
+                        return i;
+                    }
+                    tokenIdsIdx++;
+                }
             }
         }
+
         revert('ERC721A: unable to get token of owner by index');
     }
 
@@ -133,10 +138,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
         require(_exists(tokenId), 'ERC721A: owner query for nonexistent token');
 
-        for (uint256 curr = tokenId; ; curr--) {
-            TokenOwnership memory ownership = _ownerships[curr];
-            if (ownership.addr != address(0)) {
-                return ownership;
+        unchecked {
+            for (uint256 curr = tokenId; curr >= 0; curr--) {
+                TokenOwnership memory ownership = _ownerships[curr];
+                if (ownership.addr != address(0)) {
+                    return ownership;
+                }
             }
         }
 
@@ -171,7 +178,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(_exists(tokenId), 'ERC721Metadata: URI query for nonexistent token');
 
         string memory baseURI = _baseURI();
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
+        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
     }
 
     /**
@@ -313,32 +320,37 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     ) internal {
         uint256 startTokenId = currentIndex;
         require(to != address(0), 'ERC721A: mint to the zero address');
-        // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
-        require(!_exists(startTokenId), 'ERC721A: token already minted');
-        require(quantity > 0, 'ERC721A: quantity must be greater than 0');
+        require(quantity != 0, 'ERC721A: quantity must be greater than 0');
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        _addressData[to].balance += uint128(quantity);
-        _addressData[to].numberMinted += uint128(quantity);
+        // Overflows are incredibly unrealistic.
+        // balance or numberMinted overflow if current value of either + quantity > 3.4e38 (2**128) - 1
+        // updatedIndex overflows if currentIndex + quantity > 1.56e77 (2**256) - 1
+        unchecked {
+            _addressData[to].balance += uint128(quantity);
+            _addressData[to].numberMinted += uint128(quantity);
 
-        _ownerships[startTokenId].addr = to;
-        _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+            _ownerships[startTokenId].addr = to;
+            _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
-        uint256 updatedIndex = startTokenId;
+            uint256 updatedIndex = startTokenId;
 
-        for (uint256 i = 0; i < quantity; i++) {
-            emit Transfer(address(0), to, updatedIndex);
-            if (safe) {
-                require(
-                    _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                    'ERC721A: transfer to non ERC721Receiver implementer'
-                );
+            for (uint256 i; i < quantity; i++) {
+                emit Transfer(address(0), to, updatedIndex);
+                if (safe) {
+                    require(
+                        _checkOnERC721Received(address(0), to, updatedIndex, _data),
+                        'ERC721A: transfer to non ERC721Receiver implementer'
+                    );
+                }
+
+                updatedIndex++;
             }
-            updatedIndex++;
+
+            currentIndex = updatedIndex;
         }
 
-        currentIndex = updatedIndex;
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
@@ -375,21 +387,22 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
-        }
 
-        _ownerships[tokenId].addr = to;
-        _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+            _ownerships[tokenId].addr = to;
+            _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
 
-        // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
-        // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-        uint256 nextTokenId = tokenId + 1;
-        if (_ownerships[nextTokenId].addr == address(0)) {
-            if (_exists(nextTokenId)) {
-                _ownerships[nextTokenId].addr = prevOwnership.addr;
-                _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
+            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+            uint256 nextTokenId = tokenId + 1;
+            if (_ownerships[nextTokenId].addr == address(0)) {
+                if (_exists(nextTokenId)) {
+                    _ownerships[nextTokenId].addr = prevOwnership.addr;
+                    _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                }
             }
         }
 
