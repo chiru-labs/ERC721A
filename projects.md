@@ -17,3 +17,7 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Rich Sad Cat](https://richsadcat.xyz/) | [Etherscan](https://etherscan.io/address/0x8dCCd0ac948d4dd262fBD0e679c3d54677F56B34) | [Twitter](https://twitter.com/richsadcatnft)
 - [MonkeyPoly](http://monkeypoly.com/) | [Etherscan](https://etherscan.io/address/0xc3d39585afC382527b9192C9032f443524b46457) | [Twitter](https://twitter.com/themonkeypoly)
 - [The Women of Crypto](https://womenofcrypto.io/) | Etherscan | [Twitter](https://twitter.com/womenofcrypto_)
+- [Travel Toucans](https://www.travelToucans.com/) | Etherscan | [Twitter](https://twitter.com/TravelToucans)
+- [Huhu New Year](https://huhunft.com) | [Etherscan](https://etherscan.io/address/0x1c69a454bd92974ffaf67a8a5203dd8223d8fd37) | [Twitter](https://twitter.com/HuhuNFT)
+- [Super Geisha](https://www.supergeisha.io/) | [Etherscan](https://etherscan.io/address/0x2afb30418504d3c6ecfa2cb40012804e52ced20a) | [Twitter](https://twitter.com/CryptoGeisha)
+- [Sunya Collective](https://sunyacollective.com) | Etherscan | [Twitter](https://twitter.com/SunyaCollective)
