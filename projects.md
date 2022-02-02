@@ -18,3 +18,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [MonkeyPoly](http://monkeypoly.com/) | [Etherscan](https://etherscan.io/address/0xc3d39585afC382527b9192C9032f443524b46457) | [Twitter](https://twitter.com/themonkeypoly)
 - [The Women of Crypto](https://womenofcrypto.io/) | Etherscan | [Twitter](https://twitter.com/womenofcrypto_)
 - [Travel Toucans](https://www.travelToucans.com/) | Etherscan | [Twitter](https://twitter.com/TravelToucans)
+- [Huhu New Year](https://huhunft.com) | [Etherscan](https://etherscan.io/address/0x1c69a454bd92974ffaf67a8a5203dd8223d8fd37) | [Twitter](https://twitter.com/HuhuNFT)
