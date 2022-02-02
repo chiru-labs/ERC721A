@@ -90,7 +90,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721Enumerable-totalSupply}.
      */
     function totalSupply() public view override returns (uint256) {
-        return currentIndex - totalBurned;
+        // Counter underflow is impossible as totalBurned cannot be incremented
+        // more than currentIndex times
+        unchecked {
+            return currentIndex - totalBurned;    
+        }
     }
 
     /**
@@ -101,13 +105,18 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function tokenByIndex(uint256 index) public view override returns (uint256) {
         uint256 numMintedSoFar = currentIndex;
         uint256 tokenIdsIdx = 0;
-        for (uint256 i = 0; i < numMintedSoFar; i++) {
-            TokenOwnership memory ownership = _ownerships[i];
-            if (!ownership.burned) {
-                if (tokenIdsIdx == index) {
-                    return i;
+
+        // Counter overflow is impossible as the loop breaks when 
+        // uint256 i is equal to another uint256 numMintedSoFar.
+        unchecked {
+            for (uint256 i = 0; i < numMintedSoFar; i++) {
+                TokenOwnership memory ownership = _ownerships[i];
+                if (!ownership.burned) {
+                    if (tokenIdsIdx == index) {
+                        return i;
+                    }
+                    tokenIdsIdx++;
                 }
-                tokenIdsIdx++;
             }
         }
         revert('ERC721A: global index out of bounds');
@@ -123,19 +132,24 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint256 numMintedSoFar = currentIndex;
         uint256 tokenIdsIdx = 0;
         address currOwnershipAddr = address(0);
-        for (uint256 i = 0; i < numMintedSoFar; i++) {
-            TokenOwnership memory ownership = _ownerships[i];
-            if (ownership.addr != address(0)) {
-                currOwnershipAddr = ownership.addr;
-            }
-            if (ownership.burned) {
-                currOwnershipAddr = address(0);
-            }
-            if (currOwnershipAddr == owner) {
-                if (tokenIdsIdx == index) {
-                    return i;
+
+        // Counter overflow is impossible as the loop breaks when 
+        // uint256 i is equal to another uint256 numMintedSoFar.
+        unchecked {
+            for (uint256 i = 0; i < numMintedSoFar; i++) {
+                TokenOwnership memory ownership = _ownerships[i];
+                if (ownership.addr != address(0)) {
+                    currOwnershipAddr = ownership.addr;
                 }
-                tokenIdsIdx++;
+                if (ownership.burned) {
+                    currOwnershipAddr = address(0);
+                }
+                if (currOwnershipAddr == owner) {
+                    if (tokenIdsIdx == index) {
+                        return i;
+                    }
+                    tokenIdsIdx++;
+                }
             }
         }
         revert('ERC721A: unable to get token of owner by index');
@@ -176,17 +190,21 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
         uint256 curr = tokenId;
-        if (curr < currentIndex) {
-            TokenOwnership memory ownership = _ownerships[curr];
-            if (!ownership.burned) {
-                if (ownership.addr != address(0)) {
-                    return ownership;
-                }
-                while (curr > 0) {
-                    curr--;
-                    ownership = _ownerships[curr];
+
+        // Underflow is impossible because curr must be > 0 before decrement.
+        unchecked {
+            if (curr < currentIndex) {
+                TokenOwnership memory ownership = _ownerships[curr];
+                if (!ownership.burned) {
                     if (ownership.addr != address(0)) {
                         return ownership;
+                    }
+                    while (curr > 0) {
+                        curr--;
+                        ownership = _ownerships[curr];
+                        if (ownership.addr != address(0)) {
+                            return ownership;
+                        }
                     }
                 }
             }
@@ -370,27 +388,32 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        _addressData[to].balance += uint64(quantity);
-        _addressData[to].numberMinted += uint64(quantity);
+        // Overflows are incredibly unrealistic.
+        // balance or numberMinted overflow if current value of either + quantity > 3.4e38 (2**128) - 1
+        // updatedIndex overflows if currentIndex + quantity > 1.56e77 (2**256) - 1
+        unchecked {
+            _addressData[to].balance += uint64(quantity);
+            _addressData[to].numberMinted += uint64(quantity);
 
-        _ownerships[startTokenId].addr = to;
-        _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+            _ownerships[startTokenId].addr = to;
+            _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
-        uint256 updatedIndex = startTokenId;
+            uint256 updatedIndex = startTokenId;
 
-        for (uint256 i = 0; i < quantity; i++) {
-            emit Transfer(address(0), to, updatedIndex);
-            if (safe) {
-                require(
-                    _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                    'ERC721A: transfer to non ERC721Receiver implementer'
-                );
+            for (uint256 i = 0; i < quantity; i++) {
+                emit Transfer(address(0), to, updatedIndex);
+                if (safe) {
+                    require(
+                        _checkOnERC721Received(address(0), to, updatedIndex, _data),
+                        'ERC721A: transfer to non ERC721Receiver implementer'
+                    );
+                }
+                updatedIndex++;
             }
-            updatedIndex++;
-        }
 
-        require(updatedIndex <= type(uint128).max, 'ERC721A: safecast overflow');
-        currentIndex = uint128(updatedIndex);
+            require(updatedIndex <= type(uint128).max, 'ERC721A: safecast overflow');
+            currentIndex = uint128(updatedIndex);
+        }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
@@ -427,21 +450,22 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**128.
         unchecked {
             _addressData[from].balance -= 1;
-            _addressData[to].balance += 1;
-        }
+            _addressData[to].balance += 1;        
 
-        _ownerships[tokenId].addr = to;
-        _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+            _ownerships[tokenId].addr = to;
+            _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
 
-        // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
-        // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-        uint256 nextTokenId = tokenId + 1;
-        if (_ownerships[nextTokenId].addr == address(0)) {
-            if (_exists(nextTokenId)) {
-                _ownerships[nextTokenId].addr = prevOwnership.addr;
-                _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
+            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+            uint256 nextTokenId = tokenId + 1;
+            if (_ownerships[nextTokenId].addr == address(0)) {
+                if (_exists(nextTokenId)) {
+                    _ownerships[nextTokenId].addr = prevOwnership.addr;
+                    _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                }
             }
         }
 
@@ -469,23 +493,24 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**128.
         unchecked {
             _addressData[prevOwnership.addr].balance -= 1;
             _addressData[prevOwnership.addr].numberBurned += 1;
-        }
+        
+            // Keep track of who burnt the token, and when is it burned.
+            _ownerships[tokenId].addr = prevOwnership.addr;
+            _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+            _ownerships[tokenId].burned = true; 
 
-        // Keep track of who burnt the token, and when is it burned.
-        _ownerships[tokenId].addr = prevOwnership.addr;
-        _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
-        _ownerships[tokenId].burned = true; 
-
-        // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
-        // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-        uint256 nextTokenId = tokenId + 1;
-        if (_ownerships[nextTokenId].addr == address(0)) {
-            if (_exists(nextTokenId)) {
-                _ownerships[nextTokenId].addr = prevOwnership.addr;
-                _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
+            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+            uint256 nextTokenId = tokenId + 1;
+            if (_ownerships[nextTokenId].addr == address(0)) {
+                if (_exists(nextTokenId)) {
+                    _ownerships[nextTokenId].addr = prevOwnership.addr;
+                    _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                }
             }
         }
 
