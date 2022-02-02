@@ -16,7 +16,7 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
  * the Metadata and Enumerable extension. Built to optimize for lower gas during batch mints.
  *
- * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
+ * Assumes serials are sequentially minted starting at 1 (e.g. 1, 2, 3, 4..).
  *
  * Does not support burning tokens to address(0).
  *
@@ -36,7 +36,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint128 numberMinted;
     }
 
-    uint256 internal currentIndex;
+    uint256 internal _nextTokenId;
 
     // Token name
     string private _name;
@@ -60,13 +60,14 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
+        _nextTokenId = 1;
     }
 
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
      */
     function totalSupply() public view override returns (uint256) {
-        return currentIndex;
+        return _nextTokenId - 1;
     }
 
     /**
@@ -277,7 +278,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return tokenId < currentIndex;
+        return tokenId < _nextTokenId;
     }
 
     function _safeMint(address to, uint256 quantity) internal {
@@ -318,7 +319,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         bytes memory _data,
         bool safe
     ) internal {
-        uint256 startTokenId = currentIndex;
+        uint256 startTokenId = _nextTokenId;
         require(to != address(0), 'ERC721A: mint to the zero address');
         require(quantity != 0, 'ERC721A: quantity must be greater than 0');
 
@@ -326,7 +327,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Overflows are incredibly unrealistic.
         // balance or numberMinted overflow if current value of either + quantity > 3.4e38 (2**128) - 1
-        // updatedIndex overflows if currentIndex + quantity > 1.56e77 (2**256) - 1
+        // updatedIndex overflows if _nextTokenId + quantity > 1.56e77 (2**256) - 1
         unchecked {
             _addressData[to].balance += uint128(quantity);
             _addressData[to].numberMinted += uint128(quantity);
@@ -348,7 +349,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 updatedIndex++;
             }
 
-            currentIndex = updatedIndex;
+            _nextTokenId = updatedIndex;
         }
 
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
