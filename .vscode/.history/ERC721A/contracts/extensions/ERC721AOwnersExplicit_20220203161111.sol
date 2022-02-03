@@ -14,9 +14,9 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
     function _setOwnersExplicit(uint256 quantity) internal {
         require(quantity != 0, 'quantity must be nonzero');
         require(_nextTokenId > 1, 'no tokens minted yet');
-        if (nextOwnerToExplicitlySet == 0) {
-            nextOwnerToExplicitlySet = 1;
-        }
+        // if (nextOwnerToExplicitlySet == 0) {
+        //     nextOwnerToExplicitlySet = 1;
+        // }
         uint256 _nextOwnerToExplicitlySet = nextOwnerToExplicitlySet;
         require(_nextOwnerToExplicitlySet < _nextTokenId, 'all ownerships have been set');
 
