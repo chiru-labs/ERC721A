@@ -19,8 +19,4 @@ contract ERC721AOwnersExplicitMock is ERC721AOwnersExplicit {
     function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
         return _ownerships[index];
     }
-
-    function initOneIndexed() public {
-        _initOneIndexed();
-    }
 }

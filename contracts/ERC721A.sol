@@ -47,9 +47,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint64 numberBurned;
     }
 
-    uint128 internal currentIndex = 0;
+    uint128 internal currentIndex;
 
-    uint128 internal totalBurned = 0;
+    uint128 internal totalBurned;
 
     // Token name
     string private _name;
@@ -76,17 +76,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     /**
-     * @dev Skips the zero index.
-     * This method must be called before any mints (e.g. in the constructor).
-     */
-    function _initOneIndexed() internal {
-        require(currentIndex == 0, 'ERC721A: 0 index already occupied');
-        currentIndex = 1;
-        totalBurned = 1;
-        _ownerships[0].burned = true;
-    }
-
-    /**
      * @dev See {IERC721Enumerable-totalSupply}.
      */
     function totalSupply() public view override returns (uint256) {
@@ -104,12 +93,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function tokenByIndex(uint256 index) public view override returns (uint256) {
         uint256 numMintedSoFar = currentIndex;
-        uint256 tokenIdsIdx = 0;
+        uint256 tokenIdsIdx;
 
         // Counter overflow is impossible as the loop breaks when 
         // uint256 i is equal to another uint256 numMintedSoFar.
         unchecked {
-            for (uint256 i = 0; i < numMintedSoFar; i++) {
+            for (uint256 i; i < numMintedSoFar; i++) {
                 TokenOwnership memory ownership = _ownerships[i];
                 if (!ownership.burned) {
                     if (tokenIdsIdx == index) {
@@ -130,19 +119,19 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
         require(index < balanceOf(owner), 'ERC721A: owner index out of bounds');
         uint256 numMintedSoFar = currentIndex;
-        uint256 tokenIdsIdx = 0;
-        address currOwnershipAddr = address(0);
+        uint256 tokenIdsIdx;
+        address currOwnershipAddr;
 
         // Counter overflow is impossible as the loop breaks when 
         // uint256 i is equal to another uint256 numMintedSoFar.
         unchecked {
-            for (uint256 i = 0; i < numMintedSoFar; i++) {
+            for (uint256 i; i < numMintedSoFar; i++) {
                 TokenOwnership memory ownership = _ownerships[i];
+                if (ownership.burned) {
+                    continue;
+                }
                 if (ownership.addr != address(0)) {
                     currOwnershipAddr = ownership.addr;
-                }
-                if (ownership.burned) {
-                    currOwnershipAddr = address(0);
                 }
                 if (currOwnershipAddr == owner) {
                     if (tokenIdsIdx == index) {
@@ -240,7 +229,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(_exists(tokenId), 'ERC721Metadata: URI query for nonexistent token');
 
         string memory baseURI = _baseURI();
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
+        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
     }
 
     /**
@@ -384,7 +373,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(to != address(0), 'ERC721A: mint to the zero address');
         // We know if the first token in the batch doesn't exist, the other ones don't as well, because of serial ordering.
         // require(!_exists(startTokenId), 'ERC721A: token already minted');
-        require(quantity > 0, 'ERC721A: quantity must be greater than 0');
+        require(quantity != 0, 'ERC721A: quantity must be greater than 0');
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
@@ -400,7 +389,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
             uint256 updatedIndex = startTokenId;
 
-            for (uint256 i = 0; i < quantity; i++) {
+            for (uint256 i; i < quantity; i++) {
                 emit Transfer(address(0), to, updatedIndex);
                 if (safe) {
                     require(
@@ -503,7 +492,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
             _ownerships[tokenId].burned = true; 
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
+            // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
             // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
             uint256 nextTokenId = tokenId + 1;
             if (_ownerships[nextTokenId].addr == address(0)) {

@@ -17,10 +17,6 @@ contract ERC721ABurnableOwnersExplicitMock is ERC721A, ERC721ABurnable, ERC721AO
         _safeMint(to, quantity);
     }
 
-    function initOneIndexed() public {
-        _initOneIndexed();
-    }
-
     function setOwnersExplicit(uint256 quantity) public {
         _setOwnersExplicit(quantity);
     }

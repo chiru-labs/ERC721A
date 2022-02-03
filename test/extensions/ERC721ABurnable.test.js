@@ -11,9 +11,10 @@ describe('ERC721ABurnable', function () {
   
   describe('zero-indexed', function () {
     beforeEach(async function () {
-      const [owner, addr1] = await ethers.getSigners();
+      const [owner, addr1, addr2] = await ethers.getSigners();
       this.owner = owner;
       this.addr1 = addr1;
+      this.addr2 = addr2;
       await this.token['safeMint(address,uint256)'](this.addr1.address, 10);
       await this.token.connect(this.addr1).burn(5);
     });
@@ -74,31 +75,70 @@ describe('ERC721ABurnable', function () {
       )
     });
 
-    it('adjusts ownerOf', async function () {
-      for (let i = 0; i < 10; ++i) {
-        if (i == 5) {
-          await expect(this.token.ownerOf(i)).to.be.revertedWith(
-            'ERC721A: owner query for nonexistent token'
-          )
-        } else {
-          expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
+    describe('ownerships properly set', async function () {
+      it('with token before previously burnt token transfered and burned', async function () {
+        await this.token.connect(this.addr1)
+          .transferFrom(this.addr1.address, this.addr2.address, 4);
+        expect(await this.token.ownerOf(4)).to.be.equal(this.addr2.address);  
+        await this.token.connect(this.addr2).burn(4);
+        for (let i = 0; i < 10; ++i) {
+          if (i == 4 || i == 5) {
+            await expect(this.token.ownerOf(i)).to.be.revertedWith(
+              'ERC721A: owner query for nonexistent token'
+            )
+          } else {
+            expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
+          }
         }
-      }
-      await expect(this.token.ownerOf(10)).to.be.revertedWith(
-        'ERC721A: owner query for nonexistent token'
-      )
-      await this.token.connect(this.addr1).burn(9);
-      await expect(this.token.ownerOf(9)).to.be.revertedWith(
-        'ERC721A: owner query for nonexistent token'
-      )
+      });
+
+      it('with token after previously burnt token transfered and burned', async function () {
+        await this.token.connect(this.addr1)
+          .transferFrom(this.addr1.address, this.addr2.address, 6);
+        expect(await this.token.ownerOf(6)).to.be.equal(this.addr2.address);
+        await this.token.connect(this.addr2).burn(6);
+        for (let i = 0; i < 10; ++i) {
+          if (i == 6 || i == 5) {
+            await expect(this.token.ownerOf(i)).to.be.revertedWith(
+              'ERC721A: owner query for nonexistent token'
+            )
+          } else {
+            expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
+          }
+        }
+      });
+
+      it('with first token burned', async function () {
+        await this.token.connect(this.addr1).burn(0);
+        for (let i = 0; i < 10; ++i) {
+          if (i == 0 || i == 5) {
+            await expect(this.token.ownerOf(i)).to.be.revertedWith(
+              'ERC721A: owner query for nonexistent token'
+            )
+          } else {
+            expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
+          }
+        }
+      });
+
+      it('with last token burned', async function () {
+        await expect(this.token.ownerOf(10)).to.be.revertedWith(
+          'ERC721A: owner query for nonexistent token'
+        )
+        await this.token.connect(this.addr1).burn(9);
+        await expect(this.token.ownerOf(9)).to.be.revertedWith(
+          'ERC721A: owner query for nonexistent token'
+        )
+      });
     });
   });
-
-  describe('one-indexed', function () {
+  
+  if (0) describe('one-indexed', function () {
     beforeEach(async function () {
-      const [owner, addr1] = await ethers.getSigners();
+      const [owner, addr1, addr2] = await ethers.getSigners();
       this.owner = owner;
       this.addr1 = addr1;
+      this.addr2 = addr2;
       await this.token.initOneIndexed();
       await this.token['safeMint(address,uint256)'](this.addr1.address, 10);
       await this.token.connect(this.addr1).burn(5+1);
@@ -164,26 +204,61 @@ describe('ERC721ABurnable', function () {
       )
     });
 
-    it('adjusts ownerOf', async function () {
-      await expect(this.token.ownerOf(0)).to.be.revertedWith(
-        'ERC721A: owner query for nonexistent token'
-      )
-      for (let i = 0; i < 10; ++i) {
-        if (i == 5) {
-          await expect(this.token.ownerOf(i+1)).to.be.revertedWith(
-            'ERC721A: owner query for nonexistent token'
-          )
-        } else {
-          expect(await this.token.ownerOf(i+1)).to.be.equal(this.addr1.address);  
+    describe('ownerships properly set', async function () {
+      it('with token before previously burnt token transfered and burned', async function () {
+        await this.token.connect(this.addr1)
+          .transferFrom(this.addr1.address, this.addr2.address, 4+1);
+        expect(await this.token.ownerOf(4+1)).to.be.equal(this.addr2.address);
+        await this.token.connect(this.addr2).burn(4+1);
+        for (let i = 0; i < 10; ++i) {
+          if (i == 4 || i == 5) {
+            await expect(this.token.ownerOf(i+1)).to.be.revertedWith(
+              'ERC721A: owner query for nonexistent token'
+            )
+          } else {
+            expect(await this.token.ownerOf(i+1)).to.be.equal(this.addr1.address);  
+          }
         }
-      }
-      await expect(this.token.ownerOf(10+1)).to.be.revertedWith(
-        'ERC721A: owner query for nonexistent token'
-      )
-      await this.token.connect(this.addr1).burn(9+1);
-      await expect(this.token.ownerOf(9+1)).to.be.revertedWith(
-        'ERC721A: owner query for nonexistent token'
-      )
+      });
+
+      it('with token after previously burnt token transfered and burned', async function () {
+        await this.token.connect(this.addr1)
+          .transferFrom(this.addr1.address, this.addr2.address, 6+1);
+        expect(await this.token.ownerOf(6+1)).to.be.equal(this.addr2.address);
+        await this.token.connect(this.addr2).burn(6+1);
+        for (let i = 0; i < 10; ++i) {
+          if (i == 6 || i == 5) {
+            await expect(this.token.ownerOf(i+1)).to.be.revertedWith(
+              'ERC721A: owner query for nonexistent token'
+            )
+          } else {
+            expect(await this.token.ownerOf(i+1)).to.be.equal(this.addr1.address);  
+          }
+        }
+      });
+
+      it('with first token burned', async function () {
+        await this.token.connect(this.addr1).burn(0+1);
+        for (let i = 0; i < 10; ++i) {
+          if (i == 0 || i == 5) {
+            await expect(this.token.ownerOf(i+1)).to.be.revertedWith(
+              'ERC721A: owner query for nonexistent token'
+            )
+          } else {
+            expect(await this.token.ownerOf(i+1)).to.be.equal(this.addr1.address);  
+          }
+        }
+      });
+
+      it('with last token burned', async function () {
+        await expect(this.token.ownerOf(10+1)).to.be.revertedWith(
+          'ERC721A: owner query for nonexistent token'
+        )
+        await this.token.connect(this.addr1).burn(9+1);
+        await expect(this.token.ownerOf(9+1)).to.be.revertedWith(
+          'ERC721A: owner query for nonexistent token'
+        )
+      });
     });
   });
 });
