@@ -36,21 +36,21 @@ describe('ERC721AOwnersExplicit', function () {
 
       it('handles single increment properly', async function () {
         await this.token.setOwnersExplicit(1);
-        expect(await this.token.nextOwnerToExplicitlySet()).to.equal('1');
+        expect(await this.token.nextOwnerToExplicitlySet()).to.equal('2');
       });
 
       it('properly sets the ownership of index 2', async function () {
-        let ownerAtTwo = await this.token.getOwnershipAt(2);
+        let ownerAtTwo = await this.token.getOwnershipAt(3);
         expect(ownerAtTwo[0]).to.equal(ZERO_ADDRESS);
         await this.token.setOwnersExplicit(3);
         ownerAtTwo = await this.token.getOwnershipAt(2);
         expect(ownerAtTwo[0]).to.equal(this.addr2.address);
-        expect(await this.token.nextOwnerToExplicitlySet()).to.equal('3');
+        expect(await this.token.nextOwnerToExplicitlySet()).to.equal('4');
       });
 
       it('sets all ownerships in one go', async function () {
         await this.token.setOwnersExplicit(6);
-        for (let tokenId = 0; tokenId < 6; tokenId++) {
+        for (let tokenId = 1; tokenId <= 6; tokenId++) {
           let owner = await this.token.getOwnershipAt(tokenId);
           expect(owner[0]).to.not.equal(ZERO_ADDRESS);
         }
@@ -58,7 +58,7 @@ describe('ERC721AOwnersExplicit', function () {
 
       it('sets all ownerships with overflowing quantity', async function () {
         await this.token.setOwnersExplicit(15);
-        for (let tokenId = 0; tokenId < 6; tokenId++) {
+        for (let tokenId = 1; tokenId <= 6; tokenId++) {
           let owner = await this.token.getOwnershipAt(tokenId);
           expect(owner[0]).to.not.equal(ZERO_ADDRESS);
         }
@@ -66,11 +66,11 @@ describe('ERC721AOwnersExplicit', function () {
 
       it('sets all ownerships in multiple calls', async function () {
         await this.token.setOwnersExplicit(2);
-        expect(await this.token.nextOwnerToExplicitlySet()).to.equal('2');
-        await this.token.setOwnersExplicit(1);
         expect(await this.token.nextOwnerToExplicitlySet()).to.equal('3');
+        await this.token.setOwnersExplicit(1);
+        expect(await this.token.nextOwnerToExplicitlySet()).to.equal('4');
         await this.token.setOwnersExplicit(3);
-        for (let tokenId = 0; tokenId < 6; tokenId++) {
+        for (let tokenId = 1; tokenId <= 6; tokenId++) {
           let owner = await this.token.getOwnershipAt(tokenId);
           expect(owner[0]).to.not.equal(ZERO_ADDRESS);
         }
