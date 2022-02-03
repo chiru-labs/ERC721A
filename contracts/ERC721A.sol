@@ -16,8 +16,7 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
  * the Metadata and Enumerable extension. Built to optimize for lower gas during batch mints.
  *
- * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..),
- * or 1 (e.g. 1, 2, 3, 4..).
+ * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
  *
  * Assumes that an owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
  *
