@@ -35,7 +35,7 @@ npm install --save-dev erc721a
 Once installed, you can use the contracts in the library by importing them:
 
 ```solidity
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "erc721a/contracts/ERC721A.sol";
 
