@@ -10,13 +10,18 @@ if (process.env.REPORT_GAS) {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.8.4",
-  gasReporter: {
-    currency: 'USD',
+  solidity: {
+    version: "0.8.11",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 800,
+      },
+    },
   },
-  networks: {
-    development: {
-      url: "http://127.0.0.1:8545",
-    }
-  }   
+  gasReporter: {
+    currency: "USD",
+    gasPrice: 100,
+    showTimeSpent: true,
+  },
 };

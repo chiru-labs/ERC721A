@@ -3,18 +3,13 @@
 // Made upgradeable by: MrMcGoats
 pragma solidity ^0.8.0;
 
-import "../ERC721AUpgradeable.sol";
+import '../ERC721AUpgradeable.sol';
 
 contract ERC721AUpgradeableMock is ERC721AUpgradeable {
-
-    function initialize(
-        string memory name_,
-        string memory symbol_,
-        uint256 maxBatchSize_
-    ) public initializer {
-		 __ERC721A_init(name_, symbol_, maxBatchSize_);
+    function initialize(string memory name_, string memory symbol_) public initializer {
+        __ERC721A_init(name_, symbol_);
     }
-    
+
     function numberMinted(address owner) public view returns (uint256) {
         return _numberMinted(owner);
     }
@@ -37,5 +32,14 @@ contract ERC721AUpgradeableMock is ERC721AUpgradeable {
         bytes memory _data
     ) external {
         _safeMint(to, tokenId, _data);
+    }
+
+    function mint(
+        address to,
+        uint256 quantity,
+        bytes memory _data,
+        bool safe
+    ) public {
+        _mint(to, quantity, _data, safe);
     }
 }
