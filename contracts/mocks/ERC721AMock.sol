@@ -3,8 +3,6 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
 import '../ERC721A.sol';
 
 contract ERC721AMock is ERC721A {
