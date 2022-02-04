@@ -10,7 +10,7 @@
   "scripts": {
     "node": "hardhat node",
     "test": "hardhat test",
-    "testGas": "REPORT_GAS=true npx hardhat test",
+    "test:gas": "REPORT_GAS=true npx hardhat test",
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:js": "eslint --ignore-path .gitignore . --fix",
     "lint:sol": "prettier --write \"contracts/**/*.sol\""
