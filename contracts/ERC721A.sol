@@ -48,7 +48,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
     uint128 internal currentIndex;
 
-    uint128 internal burnedCounter;
+    uint128 internal burnCounter;
 
     // Token name
     string private _name;
@@ -78,10 +78,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721Enumerable-totalSupply}.
      */
     function totalSupply() public view override returns (uint256) {
-        // Counter underflow is impossible as burnedCounter cannot be incremented
+        // Counter underflow is impossible as burnCounter cannot be incremented
         // more than currentIndex times
         unchecked {
-            return currentIndex - burnedCounter;    
+            return currentIndex - burnCounter;    
         }
     }
 
@@ -505,7 +505,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         emit Transfer(prevOwnership.addr, address(0), tokenId);
         _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
-        burnedCounter++;
+        burnCounter++;
     }
 
     /**
