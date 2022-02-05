@@ -22,3 +22,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Super Geisha](https://www.supergeisha.io/) | [Etherscan](https://etherscan.io/address/0x2afb30418504d3c6ecfa2cb40012804e52ced20a) | [Twitter](https://twitter.com/CryptoGeisha)
 - [Sunya Collective](https://sunyacollective.com) | Etherscan | [Twitter](https://twitter.com/SunyaCollective)
 - [The MetaTribes](https://themetatribes.com/) | Etherscan | [Twitter](https://twitter.com/themetatribes)
+- [The Dead Army Skeleton Klub](https://www.thedeadarmyskeletonklub.army/) | [Etherscan](https://etherscan.io/address/0x19d84b2a4b21910339af097a1bddb48682d6f47d#code) | [Twitter](https://twitter.com/The_DASK)
