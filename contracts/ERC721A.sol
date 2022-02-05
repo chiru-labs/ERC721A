@@ -238,7 +238,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         address from,
         address to,
         uint256 tokenId
-    ) public override {
+    ) public virtual override {
         _transfer(from, to, tokenId);
     }
 
@@ -249,7 +249,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         address from,
         address to,
         uint256 tokenId
-    ) public override {
+    ) public virtual override {
         safeTransferFrom(from, to, tokenId, '');
     }
 
