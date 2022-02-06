@@ -45,8 +45,8 @@ describe('ERC721A', function () {
       });
 
       it('verifies invalid tokens', async function () {
-        const exists = await this.erc721a.exists(7);
-        expect(exists).to.be.false;
+        expect(await this.erc721a.exists(7)).to.be.false;
+        expect(await this.erc721a.exists(0)).to.be.false;
       });
     });
 
