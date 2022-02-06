@@ -75,7 +75,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function tokenByIndex(uint256 index) public view override returns (uint256) {
         require(index < totalSupply(), 'ERC721A: global index out of bounds');
-        return index;
+        return index + 1;
     }
 
     /**
@@ -140,7 +140,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(_exists(tokenId), 'ERC721A: owner query for nonexistent token');
 
         unchecked {
-            for (uint256 curr = tokenId; curr >= 0; curr--) {
+            for (uint256 curr = tokenId; curr > 0; curr--) {
                 TokenOwnership memory ownership = _ownerships[curr];
                 if (ownership.addr != address(0)) {
                     return ownership;
