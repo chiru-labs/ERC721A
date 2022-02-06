@@ -91,7 +91,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Counter overflow is impossible as the loop breaks when uint256 i is equal to another uint256 numMintedSoFar.
         unchecked {
-            for (uint256 i; i < numMintedSoFar; i++) {
+            for (uint256 i = 1; i <= numMintedSoFar; i++) {
                 TokenOwnership memory ownership = _ownerships[i];
                 if (ownership.addr != address(0)) {
                     currOwnershipAddr = ownership.addr;

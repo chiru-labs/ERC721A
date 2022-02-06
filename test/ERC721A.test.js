@@ -20,7 +20,7 @@ describe('ERC721A', function () {
     });
 
     it('tokenByIndex is reverted', async function () {
-      expect(this.erc721a.tokenByIndex(0)).to.be.revertedWith("out of bounds");
+      expect(this.erc721a.tokenByIndex(0)).to.be.revertedWith('out of bounds');
     });
   });
 
@@ -75,11 +75,17 @@ describe('ERC721A', function () {
 
     describe('tokenOfOwnerByIndex', async function () {
       it('returns correct tokenId for index of owner', async function () {
-        expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal('3');
+        expect(await this.erc721a.balanceOf(this.addr1.address)).to.equal('1');
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr1.address, 0)).to.equal(1);
 
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address,0)).to.equal(4);
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address,1)).to.equal(5);
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address,2)).to.equal(6);
+        expect(await this.erc721a.balanceOf(this.addr2.address)).to.equal('2');
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr2.address, 0)).to.equal(2);
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr2.address, 1)).to.equal(3);
+
+        expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal('3');
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address, 0)).to.equal(4);
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address, 1)).to.equal(5);
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address, 2)).to.equal(6);
       });
     });
 
@@ -296,7 +302,7 @@ describe('ERC721A', function () {
       it('successfully mints a single token', async function () {
         const mintTx = await this.erc721a.mint(this.receiver.address, 1, data, false);
         await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 1);
-        await expect(mintTx).to.not.emit(this.receiver, 'Received')
+        await expect(mintTx).to.not.emit(this.receiver, 'Received');
         expect(await this.erc721a.ownerOf(1)).to.equal(this.receiver.address);
       });
 
@@ -304,7 +310,7 @@ describe('ERC721A', function () {
         const mintTx = await this.erc721a.mint(this.receiver.address, 5, data, false);
         for (let tokenId = 1; tokenId <= 5; tokenId++) {
           await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
-          await expect(mintTx).to.not.emit(this.receiver, 'Received')
+          await expect(mintTx).to.not.emit(this.receiver, 'Received');
           expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.receiver.address);
         }
       });
