@@ -18,6 +18,10 @@ describe('ERC721A', function () {
       const supply = await this.erc721a.totalSupply();
       expect(supply).to.equal(0);
     });
+
+    it('tokenByIndex is reverted', async function () {
+      expect(this.erc721a.tokenByIndex(0)).to.be.revertedWith("out of bounds");
+    });
   });
 
   context('with minted tokens', async function () {
@@ -58,6 +62,24 @@ describe('ERC721A', function () {
         await expect(this.erc721a.balanceOf(ZERO_ADDRESS)).to.be.revertedWith(
           'ERC721A: balance query for the zero address'
         );
+      });
+    });
+
+    describe('tokenByIndex', async function () {
+      it('returns correct tokenId for index', async function () {
+        expect(await this.erc721a.tokenByIndex(0)).to.equal(1);
+        expect(await this.erc721a.tokenByIndex(1)).to.equal(2);
+        expect(await this.erc721a.tokenByIndex(2)).to.equal(3);
+      });
+    });
+
+    describe('tokenOfOwnerByIndex', async function () {
+      it('returns correct tokenId for index of owner', async function () {
+        expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal('3');
+
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address,0)).to.equal(4);
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address,1)).to.equal(5);
+        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address,2)).to.equal(6);
       });
     });
 
