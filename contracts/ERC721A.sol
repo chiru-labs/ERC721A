@@ -60,7 +60,14 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _nextTokenId = 1;
+        _nextTokenId = _startTokenId();
+    }
+
+    /**
+     * To change the starting tokenId, please override this function.
+     */
+    function _startTokenId() internal view virtual returns (uint256) {
+        return 0;
     }
 
     /**
@@ -68,7 +75,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function totalSupply() public view override returns (uint256) {
         unchecked {
-            return _nextTokenId - 1;
+            return _nextTokenId - _startTokenId();
         }
     }
 
@@ -78,7 +85,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function tokenByIndex(uint256 index) public view override returns (uint256) {
         require(index < totalSupply(), 'ERC721A: global index out of bounds');
         unchecked {
-            return index + 1;
+            return index + _startTokenId();
         }
     }
 
@@ -95,7 +102,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Counter overflow is impossible as the loop breaks when uint256 i is equal to another uint256 numMintedSoFar.
         unchecked {
-            for (uint256 i = 1; i <= numMintedSoFar; i++) {
+            for (uint256 i = _startTokenId(); i <= numMintedSoFar; i++) {
                 TokenOwnership memory ownership = _ownerships[i];
                 if (ownership.addr != address(0)) {
                     currOwnershipAddr = ownership.addr;
@@ -144,7 +151,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         require(_exists(tokenId), 'ERC721A: owner query for nonexistent token');
 
         unchecked {
-            for (uint256 curr = tokenId; curr > 0; curr--) {
+            uint256 startIndex = _startTokenId();
+            for (uint256 curr = tokenId; curr > startIndex; curr--) {
                 TokenOwnership memory ownership = _ownerships[curr];
                 if (ownership.addr != address(0)) {
                     return ownership;
@@ -282,7 +290,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return tokenId < _nextTokenId && tokenId > 0;
+        return tokenId < _nextTokenId && tokenId > _startTokenId();
     }
 
     function _safeMint(address to, uint256 quantity) internal {
@@ -404,7 +412,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
             uint256 nextTokenId = tokenId + 1;
             if (_ownerships[nextTokenId].addr == address(0)) {
-                if (_exists(nextTokenId)) {
+                // This suffice for _exists(nextTokenId), as _startTokenId() < tokenId < tokenId + 1
+                if (nextTokenId < _nextTokenId) {
                     _ownerships[nextTokenId].addr = prevOwnership.addr;
                     _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
                 }
