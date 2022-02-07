@@ -25,3 +25,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [ClassyDogs](https://classydogs.io/) | [Etherscan](https://etherscan.io/address/0xe317e1386fbf3d425f0523b484c504ce2125724c) | [Twitter](https://twitter.com/Classy_dogs)
 - [The Dead Army Skeleton Klub](https://www.thedeadarmyskeletonklub.army/) | [Etherscan](https://etherscan.io/address/0x19d84b2a4b21910339af097a1bddb48682d6f47d#code) | [Twitter](https://twitter.com/The_DASK)
 - [Turf](https://turf.dev/) | [Etherscan](https://etherscan.io/address/0x55d89273143de3de00822c9271dbcbd9b44b44c6) | [Twitter](https://twitter.com/turfnft)
+- [Knit Kins](https://knitkins.com) | Etherscan | [Twitter](https://twitter.com/KnitKinsNFT)
