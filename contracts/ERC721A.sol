@@ -67,7 +67,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721Enumerable-totalSupply}.
      */
     function totalSupply() public view override returns (uint256) {
-        return _nextTokenId - 1;
+        unchecked {
+            return _nextTokenId - 1;
+        }
     }
 
     /**
@@ -75,7 +77,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function tokenByIndex(uint256 index) public view override returns (uint256) {
         require(index < totalSupply(), 'ERC721A: global index out of bounds');
-        return index + 1;
+        unchecked {
+            return index + 1;
+        }
     }
 
     /**
