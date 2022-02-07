@@ -9,76 +9,37 @@ describe('ERC721ABurnableOwnersExplicit', function () {
     await this.token.deployed();
   });
   
-  describe('zero-indexed', function () {  
-    beforeEach(async function () {
-      const [owner, addr1, addr2, addr3] = await ethers.getSigners();
-      this.owner = owner;
-      this.addr1 = addr1;
-      this.addr2 = addr2;
-      this.addr3 = addr3;
-      await this.token['safeMint(address,uint256)'](addr1.address, 1);
-      await this.token['safeMint(address,uint256)'](addr2.address, 2);
-      await this.token['safeMint(address,uint256)'](addr3.address, 3);
-      await this.token.connect(this.addr1).burn(0);
-      await this.token.connect(this.addr3).burn(4);
-      await this.token.setOwnersExplicit(6);
-    });
-
-    it('ownerships correctly set', async function () {
-      for (let tokenId = 0; tokenId < 6; tokenId++) {
-        let owner = await this.token.getOwnershipAt(tokenId);
-        expect(owner[0]).to.not.equal(ZERO_ADDRESS);
-        if (tokenId == 0 || tokenId == 4) {
-          expect(owner[2]).to.equal(true);
-          await expect(this.token.ownerOf(tokenId)).to.be.revertedWith(
-            'ERC721A: owner query for nonexistent token'
-          )
-        } else {
-          expect(owner[2]).to.equal(false);
-          if (tokenId < 1+2) {
-            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr2.address);  
-          } else {
-            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr3.address);  
-          }
-        }
-      }
-    })
+  beforeEach(async function () {
+    const [owner, addr1, addr2, addr3] = await ethers.getSigners();
+    this.owner = owner;
+    this.addr1 = addr1;
+    this.addr2 = addr2;
+    this.addr3 = addr3;
+    await this.token['safeMint(address,uint256)'](addr1.address, 1);
+    await this.token['safeMint(address,uint256)'](addr2.address, 2);
+    await this.token['safeMint(address,uint256)'](addr3.address, 3);
+    await this.token.connect(this.addr1).burn(0);
+    await this.token.connect(this.addr3).burn(4);
+    await this.token.setOwnersExplicit(6);
   });
-  
-  if (0) describe('one-indexed', function () {  
-    beforeEach(async function () {
-      const [owner, addr1, addr2, addr3] = await ethers.getSigners();
-      this.owner = owner;
-      this.addr1 = addr1;
-      this.addr2 = addr2;
-      this.addr3 = addr3;
-      await this.token.initOneIndexed();
-      await this.token['safeMint(address,uint256)'](addr1.address, 1);
-      await this.token['safeMint(address,uint256)'](addr2.address, 2);
-      await this.token['safeMint(address,uint256)'](addr3.address, 3);
-      await this.token.connect(this.addr1).burn(0+1);
-      await this.token.connect(this.addr3).burn(4+1);
-      await this.token.setOwnersExplicit(6);
-    });
 
-    it('ownerships correctly set', async function () {
-      for (let tokenId = 0+1; tokenId < 6+1; tokenId++) {
-        let owner = await this.token.getOwnershipAt(tokenId);
-        expect(owner[0]).to.not.equal(ZERO_ADDRESS);
-        if (tokenId == 0+1 || tokenId == 4+1) {
-          expect(owner[2]).to.equal(true);
-          await expect(this.token.ownerOf(tokenId)).to.be.revertedWith(
-            'ERC721A: owner query for nonexistent token'
-          )
+  it('ownerships correctly set', async function () {
+    for (let tokenId = 0; tokenId < 6; tokenId++) {
+      let owner = await this.token.getOwnershipAt(tokenId);
+      expect(owner[0]).to.not.equal(ZERO_ADDRESS);
+      if (tokenId == 0 || tokenId == 4) {
+        expect(owner[2]).to.equal(true);
+        await expect(this.token.ownerOf(tokenId)).to.be.revertedWith(
+          'ERC721A: owner query for nonexistent token'
+        )
+      } else {
+        expect(owner[2]).to.equal(false);
+        if (tokenId < 1+2) {
+          expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr2.address);  
         } else {
-          expect(owner[2]).to.equal(false);
-          if (tokenId <= 1+2) {
-            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr2.address);  
-          } else {
-            expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr3.address);  
-          }
+          expect(await this.token.ownerOf(tokenId)).to.be.equal(this.addr3.address);  
         }
       }
-    })
+    }
   });
 });
