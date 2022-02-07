@@ -83,7 +83,7 @@ Don't forget to give the project a star! Thanks again!
 ### Running tests locally
 
 1. `npm install`
-2. `npm node`
+2. `npm run node`
 3. `npm test`
 
 <!-- LICENSE -->
