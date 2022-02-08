@@ -13,13 +13,6 @@ describe('ERC721A', function () {
     await this.erc721a.deployed();
   });
 
-  context('with no minted tokens', async function () {
-    it('has 0 totalSupply', async function () {
-      const supply = await this.erc721a.totalSupply();
-      expect(supply).to.equal(0);
-    });
-  });
-
   context('with minted tokens', async function () {
     beforeEach(async function () {
       const [owner, addr1, addr2, addr3] = await ethers.getSigners();
@@ -156,11 +149,6 @@ describe('ERC721A', function () {
 
         it('adjusts owners balances', async function () {
           expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
-        });
-
-        it('adjusts owners tokens by index', async function () {
-          expect(await this.erc721a.tokenOfOwnerByIndex(to, 0)).to.be.equal(tokenId);
-          expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
         });
       };
 
