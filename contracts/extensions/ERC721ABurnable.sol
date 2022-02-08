@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Creator: Chiru Labs
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
 import '@openzeppelin/contracts/utils/Context.sol';
@@ -26,7 +26,7 @@ abstract contract ERC721ABurnable is Context, ERC721A {
             getApproved(tokenId) == _msgSender() ||
             isApprovedForAll(prevOwnership.addr, _msgSender()));
 
-        require(isApprovedOrOwner, 'ERC721A: caller is not owner nor approved');
+        if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
 
         _burn(tokenId);
     }

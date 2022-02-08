@@ -30,7 +30,7 @@ describe('ERC721ABurnableOwnersExplicit', function () {
       if (tokenId == 0 || tokenId == 4) {
         expect(owner[2]).to.equal(true);
         await expect(this.token.ownerOf(tokenId)).to.be.revertedWith(
-          'ERC721A: owner query for nonexistent token'
+          'OwnerQueryForNonexistentToken'
         )
       } else {
         expect(owner[2]).to.equal(false);

@@ -35,7 +35,7 @@ npm install --save-dev erc721a
 Once installed, you can use the contracts in the library by importing them:
 
 ```solidity
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "erc721a/contracts/ERC721A.sol";
 
@@ -54,12 +54,10 @@ contract Azuki is ERC721A {
 
 ## Roadmap
 
-- [] Add burn function
 - [] Add flexibility for the first token id to not start at 0
-- [] Move `_setOwnersExplicit` to an extension
+- [] Support ERC721 Upgradeable
 - [] Add more documentation on benefits of using ERC721A
 - [] Increase test coverage
-- [] Add CI pipeline
 
 See the [open issues](https://github.com/chiru-labs/ERC721A/issues) for a full list of proposed features (and known issues).
 

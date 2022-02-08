@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Creator: Chiru Labs
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
@@ -11,6 +11,26 @@ import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/utils/Context.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
+
+error ApprovalCallerNotOwnerNorApproved();
+error ApprovalQueryForNonexistentToken();
+error ApproveToCaller();
+error ApprovalToCurrentOwner();
+error BalanceQueryForZeroAddress();
+error MintedQueryForZeroAddress();
+error BurnedQueryForZeroAddress();
+error MintToZeroAddress();
+error MintZeroQuantity();
+error OwnerIndexOutOfBounds();
+error OwnerQueryForNonexistentToken();
+error TokenIndexOutOfBounds();
+error TransferCallerNotOwnerNorApproved();
+error TransferFromIncorrectOwner();
+error TransferToNonERC721ReceiverImplementer();
+error TransferToZeroAddress();
+error UnableGetTokenOwnerByIndex();
+error URIQueryForNonexistentToken();
+error SafecastOverflow();
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -107,7 +127,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 }
             }
         }
-        revert('ERC721A: global index out of bounds');
+        revert TokenIndexOutOfBounds();
     }
 
     /**
@@ -116,7 +136,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
      */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
-        require(index < balanceOf(owner), 'ERC721A: owner index out of bounds');
+        if (index >= balanceOf(owner)) revert OwnerIndexOutOfBounds();
         uint256 numMintedSoFar = currentIndex;
         uint256 tokenIdsIdx;
         address currOwnershipAddr;
@@ -140,7 +160,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 }
             }
         }
-        revert('ERC721A: unable to get token of owner by index');
+        revert UnableGetTokenOwnerByIndex();
     }
 
     /**
@@ -158,17 +178,17 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        require(owner != address(0), 'ERC721A: balance query for the zero address');
+        if (owner == address(0)) revert BalanceQueryForZeroAddress();
         return uint256(_addressData[owner].balance);
     }
 
     function _numberMinted(address owner) internal view returns (uint256) {
-        require(owner != address(0), 'ERC721A: number minted query for the zero address');
+        if (owner == address(0)) revert MintedQueryForZeroAddress();
         return uint256(_addressData[owner].numberMinted);
     }
 
     function _numberBurned(address owner) internal view returns (uint256) {
-        require(owner != address(0), 'ERC721A: number burned query for the zero address');
+        if (owner == address(0)) revert BurnedQueryForZeroAddress();
         return uint256(_addressData[owner].numberBurned);
     }
 
@@ -197,7 +217,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 }
             }
         }
-        revert('ERC721A: owner query for nonexistent token');
+        revert OwnerQueryForNonexistentToken();
     }
 
     /**
@@ -225,7 +245,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), 'ERC721Metadata: URI query for nonexistent token');
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
         string memory baseURI = _baseURI();
         return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
@@ -245,13 +265,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function approve(address to, uint256 tokenId) public override {
         address owner = ERC721A.ownerOf(tokenId);
-        require(to != owner, 'ERC721A: approval to current owner');
+        if (to == owner) revert ApprovalToCurrentOwner();
 
-        require(
-            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-            'ERC721A: approve caller is not owner nor approved for all'
-        );
-
+        if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender())) {
+            revert ApprovalCallerNotOwnerNorApproved();
+        }
+        
         _approve(to, tokenId, owner);
     }
 
@@ -259,7 +278,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721-getApproved}.
      */
     function getApproved(uint256 tokenId) public view override returns (address) {
-        require(_exists(tokenId), 'ERC721A: approved query for nonexistent token');
+        if (!_exists(tokenId)) revert ApprovalQueryForNonexistentToken();
 
         return _tokenApprovals[tokenId];
     }
@@ -268,7 +287,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public override {
-        require(operator != _msgSender(), 'ERC721A: approve to caller');
+        if (operator == _msgSender()) revert ApproveToCaller();
 
         _operatorApprovals[_msgSender()][operator] = approved;
         emit ApprovalForAll(_msgSender(), operator, approved);
@@ -313,10 +332,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         bytes memory _data
     ) public virtual override {
         _transfer(from, to, tokenId);
-        require(
-            _checkOnERC721Received(from, to, tokenId, _data),
-            'ERC721A: transfer to non ERC721Receiver implementer'
-        );
+        if (!_checkOnERC721Received(from, to, tokenId, _data)) {
+            revert TransferToNonERC721ReceiverImplementer();
+        }
     }
 
     /**
@@ -369,8 +387,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         bool safe
     ) internal {
         uint256 startTokenId = currentIndex;
-        require(to != address(0), 'ERC721A: mint to the zero address');
-        require(quantity != 0, 'ERC721A: quantity must be greater than 0');
+        if (to == address(0)) revert MintToZeroAddress();
+        if (quantity == 0) revert MintZeroQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
@@ -388,16 +406,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
             for (uint256 i; i < quantity; i++) {
                 emit Transfer(address(0), to, updatedIndex);
-                if (safe) {
-                    require(
-                        _checkOnERC721Received(address(0), to, updatedIndex, _data),
-                        'ERC721A: transfer to non ERC721Receiver implementer'
-                    );
+                if (safe && !_checkOnERC721Received(address(0), to, updatedIndex, _data)) {
+                    revert TransferToNonERC721ReceiverImplementer();
                 }
                 updatedIndex++;
             }
 
-            require(updatedIndex <= type(uint128).max, 'ERC721A: safecast overflow');
+            if (updatedIndex > type(uint128).max) revert SafecastOverflow();
             currentIndex = uint128(updatedIndex);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
@@ -424,10 +439,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             getApproved(tokenId) == _msgSender() ||
             isApprovedForAll(prevOwnership.addr, _msgSender()));
 
-        require(isApprovedOrOwner, 'ERC721A: transfer caller is not owner nor approved');
-
-        require(prevOwnership.addr == from, 'ERC721A: transfer from incorrect owner');
-        require(to != address(0), 'ERC721A: transfer to the zero address');
+        if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
+        if (prevOwnership.addr != from) revert TransferFromIncorrectOwner();
+        if (to == address(0)) revert TransferToZeroAddress();
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
@@ -545,7 +559,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 return retval == IERC721Receiver(to).onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
-                    revert('ERC721A: transfer to non ERC721Receiver implementer');
+                    revert TransferToNonERC721ReceiverImplementer();
                 } else {
                     assembly {
                         revert(add(32, reason), mload(reason))

@@ -24,13 +24,13 @@ describe('ERC721ABurnable', function () {
 
   it('cannot burn a non-existing token', async function () {
     await expect(this.token.connect(this.addr1).burn(10)).to.be.revertedWith(
-      'ERC721A: owner query for nonexistent token'
+      'OwnerQueryForNonexistentToken'
     )
   })
 
   it('cannot burn a token twice', async function () {
     await expect(this.token.connect(this.addr1).burn(5)).to.be.revertedWith(
-      'ERC721A: owner query for nonexistent token'
+      'OwnerQueryForNonexistentToken'
     )
   })
 
@@ -70,7 +70,7 @@ describe('ERC721ABurnable', function () {
       expect(await this.token.tokenByIndex(i)).to.be.equal(i+1);
     }
     await expect(this.token.tokenByIndex(n)).to.be.revertedWith(
-      'ERC721A: global index out of bounds'
+      'TokenIndexOutOfBounds'
     )
   });
 
@@ -83,7 +83,7 @@ describe('ERC721ABurnable', function () {
       for (let i = 0; i < 10; ++i) {
         if (i == 4 || i == 5) {
           await expect(this.token.ownerOf(i)).to.be.revertedWith(
-            'ERC721A: owner query for nonexistent token'
+            'OwnerQueryForNonexistentToken'
           )
         } else {
           expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
@@ -99,7 +99,7 @@ describe('ERC721ABurnable', function () {
       for (let i = 0; i < 10; ++i) {
         if (i == 6 || i == 5) {
           await expect(this.token.ownerOf(i)).to.be.revertedWith(
-            'ERC721A: owner query for nonexistent token'
+            'OwnerQueryForNonexistentToken'
           )
         } else {
           expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
@@ -112,7 +112,7 @@ describe('ERC721ABurnable', function () {
       for (let i = 0; i < 10; ++i) {
         if (i == 0 || i == 5) {
           await expect(this.token.ownerOf(i)).to.be.revertedWith(
-            'ERC721A: owner query for nonexistent token'
+            'OwnerQueryForNonexistentToken'
           )
         } else {
           expect(await this.token.ownerOf(i)).to.be.equal(this.addr1.address);  
@@ -122,11 +122,11 @@ describe('ERC721ABurnable', function () {
 
     it('with last token burned', async function () {
       await expect(this.token.ownerOf(10)).to.be.revertedWith(
-        'ERC721A: owner query for nonexistent token'
+        'OwnerQueryForNonexistentToken'
       )
       await this.token.connect(this.addr1).burn(9);
       await expect(this.token.ownerOf(9)).to.be.revertedWith(
-        'ERC721A: owner query for nonexistent token'
+        'OwnerQueryForNonexistentToken'
       )
     });
   });
