@@ -6,7 +6,6 @@ pragma solidity ^0.8.4;
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/utils/Context.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
@@ -33,7 +32,7 @@ error URIQueryForNonexistentToken();
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
- * the Metadata and Enumerable extension. Built to optimize for lower gas during batch mints.
+ * the Metadata extension. Built to optimize for lower gas during batch mints.
  *
  * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
  *
@@ -41,7 +40,7 @@ error URIQueryForNonexistentToken();
  *
  * Assumes that an owner cannot have more than the 2**128 - 1 (max value of uint128) of supply
  */
-contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
+contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     using Address for address;
     using Strings for uint256;
 
@@ -82,58 +81,12 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     /**
-     * @dev See {IERC721Enumerable-totalSupply}.
-     */
-    function totalSupply() public view override returns (uint256) {
-        return currentIndex;
-    }
-
-    /**
-     * @dev See {IERC721Enumerable-tokenByIndex}.
-     */
-    function tokenByIndex(uint256 index) public view override returns (uint256) {
-        if (index >= totalSupply()) revert TokenIndexOutOfBounds();
-        return index;
-    }
-
-    /**
-     * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
-     * This read function is O(totalSupply). If calling from a separate contract, be sure to test gas first.
-     * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
-     */
-    function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
-        if (index >= balanceOf(owner)) revert OwnerIndexOutOfBounds();
-        uint256 numMintedSoFar = totalSupply();
-        uint256 tokenIdsIdx;
-        address currOwnershipAddr;
-
-        // Counter overflow is impossible as the loop breaks when uint256 i is equal to another uint256 numMintedSoFar.
-        unchecked {
-            for (uint256 i; i < numMintedSoFar; i++) {
-                TokenOwnership memory ownership = _ownerships[i];
-                if (ownership.addr != address(0)) {
-                    currOwnershipAddr = ownership.addr;
-                }
-                if (currOwnershipAddr == owner) {
-                    if (tokenIdsIdx == index) {
-                        return i;
-                    }
-                    tokenIdsIdx++;
-                }
-            }
-        }
-
-        revert UnableGetTokenOwnerByIndex();
-    }
-
-    /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
-            interfaceId == type(IERC721Enumerable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
