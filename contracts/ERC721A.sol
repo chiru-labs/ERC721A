@@ -199,7 +199,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
         uint256 curr = tokenId;
 
-        // Underflow is impossible because curr must be > 0 before decrement.
         unchecked {
             if (curr < _currentIndex) {
                 TokenOwnership memory ownership = _ownerships[curr];
@@ -207,7 +206,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                     if (ownership.addr != address(0)) {
                         return ownership;
                     }
-                    while (curr > 0) {
+                    // Invariant: 
+                    // There will always be an ownership that has an address and is not burned 
+                    // before an ownership that does not have an address and is not burned.
+                    // Hence, curr will not underflow.
+                    while (true) {
                         curr--;
                         ownership = _ownerships[curr];
                         if (ownership.addr != address(0)) {
