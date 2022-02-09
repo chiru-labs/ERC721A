@@ -500,7 +500,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             _addressData[prevOwnership.addr].balance -= 1;
             _addressData[prevOwnership.addr].numberBurned += 1;
         
-            // Keep track of who burnt the token, and when is it burned.
+            // Keep track of who burned the token, and the timestamp of burning.
             _ownerships[tokenId].addr = prevOwnership.addr;
             _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
             _ownerships[tokenId].burned = true; 
@@ -521,7 +521,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         emit Transfer(prevOwnership.addr, address(0), tokenId);
         _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
-        burnCounter++;
+        // Overflow not possible, as burnCounter cannot be exceed currentIndex times.
+        unchecked { 
+            burnCounter++;
+        }
     }
 
     /**
