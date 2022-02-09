@@ -28,7 +28,6 @@ error TransferFromIncorrectOwner();
 error TransferToNonERC721ReceiverImplementer();
 error TransferToZeroAddress();
 error UnableDetermineTokenOwner();
-error UnableGetTokenOwnerByIndex();
 error URIQueryForNonexistentToken();
 
 /**
@@ -123,7 +122,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             }
         }
 
-        revert UnableGetTokenOwnerByIndex();
+        // Execution should never reach this point.
+        assert(false);
     }
 
     /**
