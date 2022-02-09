@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Creator: Chiru Labs
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
+
+error AllOwnershipsHaveBeenSet();
+error QuantityMustBeNonZero();
+error NoTokensMintedYet();
 
 abstract contract ERC721AOwnersExplicit is ERC721A {
     uint256 public nextOwnerToExplicitlySet;
@@ -12,13 +16,13 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
      * @dev Explicitly set `owners` to eliminate loops in future calls of ownerOf().
      */
     function _setOwnersExplicit(uint256 quantity) internal {
-        require(quantity != 0, 'quantity must be nonzero');
-        require(_nextTokenId != _startTokenId(), 'no tokens minted yet');
+        if (quantity == 0) revert QuantityMustBeNonZero();
+        if (_nextTokenId == _startTokenId()) revert NoTokensMintedYet();
         uint256 _nextOwnerToExplicitlySet = nextOwnerToExplicitlySet;
         if (_nextOwnerToExplicitlySet == 0) {
             _nextOwnerToExplicitlySet = _startTokenId();
         }
-        require(_nextOwnerToExplicitlySet < _nextTokenId, 'all ownerships have been set');
+        if (_nextOwnerToExplicitlySet >= _startTokenId()) revert AllOwnershipsHaveBeenSet();
 
         // Index underflow is impossible.
         // Counter or index overflow is incredibly unrealistic.
