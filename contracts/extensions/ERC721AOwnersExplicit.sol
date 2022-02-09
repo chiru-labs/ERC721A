@@ -10,7 +10,7 @@ error QuantityMustBeNonZero();
 error NoTokensMintedYet();
 
 abstract contract ERC721AOwnersExplicit is ERC721A {
-    uint256 public nextOwnerToExplicitlySet = 0;
+    uint256 public nextOwnerToExplicitlySet;
 
     /**
      * @dev Explicitly set `owners` to eliminate loops in future calls of ownerOf().
