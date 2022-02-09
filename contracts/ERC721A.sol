@@ -305,6 +305,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
      * - `quantity` must be greater than 0.
      *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
+     *
      * Emits a {Transfer} event.
      */
     function _safeMint(
@@ -315,6 +320,31 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         _mint(to, quantity, _data, true);
     }
 
+    function _unsafeMint(address to, uint256 quantity) internal {
+        _unsafeMint(to, quantity, '');
+    }
+
+    /**
+     * @dev afely mints `quantity` tokens and transfers them to `to`.
+     *
+     * @dev Unsafe: doesn't execute `onERC721Received` on the receiver.
+     *      Prefer the use of `saveMint` instead of `mint` if you don't know the defrence.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _unsafeMint(
+        address to,
+        uint256 quantity,
+        bytes memory _data
+    ) internal {
+        _mint(to, quantity, _data, false);
+    }
+
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
@@ -322,6 +352,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      *
      * - `to` cannot be the zero address.
      * - `quantity` must be greater than 0.
+     * - `_data` additional info to be used in `onERC721Received` function.
+     * - `safe` indicates whether to execute `onERC721Received` on the receiver or not.
      *
      * Emits a {Transfer} event.
      */

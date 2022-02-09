@@ -299,5 +299,37 @@ describe('ERC721A', function () {
         await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith('MintZeroQuantity');
       });
     });
+
+    describe('unsafeMint', function () {
+      it('successfully mints a single token', async function () {
+        const mintTx = await this.erc721a.unsafeMint(this.receiver.address, 1);
+        await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 0);
+        await expect(mintTx).to.not.emit(this.receiver, 'Received');
+        expect(await this.erc721a.ownerOf(0)).to.equal(this.receiver.address);
+      });
+
+      it('successfully mints multiple tokens', async function () {
+        const mintTx = await this.erc721a.unsafeMint(this.receiver.address, 5);
+        for (let tokenId = 0; tokenId < 5; tokenId++) {
+          await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
+          await expect(mintTx).to.not.emit(this.receiver, 'Received');
+          expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.receiver.address);
+        }
+      });
+
+      it('does not revert for non-receivers', async function () {
+        const nonReceiver = this.erc721a;
+        await this.erc721a.unsafeMint(nonReceiver.address, 1);
+        expect(await this.erc721a.ownerOf(0)).to.equal(nonReceiver.address);
+      });
+
+      it('rejects mints to the zero address', async function () {
+        await expect(this.erc721a.unsafeMint(ZERO_ADDRESS, 1)).to.be.revertedWith('MintToZeroAddress');
+      });
+
+      it('requires quantity to be greater than 0', async function () {
+        await expect(this.erc721a.unsafeMint(this.owner.address, 0)).to.be.revertedWith('MintZeroQuantity');
+      });
+    });
   });
 });
