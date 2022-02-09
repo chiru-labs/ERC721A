@@ -325,7 +325,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     /**
-     * @dev afely mints `quantity` tokens and transfers them to `to`.
+     * @dev Unsafely mints `quantity` tokens and transfers them to `to`.
      *
      * @dev Unsafe: doesn't execute `onERC721Received` on the receiver.
      *      Prefer the use of `saveMint` instead of `mint` if you don't know the defrence.
