@@ -158,15 +158,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         if (!_exists(tokenId)) revert OwnerQueryForNonexistentToken();
 
         unchecked {
-            for (uint256 curr = tokenId; curr >= 0; curr--) {
+            for (uint256 curr = tokenId;; curr--) {
                 TokenOwnership memory ownership = _ownerships[curr];
                 if (ownership.addr != address(0)) {
                     return ownership;
                 }
             }
         }
-
-        revert UnableDetermineTokenOwner();
     }
 
     /**
