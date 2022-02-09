@@ -22,7 +22,7 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
         if (_nextOwnerToExplicitlySet == 0) {
             _nextOwnerToExplicitlySet = _startTokenId();
         }
-        if (_nextOwnerToExplicitlySet >= _startTokenId()) revert AllOwnershipsHaveBeenSet();
+        if (_nextOwnerToExplicitlySet >= _nextTokenId) revert AllOwnershipsHaveBeenSet();
 
         // Index underflow is impossible.
         // Counter or index overflow is incredibly unrealistic.
