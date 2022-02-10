@@ -54,7 +54,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint128 numberMinted;
     }
 
-    uint256 internal _currentindex;
+    uint256 internal _currentIndex;
 
     // Token name
     string private _name;
@@ -84,7 +84,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * @dev See {IERC721Enumerable-totalSupply}.
      */
     function totalSupply() public view override returns (uint256) {
-        return _currentindex;
+        return _currentIndex;
     }
 
     /**
@@ -290,7 +290,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return tokenId < _currentindex;
+        return tokenId < _currentIndex;
     }
 
     function _safeMint(address to, uint256 quantity) internal {
@@ -331,7 +331,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         bytes memory _data,
         bool safe
     ) internal {
-        uint256 startTokenId = _currentindex;
+        uint256 startTokenId = _currentIndex;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -339,7 +339,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Overflows are incredibly unrealistic.
         // balance or numberMinted overflow if current value of either + quantity > 3.4e38 (2**128) - 1
-        // updatedIndex overflows if _currentindex + quantity > 1.56e77 (2**256) - 1
+        // updatedIndex overflows if _currentIndex + quantity > 1.56e77 (2**256) - 1
         unchecked {
             _addressData[to].balance += uint128(quantity);
             _addressData[to].numberMinted += uint128(quantity);
@@ -358,7 +358,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 updatedIndex++;
             }
 
-            _currentindex = updatedIndex;
+            _currentIndex = updatedIndex;
         }
 
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
