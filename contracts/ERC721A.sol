@@ -114,13 +114,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
         if (index >= balanceOf(owner)) revert OwnerIndexOutOfBounds();
-        uint256 numMintedSoFar = totalSupply();
         uint256 tokenIdsIdx;
         address currOwnershipAddr;
+        uint256 end = _nextTokenId;
 
         // Counter overflow is impossible as the loop breaks when uint256 i is equal to another uint256 numMintedSoFar.
         unchecked {
-            for (uint256 i = _startTokenId(); i < numMintedSoFar + _startTokenId(); i++) {
+            for (uint256 i = _startTokenId(); i < end; i++) {
                 TokenOwnership memory ownership = _ownerships[i];
                 if (ownership.addr != address(0)) {
                     currOwnershipAddr = ownership.addr;
