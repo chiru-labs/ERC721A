@@ -381,7 +381,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
             isApprovedForAll(prevOwnership.addr, _msgSender()) ||
-            _tokenApprovals[tokenId] == _msgSender());
+            getApproved(tokenId) == _msgSender());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         if (prevOwnership.addr != from) revert TransferFromIncorrectOwner();
