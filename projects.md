@@ -27,3 +27,5 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Turf](https://turf.dev/) | [Etherscan](https://etherscan.io/address/0x55d89273143de3de00822c9271dbcbd9b44b44c6) | [Twitter](https://twitter.com/turfnft)
 - [Knit Kins](https://knitkins.com) | Etherscan | [Twitter](https://twitter.com/KnitKinsNFT)
 - [Meta Angels NFT](https://www.metaangelsnft.com) | [Etherscan](https://etherscan.io/address/0xaD265Ab9B99296364F13Ce5b8B3e8d0998778bfb) | [Twitter](https://twitter.com/meta_angels)
+- [Doodlz](https://doodlz.app/) | [Etherscan](https://etherscan.io/address/0xDAb1D2ffb0Fc22C9DDE2C4474220C50164Ff124C) | [Twitter](https://twitter.com/DoodlzNFT)
+
