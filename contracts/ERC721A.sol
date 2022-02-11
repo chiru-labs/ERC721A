@@ -29,7 +29,6 @@ error TransferFromIncorrectOwner();
 error TransferToNonERC721ReceiverImplementer();
 error TransferToZeroAddress();
 error URIQueryForNonexistentToken();
-error SafecastOverflow();
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -421,7 +420,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 updatedIndex++;
             }
 
-            if (updatedIndex > type(uint128).max) revert SafecastOverflow();
             _currentIndex = uint128(updatedIndex);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
