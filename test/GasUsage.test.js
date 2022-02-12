@@ -33,7 +33,7 @@ describe('ERC721A Gas Usage', function () {
   });
 
   context('safeMintTen', function () {
-    it('runs mintTen 50 times', async function () {
+    it('runs safeMintTen 50 times', async function () {
       for (let i = 0; i < 50; i++) {
         await this.erc721a.safeMintTen(this.addr1.address);
       }
