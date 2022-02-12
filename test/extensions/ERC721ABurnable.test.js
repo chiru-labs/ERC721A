@@ -1,6 +1,5 @@
 const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
 
 describe('ERC721ABurnable', function () {
   
