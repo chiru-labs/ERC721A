@@ -65,10 +65,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     }
 
     // Compiler will pack the following 
-    // _nextTokenId and _burnCounter into a single 256bit word.
+    // _currentIndex and _burnCounter into a single 256bit word.
     
     // The id of the next token to be minted.
-    uint128 internal _nextTokenId;
+    uint128 internal _currentIndex;
 
     // The number of tokens burned.
     uint128 internal _burnCounter;
@@ -95,7 +95,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _nextTokenId = uint128(_startTokenId());
+        _currentIndex = uint128(_startTokenId());
     }
 
     /**
@@ -116,9 +116,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function totalSupply() public view override returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than _nextTokenId - _startTokenId() times
+        // more than _currentIndex - _startTokenId() times
         unchecked {
-            return _nextTokenId - _burnCounter - _startTokenId();    
+            return _currentIndex - _burnCounter - _startTokenId();    
         }
     }
 
@@ -128,7 +128,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
      */
     function tokenByIndex(uint256 index) public view override returns (uint256) {
-        uint256 end = _nextTokenId;
+        uint256 end = _currentIndex;
         uint256 tokenIdsIdx;
 
         // Counter overflow is impossible as the loop breaks when
@@ -154,7 +154,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256) {
         if (index >= balanceOf(owner)) revert OwnerIndexOutOfBounds();
-        uint256 end = _nextTokenId;
+        uint256 end = _currentIndex;
         uint256 tokenIdsIdx;
         address currOwnershipAddr;
 
@@ -219,7 +219,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint256 curr = tokenId;
 
         unchecked {
-            if (_startTokenId() <= curr && curr < _nextTokenId) {
+            if (_startTokenId() <= curr && curr < _currentIndex) {
                 TokenOwnership memory ownership = _ownerships[curr];
                 if (!ownership.burned) {
                     if (ownership.addr != address(0)) {
@@ -367,7 +367,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _startTokenId() <= tokenId && tokenId < _nextTokenId && 
+        return _startTokenId() <= tokenId && tokenId < _currentIndex && 
             !_ownerships[tokenId].burned;
     }
 
@@ -409,7 +409,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         bytes memory _data,
         bool safe
     ) internal {
-        uint256 startTokenId = _nextTokenId;
+        uint256 startTokenId = _currentIndex;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -417,7 +417,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Overflows are incredibly unrealistic.
         // balance or numberMinted overflow if current value of either + quantity > 3.4e38 (2**128) - 1
-        // updatedIndex overflows if _nextTokenId + quantity > 3.4e38 (2**128) - 1
+        // updatedIndex overflows if _currentIndex + quantity > 3.4e38 (2**128) - 1
         unchecked {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
@@ -435,7 +435,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 updatedIndex++;
             }
 
-            _nextTokenId = uint128(updatedIndex);
+            _currentIndex = uint128(updatedIndex);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -486,7 +486,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             if (_ownerships[nextTokenId].addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
-                if (nextTokenId < _nextTokenId) {
+                if (nextTokenId < _currentIndex) {
                     _ownerships[nextTokenId].addr = prevOwnership.addr;
                     _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
                 }
@@ -533,7 +533,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
             if (_ownerships[nextTokenId].addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
-                if (nextTokenId < _nextTokenId) {
+                if (nextTokenId < _currentIndex) {
                     _ownerships[nextTokenId].addr = prevOwnership.addr;
                     _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
                 }
@@ -543,7 +543,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         emit Transfer(prevOwnership.addr, address(0), tokenId);
         _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
-        // Overflow not possible, as _burnCounter cannot be exceed _nextTokenId times.
+        // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
         unchecked { 
             _burnCounter++;
         }
