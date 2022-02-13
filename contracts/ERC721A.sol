@@ -102,8 +102,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      * To change the starting tokenId, please override this function.
      * 
      * This function must return a constant which is small enough such that
-     * the maximum tokenId that will ever be minted is less than 
+     * the maximum tokenId that can ever be minted will not exceed 
      * 2**128 - 1 (max value of uint128).
+     * 
+     * The return type is (uint256) for gas efficiency purposes.
      */
     function _startTokenId() internal view virtual returns (uint256) {
         return 0;
@@ -114,7 +116,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
      */
     function totalSupply() public view override returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than _nextTokenId times
+        // more than _nextTokenId - _startTokenId() times
         unchecked {
             return _nextTokenId - _burnCounter - _startTokenId();    
         }
