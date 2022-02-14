@@ -157,11 +157,6 @@ describe('ERC721A', function () {
         it('adjusts owners balances', async function () {
           expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
         });
-
-        it('adjusts owners tokens by index', async function () {
-          expect(await this.erc721a.tokenOfOwnerByIndex(to, 0)).to.be.equal(tokenId);
-          expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
-        });
       };
 
       const testUnsuccessfulTransfer = function (transferFn) {
