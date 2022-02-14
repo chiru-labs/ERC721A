@@ -3,7 +3,6 @@
 Here are a list of projects that have or will be implementing ERC721A as part of their mint process. If your project is using ERC721A, feel free to open a PR and add it to the list!
 
 - [Azuki](https://www.azuki.com/) | [Etherscan](https://etherscan.io/address/0xed5af388653567af2f388e6224dc7c4b3241c544) | [Twitter](https://twitter.com/AzukiZen) 
-- [Capsule Machine NFT](https://www.capsulemachinenft.com/) | [Etherscan](https://etherscan.io/address/0xc19ced6633f0da7cef642b7a3f6b3ff0bb2465c0) | [Twitter](https://twitter.com/_capsulemachine) 
 - [Cereal Club](https://www.cerealclub.io/) | Etherscan | [Twitter](https://twitter.com/cerealclubnft)
 - [The Lost Glitches](https://playlostglitches.com/) | [Etherscan](https://etherscan.io/address/0x8460bb8eb1251a923a31486af9567e500fc2f43f) | [Twitter](https://twitter.com/TheLostGlitches)
 - [Standard Protocol](https://standard.tech/) | Etherscan | [Twitter](https://twitter.com/standardweb3)
@@ -29,3 +28,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Knit Kins](https://knitkins.com) | Etherscan | [Twitter](https://twitter.com/KnitKinsNFT)
 - [Meta Angels NFT](https://www.metaangelsnft.com) | [Etherscan](https://etherscan.io/address/0xaD265Ab9B99296364F13Ce5b8B3e8d0998778bfb) | [Twitter](https://twitter.com/meta_angels)
 - [Probably Something](https://probablysomething.io/) | [Etherscan](https://etherscan.io/address/0x0e6c54bdf6bfc75777c23dd2b7504d82b484582a) | [Twitter](https://twitter.com/ProblySomething)
+- [Capsule Machine NFT](https://www.capsulemachinenft.com/) | [Etherscan](https://etherscan.io/address/0xc19ced6633f0da7cef642b7a3f6b3ff0bb2465c0) | [Twitter](https://twitter.com/_capsulemachine) 
