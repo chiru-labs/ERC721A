@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
-// Creators: locationtba.eth, 2pmflow.eth
-// Made upgradeable by: mrmcgoats.eth for Xenum Technology (xenum.io)
+// Original Creators: Chiru Labs
+// Made upgradeable by: Xenum Technologies (xenum.io)
 
 pragma solidity ^0.8.0;
 

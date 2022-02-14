@@ -20,7 +20,6 @@ async function main() {
   const contract = await upgrades.deployProxy(Contract, /*[
     "ERC721A",
     "COIN",
-    10
   ]*/);
   await contract.deployed();
 

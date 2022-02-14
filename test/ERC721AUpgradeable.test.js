@@ -12,7 +12,7 @@ describe('ERC721A', function () {
     this.erc721a = await this.ERC721A.deploy();
     await this.erc721a.deployed();
     // Initialize
-    this.erc721a.initialize('Azuki', 'AZUKI')
+    this.erc721a.initialize('Azuki', 'AZUKI');
   });
 
   context('with no minted tokens', async function () {
