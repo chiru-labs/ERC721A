@@ -25,6 +25,6 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [ClassyDogs](https://classydogs.io/) | [Etherscan](https://etherscan.io/address/0xe317e1386fbf3d425f0523b484c504ce2125724c) | [Twitter](https://twitter.com/Classy_dogs)
 - [The Dead Army Skeleton Klub](https://www.thedeadarmyskeletonklub.army/) | [Etherscan](https://etherscan.io/address/0x19d84b2a4b21910339af097a1bddb48682d6f47d#code) | [Twitter](https://twitter.com/The_DASK)
 - [Turf](https://turf.dev/) | [Etherscan](https://etherscan.io/address/0x55d89273143de3de00822c9271dbcbd9b44b44c6) | [Twitter](https://twitter.com/turfnft)
-- [Knit Kins](https://knitkins.com) | Etherscan | [Twitter](https://twitter.com/KnitKinsNFT)
+- [Knit Kins](https://knitkins.com) | [Etherscan](https://etherscan.io/address/0xD0A8bD7933d9C607b3FBBa7213e67b79e9bd07F6) | [Twitter](https://twitter.com/KnitKinsNFT)
 - [Meta Angels NFT](https://www.metaangelsnft.com) | [Etherscan](https://etherscan.io/address/0xaD265Ab9B99296364F13Ce5b8B3e8d0998778bfb) | [Twitter](https://twitter.com/meta_angels)
 - [Probably Something](https://probablysomething.io/) | [Etherscan](https://etherscan.io/address/0x0e6c54bdf6bfc75777c23dd2b7504d82b484582a) | [Twitter](https://twitter.com/ProblySomething)
