@@ -109,31 +109,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Enumerable-tokenByIndex}.
-     * This read function is O(totalSupply). If calling from a separate contract, be sure to test gas first.
-     * It may also degrade with extremely large collection sizes (e.g >> 10000), test for your use case.
-     */
-    function tokenByIndex(uint256 index) public view returns (uint256) {
-        uint256 numMintedSoFar = _currentIndex;
-        uint256 tokenIdsIdx;
-
-        // Counter overflow is impossible as the loop breaks when
-        // uint256 i is equal to another uint256 numMintedSoFar.
-        unchecked {
-            for (uint256 i; i < numMintedSoFar; i++) {
-                TokenOwnership memory ownership = _ownerships[i];
-                if (!ownership.burned) {
-                    if (tokenIdsIdx == index) {
-                        return i;
-                    }
-                    tokenIdsIdx++;
-                }
-            }
-        }
-        revert TokenIndexOutOfBounds();
-    }
-
-    /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
