@@ -64,14 +64,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         uint64 numberBurned;
     }
 
-    // Compiler will pack the following 
-    // _currentIndex and _burnCounter into a single 256bit word.
-    
     // The tokenId of the next token to be minted.
-    uint128 internal _currentIndex;
+    uint256 internal _currentIndex;
 
     // The number of tokens burned.
-    uint128 internal _burnCounter;
+    uint256 internal _burnCounter;
 
     // Token name
     string private _name;
