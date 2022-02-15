@@ -28,3 +28,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Knit Kins](https://knitkins.com) | [Etherscan](https://etherscan.io/address/0xD0A8bD7933d9C607b3FBBa7213e67b79e9bd07F6) | [Twitter](https://twitter.com/KnitKinsNFT)
 - [Meta Angels NFT](https://www.metaangelsnft.com) | [Etherscan](https://etherscan.io/address/0xaD265Ab9B99296364F13Ce5b8B3e8d0998778bfb) | [Twitter](https://twitter.com/meta_angels)
 - [Probably Something](https://probablysomething.io/) | [Etherscan](https://etherscan.io/address/0x0e6c54bdf6bfc75777c23dd2b7504d82b484582a) | [Twitter](https://twitter.com/ProblySomething)
+- [Capsule Machine NFT](https://www.capsulemachinenft.com/) | [Etherscan](https://etherscan.io/address/0xc19ced6633f0da7cef642b7a3f6b3ff0bb2465c0) | [Twitter](https://twitter.com/_capsulemachine) 
