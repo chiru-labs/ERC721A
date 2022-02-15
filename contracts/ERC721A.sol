@@ -38,7 +38,7 @@ error URIQueryForNonexistentToken();
  *
  * Assumes that an owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
  *
- * Assumes that the maximum token id cannot exceed 2**128 - 1 (max value of uint128).
+ * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
 contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable {
     using Address for address;
@@ -398,8 +398,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
-        // balance or numberMinted overflow if current value of either + quantity > 3.4e38 (2**128) - 1
-        // updatedIndex overflows if _currentIndex + quantity > 3.4e38 (2**128) - 1
+        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
+        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
@@ -417,7 +417,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
                 updatedIndex++;
             }
 
-            _currentIndex = uint128(updatedIndex);
+            _currentIndex = updatedIndex;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -454,7 +454,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**128.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
@@ -499,7 +499,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata, IERC721Enumerable
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**128.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
             _addressData[prevOwnership.addr].balance -= 1;
             _addressData[prevOwnership.addr].numberBurned += 1;
