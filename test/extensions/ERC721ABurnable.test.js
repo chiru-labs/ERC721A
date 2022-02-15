@@ -58,19 +58,6 @@ describe('ERC721ABurnable', function () {
       .to.be.equal(this.numTestTokens - 1);
   });
 
-  it('adjusts token by index', async function () {
-    const n = await this.token.totalSupply();
-    for (let i = 0; i < this.burnedTokenId; ++i) {
-      expect(await this.token.tokenByIndex(i)).to.be.equal(i);
-    }
-    for (let i = this.burnedTokenId; i < n; ++i) {
-      expect(await this.token.tokenByIndex(i)).to.be.equal(i + 1);
-    }
-    await expect(this.token.tokenByIndex(n)).to.be.revertedWith(
-      'TokenIndexOutOfBounds'
-    );
-  });
-
   describe('ownerships correctly set', async function () {
     it('with token before previously burnt token transfered and burned', async function () {
       const tokenIdToBurn = this.burnedTokenId - 1;
