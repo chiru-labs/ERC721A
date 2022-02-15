@@ -32,7 +32,7 @@ jobs:
       - store_test_results:
           path: test_results
 
-  gas-usage:
+  test-gas-usage:
     docker:
       - image: cimg/node:16.10
     steps:
@@ -52,7 +52,7 @@ workflows:
   # Inside the workflow, you provide the jobs you want to run, e.g this workflow runs the build-and-test job above.
   # CircleCI will run this workflow on every commit.
   # For more details on extending your workflow, see the configuration docs: https://circleci.com/docs/2.0/configuration-reference/#workflows
-  truffle:
+  hardhat:
     jobs:
-      - build-and-test
-      - coverage
+      - test
+      - test-gas-usage
