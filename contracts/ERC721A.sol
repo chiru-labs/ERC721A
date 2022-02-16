@@ -33,7 +33,7 @@ error URIQueryForNonexistentToken();
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
- * the Metadata and Enumerable extension. Built to optimize for lower gas during batch mints.
+ * the Metadata extension. Built to optimize for lower gas during batch mints.
  *
  * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
  *
@@ -128,21 +128,34 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         return uint256(_addressData[owner].balance);
     }
 
+    /**
+     * Returns the number of tokens minted by `owner`.
+     */
     function _numberMinted(address owner) internal view returns (uint256) {
         if (owner == address(0)) revert MintedQueryForZeroAddress();
         return uint256(_addressData[owner].numberMinted);
     }
 
+    /**
+     * Returns the number of tokens burned by or on behalf of `owner`.
+     */
     function _numberBurned(address owner) internal view returns (uint256) {
         if (owner == address(0)) revert BurnedQueryForZeroAddress();
         return uint256(_addressData[owner].numberBurned);
     }
 
+    /**
+     * Returns the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     */
     function _getAux(address owner) internal view returns (uint64) {
         if (owner == address(0)) revert AuxQueryForZeroAddress();
         return _addressData[owner].aux;
     }
 
+    /**
+     * Sets the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     * If there are multiple variables, please pack them into a uint64.
+     */
     function _setAux(address owner, uint64 aux) internal {
         if (owner == address(0)) revert AuxQueryForZeroAddress();
         _addressData[owner].aux = aux;
