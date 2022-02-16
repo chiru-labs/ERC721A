@@ -115,7 +115,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         return
             interfaceId == type(IERC721).interfaceId ||
             interfaceId == type(IERC721Metadata).interfaceId ||
-            interfaceId == type(IERC721Enumerable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
