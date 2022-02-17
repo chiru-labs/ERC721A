@@ -47,6 +47,6 @@ abstract contract ERC721ALowCap is ERC721A {
             }
         }
 
-		return list;
+        return list;
     }
 }
