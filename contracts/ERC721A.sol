@@ -165,46 +165,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * @dev Returns a list of `tokenId` that is owned by the address given 'owner'
-     */
-    function tokensOfOwner(address owner) public view returns (uint256[] memory) {
-        uint256 holdingAmount  = balanceOf(owner);
-        uint256 numMintedSoFar = _currentIndex;
-        uint256 tokenIdsIdx;
-        address lastOwnershipAddr;
-
-        uint256[] memory result = new uint256[](holdingAmount);
-
-        unchecked {
-            for (uint256 i; i < numMintedSoFar; i++) {
-                TokenOwnership memory ownership = _ownerships[i];
-
-                if (ownership.burned) {
-                    continue;
-                }
-
-                // Find out who owns this sequence
-                if (ownership.addr != address(0)) {
-                    lastOwnershipAddr = ownership.addr;
-                }
-
-                // Append tokens the last found owner owns in the sequence
-                if (lastOwnershipAddr == owner) {
-                    result[tokenIdsIdx] = i;
-                    tokenIdsIdx++;
-                }
-
-                // All tokens have been found, we don't need to keep searching
-                if(tokenIdsIdx == holdingAmount) {
-                    break;
-                }
-            }
-        }
-
-		return result;
-    }
-
-    /**
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
