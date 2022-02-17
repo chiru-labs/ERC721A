@@ -190,7 +190,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
                 // Append tokens the last found owner owns in the sequence
                 if (lastOwnershipAddr == owner) {
-					result[tokenIdsIdx] = i;
+                    result[tokenIdsIdx] = i;
                     tokenIdsIdx++;
                 }
 
