@@ -3,7 +3,7 @@
 Here are a list of projects that have or will be implementing ERC721A as part of their mint process. If your project is using ERC721A, feel free to open a PR and add it to the list!
 
 - [Azuki](https://www.azuki.com/) | [Etherscan](https://etherscan.io/address/0xed5af388653567af2f388e6224dc7c4b3241c544) | [Twitter](https://twitter.com/AzukiZen) 
-- [Cereal Club](https://www.cerealclub.io/) | Etherscan | [Twitter](https://twitter.com/cerealclubnft)
+- [Cereal Club](https://www.cerealclub.io/) | [Etherscan](https://etherscan.io/address/0x9e8b85dbb082255bd81c5b25323b694bc799a616) | [Twitter](https://twitter.com/cerealclubnft)
 - [The Lost Glitches](https://playlostglitches.com/) | [Etherscan](https://etherscan.io/address/0x8460bb8eb1251a923a31486af9567e500fc2f43f) | [Twitter](https://twitter.com/TheLostGlitches)
 - [Standard Protocol](https://standard.tech/) | Etherscan | [Twitter](https://twitter.com/standardweb3)
 - [Kitty Crypto Gang](https://www.kittycryptogang.com/) | Etherscan | [Twitter](https://twitter.com/KittyCryptoGang)
@@ -20,7 +20,6 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Travel Toucans](https://www.travelToucans.com/) | Etherscan | [Twitter](https://twitter.com/TravelToucans)
 - [Huhu New Year](https://huhunft.com) | [Etherscan](https://etherscan.io/address/0x1c69a454bd92974ffaf67a8a5203dd8223d8fd37) | [Twitter](https://twitter.com/HuhuNFT)
 - [Super Geisha](https://www.supergeisha.io/) | [Etherscan](https://etherscan.io/address/0x2afb30418504d3c6ecfa2cb40012804e52ced20a) | [Twitter](https://twitter.com/CryptoGeisha)
-- [Sunya Collective](https://sunyacollective.com) | Etherscan | [Twitter](https://twitter.com/SunyaCollective)
 - [The MetaTribes](https://themetatribes.com/) | Etherscan | [Twitter](https://twitter.com/themetatribes)
 - [ClassyDogs](https://classydogs.io/) | [Etherscan](https://etherscan.io/address/0xe317e1386fbf3d425f0523b484c504ce2125724c) | [Twitter](https://twitter.com/Classy_dogs)
 - [The Dead Army Skeleton Klub](https://www.thedeadarmyskeletonklub.army/) | [Etherscan](https://etherscan.io/address/0x19d84b2a4b21910339af097a1bddb48682d6f47d#code) | [Twitter](https://twitter.com/The_DASK)
@@ -29,6 +28,6 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Meta Angels NFT](https://www.metaangelsnft.com) | [Etherscan](https://etherscan.io/address/0xaD265Ab9B99296364F13Ce5b8B3e8d0998778bfb) | [Twitter](https://twitter.com/meta_angels)
 - [Probably Something](https://probablysomething.io/) | [Etherscan](https://etherscan.io/address/0x0e6c54bdf6bfc75777c23dd2b7504d82b484582a) | [Twitter](https://twitter.com/ProblySomething)
 - [Sky Crucible](https://skycrucible.xyz) | [Etherscan](https://etherscan.io/address/0x25a4f45d88b6d48a2ec2c87f5ef7f6af65db9d8e) | [Twitter](https://twitter.com/SkyCrucible) 
-- [Anim Ape]| [Etherscan](https://etherscan.io/address/0xc4f44b646353b1a07053ebc939954f62d35c80b8) | [Twitter](https://twitter.com/Mysthereum_NFT)
+- Anim Ape | [Etherscan](https://etherscan.io/address/0xc4f44b646353b1a07053ebc939954f62d35c80b8) | [Twitter](https://twitter.com/Mysthereum_NFT)
 - [Capsule Machine NFT](https://www.capsulemachinenft.com/) | [Etherscan](https://etherscan.io/address/0xc19ced6633f0da7cef642b7a3f6b3ff0bb2465c0) | [Twitter](https://twitter.com/_capsulemachine) 
 - [Mister Otter River Club](https://morc.vercel.app/) | [Etherscan](https://etherscan.io/address/0xa8c724a829a48f551950a783c6ec50e728725026) | [Twitter](https://twitter.com/misterotternft) 
