@@ -68,6 +68,31 @@ describe('ERC721A', function () {
       });
     });
 
+    describe('aux', async function () {
+      it('get and set works correctly', async function () {
+        const uint64Max = '18446744073709551615';
+        expect(await this.erc721a.getAux(this.owner.address)).to.equal('0');
+        await this.erc721a.setAux(this.owner.address, uint64Max);
+        expect(await this.erc721a.getAux(this.owner.address)).to.equal(uint64Max);
+        
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('0');
+        await this.erc721a.setAux(this.addr1.address, '1');
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
+
+        await this.erc721a.setAux(this.addr3.address, '5');
+        expect(await this.erc721a.getAux(this.addr3.address)).to.equal('5');
+
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
+      });
+      
+      it('get and set rejects the zero address', async function () {
+        await expect(this.erc721a.getAux(ZERO_ADDRESS))
+          .to.be.revertedWith('AuxQueryForZeroAddress');
+        await expect(this.erc721a.setAux(ZERO_ADDRESS, '1'))
+          .to.be.revertedWith('AuxQueryForZeroAddress');
+      });
+    });
+
     describe('ownerOf', async function () {
       it('returns the right owner', async function () {
         expect(await this.erc721a.ownerOf(0)).to.equal(this.addr1.address);
