@@ -31,3 +31,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - Anim Ape | [Etherscan](https://etherscan.io/address/0xc4f44b646353b1a07053ebc939954f62d35c80b8) | [Twitter](https://twitter.com/Mysthereum_NFT)
 - [Capsule Machine NFT](https://www.capsulemachinenft.com/) | [Etherscan](https://etherscan.io/address/0xc19ced6633f0da7cef642b7a3f6b3ff0bb2465c0) | [Twitter](https://twitter.com/_capsulemachine) 
 - [Mister Otter River Club](https://morc.vercel.app/) | [Etherscan](https://etherscan.io/address/0xa8c724a829a48f551950a783c6ec50e728725026) | [Twitter](https://twitter.com/misterotternft) 
+- [Tasty Bones NFT](https://tastybones.xyz/) | [Etherscan](https://etherscan.io/address/0x1b79c7832ed9358E024F9e46E9c8b6f56633691B) | [Twitter](https://twitter.com/tastybonesnft) 
