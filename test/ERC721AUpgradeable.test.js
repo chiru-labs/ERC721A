@@ -5,7 +5,7 @@ const { ZERO_ADDRESS } = constants;
 const RECEIVER_MAGIC_VALUE = '0x150b7a02';
 const GAS_MAGIC_VALUE = 20000;
 
-describe('ERC721A', function () {
+describe('ERC721AUpgradeable', function () {
   beforeEach(async function () {
     this.ERC721A = await ethers.getContractFactory('ERC721AUpgradeableMock');
     this.ERC721Receiver = await ethers.getContractFactory('ERC721ReceiverMock');
@@ -57,9 +57,7 @@ describe('ERC721A', function () {
       });
 
       it('throws an exception for the 0 address', async function () {
-        await expect(this.erc721a.balanceOf(ZERO_ADDRESS)).to.be.revertedWith(
-          'ERC721AUpgradeable: balance query for the zero address'
-        );
+        await expect(this.erc721a.balanceOf(ZERO_ADDRESS)).to.be.revertedWith('BalanceQueryForZeroAddress');
       });
     });
 
@@ -72,6 +70,31 @@ describe('ERC721A', function () {
       });
     });
 
+    describe('aux', async function () {
+      it('get and set works correctly', async function () {
+        const uint64Max = '18446744073709551615';
+        expect(await this.erc721a.getAux(this.owner.address)).to.equal('0');
+        await this.erc721a.setAux(this.owner.address, uint64Max);
+        expect(await this.erc721a.getAux(this.owner.address)).to.equal(uint64Max);
+        
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('0');
+        await this.erc721a.setAux(this.addr1.address, '1');
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
+
+        await this.erc721a.setAux(this.addr3.address, '5');
+        expect(await this.erc721a.getAux(this.addr3.address)).to.equal('5');
+
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
+      });
+      
+      it('get and set rejects the zero address', async function () {
+        await expect(this.erc721a.getAux(ZERO_ADDRESS))
+          .to.be.revertedWith('AuxQueryForZeroAddress');
+        await expect(this.erc721a.setAux(ZERO_ADDRESS, '1'))
+          .to.be.revertedWith('AuxQueryForZeroAddress');
+      });
+    });
+
     describe('ownerOf', async function () {
       it('returns the right owner', async function () {
         expect(await this.erc721a.ownerOf(0)).to.equal(this.addr1.address);
@@ -80,7 +103,7 @@ describe('ERC721A', function () {
       });
 
       it('reverts for an invalid token', async function () {
-        await expect(this.erc721a.ownerOf(10)).to.be.revertedWith('ERC721AUpgradeable: owner query for nonexistent token');
+        await expect(this.erc721a.ownerOf(10)).to.be.revertedWith('OwnerQueryForNonexistentToken');
       });
     });
 
@@ -96,18 +119,18 @@ describe('ERC721A', function () {
 
       it('rejects an invalid token owner', async function () {
         await expect(this.erc721a.connect(this.addr1).approve(this.addr2.address, tokenId2)).to.be.revertedWith(
-          'ERC721AUpgradeable: approval to current owner'
+          'ApprovalToCurrentOwner'
         );
       });
 
       it('rejects an unapproved caller', async function () {
         await expect(this.erc721a.approve(this.addr2.address, tokenId)).to.be.revertedWith(
-          'ERC721AUpgradeable: approve caller is not owner nor approved for all'
+          'ApprovalCallerNotOwnerNorApproved'
         );
       });
 
       it('does not get approved for invalid tokens', async function () {
-        await expect(this.erc721a.getApproved(10)).to.be.revertedWith('ERC721AUpgradeable: approved query for nonexistent token');
+        await expect(this.erc721a.getApproved(10)).to.be.revertedWith('ApprovalQueryForNonexistentToken');
       });
     });
 
@@ -122,7 +145,7 @@ describe('ERC721A', function () {
 
       it('sets rejects approvals for non msg senders', async function () {
         await expect(this.erc721a.connect(this.addr1).setApprovalForAll(this.addr1.address, true)).to.be.revertedWith(
-          'ERC721AUpgradeable: approve to caller'
+          'ApproveToCaller'
         );
       });
     });
@@ -161,11 +184,6 @@ describe('ERC721A', function () {
         it('adjusts owners balances', async function () {
           expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
         });
-
-        it('adjusts owners tokens by index', async function () {
-          expect(await this.erc721a.tokenOfOwnerByIndex(to, 0)).to.be.equal(tokenId);
-          expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
-        });
       };
 
       const testUnsuccessfulTransfer = function (transferFn) {
@@ -174,21 +192,21 @@ describe('ERC721A', function () {
         it('rejects unapproved transfer', async function () {
           await expect(
             this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, this.addr1.address, tokenId)
-          ).to.be.revertedWith('ERC721AUpgradeable: transfer caller is not owner nor approved');
+          ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
         });
 
         it('rejects transfer from incorrect owner', async function () {
           await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
           await expect(
             this.erc721a.connect(this.addr1)[transferFn](this.addr3.address, this.addr1.address, tokenId)
-          ).to.be.revertedWith('ERC721AUpgradeable: transfer from incorrect owner');
+          ).to.be.revertedWith('TransferFromIncorrectOwner');
         });
 
         it('rejects transfer to zero address', async function () {
           await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
           await expect(
             this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, ZERO_ADDRESS, tokenId)
-          ).to.be.revertedWith('ERC721AUpgradeable: transfer to the zero address');
+          ).to.be.revertedWith('TransferToZeroAddress');
         });
       };
 
@@ -252,20 +270,20 @@ describe('ERC721A', function () {
 
       it('rejects mints to the zero address', async function () {
         await expect(this.erc721a['safeMint(address,uint256)'](ZERO_ADDRESS, 1)).to.be.revertedWith(
-          'ERC721AUpgradeable: mint to the zero address'
+          'MintToZeroAddress'
         );
       });
 
       it('requires quantity to be greater than 0', async function () {
         await expect(this.erc721a['safeMint(address,uint256)'](this.owner.address, 0)).to.be.revertedWith(
-          'ERC721AUpgradeable: quantity must be greater than 0'
+          'MintZeroQuantity'
         );
       });
 
       it('reverts for non-receivers', async function () {
         const nonReceiver = this.erc721a;
         await expect(this.erc721a['safeMint(address,uint256)'](nonReceiver.address, 1)).to.be.revertedWith(
-          'ERC721AUpgradeable: transfer to non ERC721Receiver implementer'
+          'TransferToNonERC721ReceiverImplementer'
         );
       });
     });
@@ -276,7 +294,7 @@ describe('ERC721A', function () {
       it('successfully mints a single token', async function () {
         const mintTx = await this.erc721a.mint(this.receiver.address, 1, data, false);
         await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 0);
-        await expect(mintTx).to.not.emit(this.receiver, 'Received')
+        await expect(mintTx).to.not.emit(this.receiver, 'Received');
         expect(await this.erc721a.ownerOf(0)).to.equal(this.receiver.address);
       });
 
@@ -284,7 +302,7 @@ describe('ERC721A', function () {
         const mintTx = await this.erc721a.mint(this.receiver.address, 5, data, false);
         for (let tokenId = 0; tokenId < 5; tokenId++) {
           await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
-          await expect(mintTx).to.not.emit(this.receiver, 'Received')
+          await expect(mintTx).to.not.emit(this.receiver, 'Received');
           expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.receiver.address);
         }
       });
@@ -296,15 +314,11 @@ describe('ERC721A', function () {
       });
 
       it('rejects mints to the zero address', async function () {
-        await expect(this.erc721a.mint(ZERO_ADDRESS, 1, data, false)).to.be.revertedWith(
-          'ERC721AUpgradeable: mint to the zero address'
-        );
+        await expect(this.erc721a.mint(ZERO_ADDRESS, 1, data, false)).to.be.revertedWith('MintToZeroAddress');
       });
 
       it('requires quantity to be greater than 0', async function () {
-        await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith(
-          'ERC721AUpgradeable: quantity must be greater than 0'
-        );
+        await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith('MintZeroQuantity');
       });
     });
   });

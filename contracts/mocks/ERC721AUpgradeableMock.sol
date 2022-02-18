@@ -13,6 +13,14 @@ contract ERC721AUpgradeableMock is ERC721AUpgradeable {
         return _numberMinted(owner);
     }
 
+    function getAux(address owner) public view returns (uint64) {
+        return _getAux(owner);
+    }
+
+    function setAux(address owner, uint64 aux) public {
+        _setAux(owner, aux);
+    }
+
     function baseURI() public view returns (string memory) {
         return _baseURI();
     }
