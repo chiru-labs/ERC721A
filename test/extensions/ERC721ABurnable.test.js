@@ -53,47 +53,9 @@ describe('ERC721ABurnable', function () {
     }
   })
 
-  it('adjusts owners tokens by index', async function () {
-    const n = await this.token.totalSupply();
-    for (let i = 0; i < this.burnedTokenId; ++i) {
-      expect(await this.token.tokenByIndex(i)).to.be.equal(i);
-    }
-    for (let i = this.burnedTokenId; i < n; ++i) {
-      expect(await this.token.tokenByIndex(i)).to.be.equal(i + 1);
-    }
-    // tokenIds of addr1: [0,1,2,3,4,6,7,8,9]
-    expect(await this.token.tokenOfOwnerByIndex(this.addr1.address, 2))
-      .to.be.equal(2);
-    await this.token.connect(this.addr1).burn(2);
-    // tokenIds of addr1: [0,1,3,4,6,7,8,9]
-    expect(await this.token.tokenOfOwnerByIndex(this.addr1.address, 2))
-      .to.be.equal(3);
-    await this.token.connect(this.addr1).burn(0);
-    // tokenIds of addr1: [1,3,4,6,7,8,9]
-    expect(await this.token.tokenOfOwnerByIndex(this.addr1.address, 2))
-      .to.be.equal(4);
-    await this.token.connect(this.addr1).burn(3);
-    // tokenIds of addr1: [1,4,6,7,8,9]
-    expect(await this.token.tokenOfOwnerByIndex(this.addr1.address, 2))
-      .to.be.equal(6);
-  })
-
   it('adjusts owners balances', async function () {
     expect(await this.token.balanceOf(this.addr1.address))
       .to.be.equal(this.numTestTokens - 1);
-  });
-
-  it('adjusts token by index', async function () {
-    const n = await this.token.totalSupply();
-    for (let i = 0; i < this.burnedTokenId; ++i) {
-      expect(await this.token.tokenByIndex(i)).to.be.equal(i);
-    }
-    for (let i = this.burnedTokenId; i < n; ++i) {
-      expect(await this.token.tokenByIndex(i)).to.be.equal(i + 1);
-    }
-    await expect(this.token.tokenByIndex(n)).to.be.revertedWith(
-      'TokenIndexOutOfBounds'
-    );
   });
 
   describe('ownerships correctly set', async function () {
