@@ -3,8 +3,6 @@
 
 pragma solidity ^0.8.4;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
 import '../ERC721A.sol';
 
 contract ERC721AStartOneMock is ERC721A {
@@ -16,6 +14,14 @@ contract ERC721AStartOneMock is ERC721A {
 
     function numberMinted(address owner) public view returns (uint256) {
         return _numberMinted(owner);
+    }
+
+    function getAux(address owner) public view returns (uint64) {
+        return _getAux(owner);
+    }
+
+    function setAux(address owner, uint64 aux) public {
+        _setAux(owner, aux);
     }
 
     function baseURI() public view returns (string memory) {

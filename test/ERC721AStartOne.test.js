@@ -18,10 +18,6 @@ describe('ERC721AStartOne', function () {
       const supply = await this.erc721a.totalSupply();
       expect(supply).to.equal(0);
     });
-
-    it('tokenByIndex is reverted', async function () {
-      expect(this.erc721a.tokenByIndex(0)).to.be.revertedWith('TokenIndexOutOfBounds');
-    });
   });
 
   context('with minted tokens', async function () {
@@ -65,36 +61,37 @@ describe('ERC721AStartOne', function () {
       });
     });
 
-    describe('tokenByIndex', async function () {
-      it('returns correct tokenId for index', async function () {
-        expect(await this.erc721a.tokenByIndex(0)).to.equal(1);
-        expect(await this.erc721a.tokenByIndex(1)).to.equal(2);
-        expect(await this.erc721a.tokenByIndex(2)).to.equal(3);
-      });
-    });
-
-    describe('tokenOfOwnerByIndex', async function () {
-      it('returns correct tokenId for index of owner', async function () {
-        expect(await this.erc721a.balanceOf(this.addr1.address)).to.equal('1');
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr1.address, 0)).to.equal(1);
-
-        expect(await this.erc721a.balanceOf(this.addr2.address)).to.equal('2');
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr2.address, 0)).to.equal(2);
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr2.address, 1)).to.equal(3);
-
-        expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal('3');
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address, 0)).to.equal(4);
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address, 1)).to.equal(5);
-        expect(await this.erc721a.tokenOfOwnerByIndex(this.addr3.address, 2)).to.equal(6);
-      });
-    });
-
     describe('_numberMinted', async function () {
       it('returns the amount for a given address', async function () {
         expect(await this.erc721a.numberMinted(this.owner.address)).to.equal('0');
         expect(await this.erc721a.numberMinted(this.addr1.address)).to.equal('1');
         expect(await this.erc721a.numberMinted(this.addr2.address)).to.equal('2');
         expect(await this.erc721a.numberMinted(this.addr3.address)).to.equal('3');
+      });
+    });
+
+    describe('aux', async function () {
+      it('get and set works correctly', async function () {
+        const uint64Max = '18446744073709551615';
+        expect(await this.erc721a.getAux(this.owner.address)).to.equal('0');
+        await this.erc721a.setAux(this.owner.address, uint64Max);
+        expect(await this.erc721a.getAux(this.owner.address)).to.equal(uint64Max);
+        
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('0');
+        await this.erc721a.setAux(this.addr1.address, '1');
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
+
+        await this.erc721a.setAux(this.addr3.address, '5');
+        expect(await this.erc721a.getAux(this.addr3.address)).to.equal('5');
+
+        expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
+      });
+
+      it('get and set rejects the zero address', async function () {
+        await expect(this.erc721a.getAux(ZERO_ADDRESS))
+          .to.be.revertedWith('AuxQueryForZeroAddress');
+        await expect(this.erc721a.setAux(ZERO_ADDRESS, '1'))
+          .to.be.revertedWith('AuxQueryForZeroAddress');
       });
     });
 
@@ -186,11 +183,6 @@ describe('ERC721AStartOne', function () {
 
         it('adjusts owners balances', async function () {
           expect(await this.erc721a.balanceOf(from)).to.be.equal(1);
-        });
-
-        it('adjusts owners tokens by index', async function () {
-          expect(await this.erc721a.tokenOfOwnerByIndex(to, 0)).to.be.equal(tokenId);
-          expect(await this.erc721a.tokenOfOwnerByIndex(from, 0)).to.be.not.equal(tokenId);
         });
       };
 
