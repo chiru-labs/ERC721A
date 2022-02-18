@@ -30,3 +30,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Probably Something](https://probablysomething.io/) | [Etherscan](https://etherscan.io/address/0x0e6c54bdf6bfc75777c23dd2b7504d82b484582a) | [Twitter](https://twitter.com/ProblySomething)
 - [Anim Ape]| [Etherscan](https://etherscan.io/address/0xc4f44b646353b1a07053ebc939954f62d35c80b8) | [Twitter](https://twitter.com/Mysthereum_NFT)
 - [Capsule Machine NFT](https://www.capsulemachinenft.com/) | [Etherscan](https://etherscan.io/address/0xc19ced6633f0da7cef642b7a3f6b3ff0bb2465c0) | [Twitter](https://twitter.com/_capsulemachine) 
+- [Mister Otter River Club](https://morc.vercel.app/) | [Etherscan](https://etherscan.io/address/0xa8c724a829a48f551950a783c6ec50e728725026) | [Twitter](https://twitter.com/misterotternft) 
