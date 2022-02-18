@@ -104,6 +104,11 @@ contract ERC721AUpgradeable is
         __ERC165_init_unchained();
         __Context_init_unchained();
     }
+    
+    function __ERC721A_init_unchained(string memory name_, string memory symbol_) public virtual onlyInitializing {
+       _name = name_;
+       _symbol = symbol_;
+    }
 
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
