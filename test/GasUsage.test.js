@@ -11,7 +11,7 @@ describe('ERC721A Gas Usage', function () {
   context('mintOne', function () {
     it('runs mintOne 50 times', async function () {
       for (let i = 0; i < 50; i++) {
-        await this.erc721a.safeMintOne(this.addr1.address);
+        await this.erc721a.mintOne(this.addr1.address);
       }
     });
   });
@@ -19,7 +19,7 @@ describe('ERC721A Gas Usage', function () {
   context('safeMintOne', function () {
     it('runs safeMintOne 50 times', async function () {
       for (let i = 0; i < 50; i++) {
-        await this.erc721a.mintOne(this.addr1.address);
+        await this.erc721a.safeMintOne(this.addr1.address);
       }
     });
   });
@@ -27,15 +27,15 @@ describe('ERC721A Gas Usage', function () {
   context('mintTen', function () {
     it('runs mintTen 50 times', async function () {
       for (let i = 0; i < 50; i++) {
-        await this.erc721a.safeMintTen(this.addr1.address);
+        await this.erc721a.mintTen(this.addr1.address);
       }
     });
   });
 
   context('safeMintTen', function () {
-    it('runs mintTen 50 times', async function () {
+    it('runs safeMintTen 50 times', async function () {
       for (let i = 0; i < 50; i++) {
-        await this.erc721a.mintTen(this.addr1.address);
+        await this.erc721a.safeMintTen(this.addr1.address);
       }
     });
   });
