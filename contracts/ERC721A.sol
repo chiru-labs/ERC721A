@@ -115,12 +115,24 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
+     * @dev Burned tokens are calculated here, use _totalMinted() if you want to count just minted tokens.
      */
     function totalSupply() public view returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
         // more than _currentIndex - _startTokenId() times
         unchecked {
             return _currentIndex - _burnCounter - _startTokenId();    
+        }
+    }
+
+    /**
+     * Returns the total amount of tokens minted in the contract.
+     */
+    function _totalMinted() internal view returns (uint256) {
+        // Counter underflow is impossible as _currentIndex does not decrement,
+        // and it is initialized to _startTokenId()
+        unchecked {
+            return _currentIndex - _startTokenId();
         }
     }
 
