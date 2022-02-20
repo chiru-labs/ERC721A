@@ -16,6 +16,10 @@ contract ERC721AStartOneMock is ERC721A {
         return _numberMinted(owner);
     }
 
+    function totalMinted() public view returns (uint256) {
+        return _totalMinted();
+    }
+
     function getAux(address owner) public view returns (uint64) {
         return _getAux(owner);
     }
