@@ -8,7 +8,7 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Standard Protocol](https://standard.tech/) | Etherscan | [Twitter](https://twitter.com/standardweb3)
 - [Kitty Crypto Gang](https://www.kittycryptogang.com/) | Etherscan | [Twitter](https://twitter.com/KittyCryptoGang)
 - [X Rabbits Club](https://xrabbits.club/) | [Etherscan](https://etherscan.io/address/0x534d37c630b7e4d2a6c1e064f3a2632739e9ee04) | [Twitter](https://twitter.com/XRabbitsClub)
-- [WhaleTogether](https://whaletogether.com/) | Etherscan | [Twitter](https://twitter.com/WhaleTogether)
+- [WhaleTogether](https://whaletogether.com/) | [Etherscan](https://etherscan.io/address/0x417737d49a175D62625154262d8569D3890425ae) | [Twitter](https://twitter.com/WhaleTogether)
 - [Pixel Piracy](https://pixelpiracy.io/) | [Etherscan](https://etherscan.io/address/0x1af1f96e6cbf2a038b056acac1603170f9967cb5) | [Twitter](https://twitter.com/pixelpiracynft)
 - [Dastardly Ducks](https://www.dastardlyducks.com) | [Etherscan](https://etherscan.io/address/0x5472896e283ebcb13924c659c9db594aa9dc05a4#code) | [Twitter](https://www.twitter.com/dastardlyducks)
 - [Miss Metaverse NFT](https://www.missmetaverse.io/) | [Etherscan](https://etherscan.io/address/0xdE1Ba923233Fa1736992F7d5824C3B086b86f67c) | [Twitter](https://twitter.com/MissMetaNFT)
