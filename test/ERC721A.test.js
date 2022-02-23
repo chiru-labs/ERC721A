@@ -18,6 +18,11 @@ describe('ERC721A', function () {
       const supply = await this.erc721a.totalSupply();
       expect(supply).to.equal(0);
     });
+
+    it('has 0 totalMinted', async function () {
+      const totalMinted = await this.erc721a.totalMinted();
+      expect(totalMinted).to.equal(0);
+    });
   });
 
   context('with minted tokens', async function () {
@@ -65,6 +70,13 @@ describe('ERC721A', function () {
         expect(await this.erc721a.numberMinted(this.addr1.address)).to.equal('1');
         expect(await this.erc721a.numberMinted(this.addr2.address)).to.equal('2');
         expect(await this.erc721a.numberMinted(this.addr3.address)).to.equal('3');
+      });
+    });
+
+    context('_totalMinted', async function () {
+      it('has 6 totalMinted', async function () {
+        const totalMinted = await this.erc721a.totalMinted();
+        expect(totalMinted).to.equal('6');
       });
     });
 
