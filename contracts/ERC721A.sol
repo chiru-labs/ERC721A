@@ -32,36 +32,40 @@ error TransferToZeroAddress();
 error URIQueryForNonexistentToken();
 
 /**
- * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
- * the Metadata extension. Built to optimize for lower gas during batch mints.
+ * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] 
+ * Non-Fungible Token Standard, including the Metadata extension. 
+ * Built to optimize for lower gas during batch mints.
  *
- * Assumes serials are sequentially minted starting at _startTokenId() (defaults to 0, e.g. 0, 1, 2, 3..).
+ * Assumes serials are sequentially minted starting at `_startTokenId()` (defaults to 0),
+ * (e.g. 0, 1, 2, 3..).
  *
- * Assumes that an owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
+ * Assumes that an owner cannot have more than `2**64 - 1` (max value of uint64) of supply.
  *
- * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
+ * Assumes that the maximum token id cannot exceed `2**256 - 1` (max value of uint256).
  */
 contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     using Address for address;
     using Strings for uint256;
 
-    // Compiler will pack this into a single 256bit word.
+    // Contains ownership data pertaining to the token.
+    // Compiler will pack this into a single 256 bit word.
     struct TokenOwnership {
         // The address of the owner.
         address addr;
-        // Keeps track of the start time of ownership with minimal overhead for tokenomics.
+        // The start time of ownership. For tokenomics with minimal overhead.
         uint64 startTimestamp;
         // Whether the token has been burned.
         bool burned;
     }
 
-    // Compiler will pack this into a single 256bit word.
+    // Contains data pertaining to the address.
+    // Compiler will pack this into a single 256 bit word.
     struct AddressData {
-        // Realistically, 2**64-1 is more than enough.
+        // The number of tokens owned. Realistically, `2**64-1` is more than enough.
         uint64 balance;
-        // Keeps track of mint count with minimal overhead for tokenomics.
+        // Number of tokens minted. For tokenomics with minimal overhead.
         uint64 numberMinted;
-        // Keeps track of burn count with minimal overhead for tokenomics.
+        // Number of tokens burned. For tokenomics with minimal overhead.
         uint64 numberBurned;
         // For miscellaneous variable(s) pertaining to the address
         // (e.g. number of whitelist mint slots used). 
@@ -82,7 +86,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     string private _symbol;
 
     // Mapping from token ID to ownership details
-    // An empty struct value does not necessarily mean the token is unowned. See ownershipOf implementation for details.
+    // An empty struct value does not necessarily mean the token is unowned.
+    // See ownershipOf implementation for details.
     mapping(uint256 => TokenOwnership) internal _ownerships;
 
     // Mapping owner address to address data
@@ -97,17 +102,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _currentIndex = uint128(_startTokenId());
+        _currentIndex = _startTokenId();
     }
 
     /**
-     * To change the starting tokenId, please override this function.
-     * 
-     * This function must return a constant which is small enough such that
-     * the maximum tokenId that can ever be minted will not exceed 
-     * 2**128 - 1 (max value of uint128).
-     * 
-     * The return type is (uint256) for gas efficiency purposes.
+     * @dev To change the starting token ID, please override this function.
      */
     function _startTokenId() internal view virtual returns (uint256) {
         return 0;
@@ -115,22 +114,23 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
-     * @dev Burned tokens are calculated here, use _totalMinted() if you want to count just minted tokens.
+     * Burned tokens are calculated here: tokens burned will reduce `totalSupply()`.
+     * Use `_totalMinted()` if you want to count just the minted tokens.
      */
     function totalSupply() public view returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than _currentIndex - _startTokenId() times
+        // more than `_currentIndex` - `_startTokenId()` times
         unchecked {
-            return _currentIndex - _burnCounter - _startTokenId();    
+            return _currentIndex - _burnCounter - _startTokenId();
         }
     }
 
     /**
-     * Returns the total amount of tokens minted in the contract.
+     * @dev Returns the total amount of tokens minted.
      */
     function _totalMinted() internal view returns (uint256) {
-        // Counter underflow is impossible as _currentIndex does not decrement,
-        // and it is initialized to _startTokenId()
+        // Counter underflow is impossible as `_currentIndex` does not decrement,
+        // and it is initialized to `_startTokenId()`
         unchecked {
             return _currentIndex - _startTokenId();
         }
@@ -155,7 +155,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * Returns the number of tokens minted by `owner`.
+     * @dev Returns the number of tokens minted to `owner`.
      */
     function _numberMinted(address owner) internal view returns (uint256) {
         if (owner == address(0)) revert MintedQueryForZeroAddress();
@@ -163,7 +163,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * Returns the number of tokens burned by or on behalf of `owner`.
+     * @dev Returns the number of tokens burned by or on behalf of `owner`.
      */
     function _numberBurned(address owner) internal view returns (uint256) {
         if (owner == address(0)) revert BurnedQueryForZeroAddress();
@@ -171,7 +171,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * Returns the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     * @dev Returns the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
      */
     function _getAux(address owner) internal view returns (uint64) {
         if (owner == address(0)) revert AuxQueryForZeroAddress();
@@ -179,7 +179,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * Sets the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     * @dev Sets the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
      * If there are multiple variables, please pack them into a uint64.
      */
     function _setAux(address owner, uint64 aux) internal {
@@ -188,6 +188,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
+     * @dev Returns the ownership of the `tokenId`.
      * Gas spent here starts off proportional to the maximum mint batch size.
      * It gradually moves to O(1) as tokens get transferred around in the collection over time.
      */
@@ -201,8 +202,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                     if (ownership.addr != address(0)) {
                         return ownership;
                     }
-                    // Invariant: 
-                    // There will always be an ownership that has an address and is not burned 
+                    // Invariant:
+                    // There will always be an ownership that has an address and is not burned
                     // before an ownership that does not have an address and is not burned.
                     // Hence, curr will not underflow.
                     while (true) {
@@ -356,7 +357,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      *
      * Requirements:
      *
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, 
+         which is called for each safe transfer.
      * - `quantity` must be greater than 0.
      *
      * Emits a {Transfer} event.
@@ -391,9 +393,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        // Overflows are incredibly unrealistic.
-        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
-        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        // Overflows are incredibly unrealistic. 
+        // `balance` overflows if `balance` + `quantity` > `1.8e19` (2**64 - 1)
+        // `numberMinted` overflows if `numberMinted` + `quantity` > `1.8e19` (2**64 - 1)
+        // `updatedIndex` overflows if `_currentIndex` + `quantity` > `1.2e77` (2**256 - 1)
         unchecked {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
@@ -448,7 +451,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        // Counter overflow is incredibly unrealistic as `tokenId` would have to be `2**256`.
         unchecked {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
@@ -456,11 +459,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             _ownerships[tokenId].addr = to;
             _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+            // If the ownership slot of `tokenId+1` is not explicitly set, 
+            // that means the transfer initiator owns it.
+            // Set the slot of `tokenId+1` explicitly in storage to maintain 
+            // correctness for `ownerOf(tokenId+1)` calls.
             uint256 nextTokenId = tokenId + 1;
             if (_ownerships[nextTokenId].addr == address(0)) {
-                // This will suffice for checking _exists(nextTokenId),
+                // This will suffice for checking `_exists(nextTokenId)`,
                 // as a burned slot cannot contain the zero address.
                 if (nextTokenId < _currentIndex) {
                     _ownerships[nextTokenId].addr = prevOwnership.addr;
@@ -493,7 +498,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        // Counter overflow is incredibly unrealistic as `tokenId` would have to be `2**256`.
         unchecked {
             _addressData[prevOwnership.addr].balance -= 1;
             _addressData[prevOwnership.addr].numberBurned += 1;
@@ -503,11 +508,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
             _ownerships[tokenId].burned = true;
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+            // If the ownership slot of `tokenId + 1` is not explicitly set, 
+            // that means the burn initiator owns it.
+            // Set the slot of `tokenId + 1` explicitly in storage to maintain 
+            // correctness for `ownerOf(tokenId+1)` calls.
             uint256 nextTokenId = tokenId + 1;
             if (_ownerships[nextTokenId].addr == address(0)) {
-                // This will suffice for checking _exists(nextTokenId),
+                // This will suffice for checking `_exists(nextTokenId)`,
                 // as a burned slot cannot contain the zero address.
                 if (nextTokenId < _currentIndex) {
                     _ownerships[nextTokenId].addr = prevOwnership.addr;
