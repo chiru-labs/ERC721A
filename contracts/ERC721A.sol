@@ -324,7 +324,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         bytes memory _data
     ) public virtual override {
         _transfer(from, to, tokenId);
-        if (!_checkOnERC721Received(from, to, tokenId, _data)) {
+        if (to.isContract() && !_checkContractOnERC721Received(from, to, tokenId, _data)) {
             revert TransferToNonERC721ReceiverImplementer();
         }
     }
@@ -401,7 +401,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             if (safe && to.isContract()) {
                 while (updatedIndex != end) {
                     emit Transfer(address(0), to, updatedIndex);
-                    if (!_checkOnERC721Received(address(0), to, updatedIndex, _data)) {
+                    if (!_checkContractOnERC721Received(address(0), to, updatedIndex, _data)) {
                         revert TransferToNonERC721ReceiverImplementer();
                     }
                     updatedIndex++;
@@ -551,7 +551,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * @param _data bytes optional data to send along with the call
      * @return bool whether the call correctly returned the expected magic value
      */
-    function _checkOnERC721Received(
+    function _checkContractOnERC721Received(
         address from,
         address to,
         uint256 tokenId,
