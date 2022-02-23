@@ -404,7 +404,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                 }
                 updatedIndex++;
             }
-
+            // Reentrancy protection.
+            if (safe && _currentIndex != startTokenId) revert();
             _currentIndex = updatedIndex;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
