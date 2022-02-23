@@ -5,9 +5,9 @@ const { ZERO_ADDRESS } = constants;
 const RECEIVER_MAGIC_VALUE = '0x150b7a02';
 const GAS_MAGIC_VALUE = 20000;
 
-describe('ERC721A', function () {
+describe('ERC721AStartOne', function () {
   beforeEach(async function () {
-    this.ERC721A = await ethers.getContractFactory('ERC721AMock');
+    this.ERC721A = await ethers.getContractFactory('ERC721AStartOneMock');
     this.ERC721Receiver = await ethers.getContractFactory('ERC721ReceiverMock');
     this.erc721a = await this.ERC721A.deploy('Azuki', 'AZUKI');
     await this.erc721a.deployed();
@@ -20,8 +20,8 @@ describe('ERC721A', function () {
     });
 
     it('has 0 totalMinted', async function () {
-      const totalMinted = await this.erc721a.totalMinted();
-      expect(totalMinted).to.equal(0);
+      const minted = await this.erc721a.totalMinted();
+      expect(minted).to.equal(0);
     });
   });
 
@@ -39,15 +39,15 @@ describe('ERC721A', function () {
 
     describe('exists', async function () {
       it('verifies valid tokens', async function () {
-        for (let tokenId = 0; tokenId < 6; tokenId++) {
+        for (let tokenId = 1; tokenId < 7; tokenId++) {
           const exists = await this.erc721a.exists(tokenId);
           expect(exists).to.be.true;
         }
       });
 
       it('verifies invalid tokens', async function () {
-        const exists = await this.erc721a.exists(6);
-        expect(exists).to.be.false;
+        expect(await this.erc721a.exists(7)).to.be.false;
+        expect(await this.erc721a.exists(0)).to.be.false;
       });
     });
 
@@ -60,7 +60,9 @@ describe('ERC721A', function () {
       });
 
       it('throws an exception for the 0 address', async function () {
-        await expect(this.erc721a.balanceOf(ZERO_ADDRESS)).to.be.revertedWith('BalanceQueryForZeroAddress');
+        await expect(this.erc721a.balanceOf(ZERO_ADDRESS)).to.be.revertedWith(
+          'BalanceQueryForZeroAddress'
+        );
       });
     });
 
@@ -75,8 +77,8 @@ describe('ERC721A', function () {
 
     context('_totalMinted', async function () {
       it('has 6 totalMinted', async function () {
-        const totalMinted = await this.erc721a.totalMinted();
-        expect(totalMinted).to.equal('6');
+        const minted = await this.erc721a.totalMinted();
+        expect(minted).to.equal('6');
       });
     });
 
@@ -96,7 +98,7 @@ describe('ERC721A', function () {
 
         expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
       });
-      
+
       it('get and set rejects the zero address', async function () {
         await expect(this.erc721a.getAux(ZERO_ADDRESS))
           .to.be.revertedWith('AuxQueryForZeroAddress');
@@ -107,9 +109,9 @@ describe('ERC721A', function () {
 
     describe('ownerOf', async function () {
       it('returns the right owner', async function () {
-        expect(await this.erc721a.ownerOf(0)).to.equal(this.addr1.address);
-        expect(await this.erc721a.ownerOf(1)).to.equal(this.addr2.address);
-        expect(await this.erc721a.ownerOf(5)).to.equal(this.addr3.address);
+        expect(await this.erc721a.ownerOf(1)).to.equal(this.addr1.address);
+        expect(await this.erc721a.ownerOf(2)).to.equal(this.addr2.address);
+        expect(await this.erc721a.ownerOf(6)).to.equal(this.addr3.address);
       });
 
       it('reverts for an invalid token', async function () {
@@ -118,8 +120,8 @@ describe('ERC721A', function () {
     });
 
     describe('approve', async function () {
-      const tokenId = 0;
-      const tokenId2 = 1;
+      const tokenId = 1;
+      const tokenId2 = 2;
 
       it('sets approval for the target address', async function () {
         await this.erc721a.connect(this.addr1).approve(this.addr2.address, tokenId);
@@ -162,7 +164,7 @@ describe('ERC721A', function () {
 
     context('test transfer functionality', function () {
       const testSuccessfulTransfer = function (transferFn) {
-        const tokenId = 1;
+        const tokenId = 2;
         let from;
         let to;
 
@@ -197,7 +199,7 @@ describe('ERC721A', function () {
       };
 
       const testUnsuccessfulTransfer = function (transferFn) {
-        const tokenId = 1;
+        const tokenId = 2;
 
         it('rejects unapproved transfer', async function () {
           await expect(
@@ -231,7 +233,7 @@ describe('ERC721A', function () {
           it('validates ERC721Received', async function () {
             await expect(this.transferTx)
               .to.emit(this.receiver, 'Received')
-              .withArgs(this.addr2.address, this.addr2.address, 1, '0x', GAS_MAGIC_VALUE);
+              .withArgs(this.addr2.address, this.addr2.address, 2, '0x', GAS_MAGIC_VALUE);
           });
         });
       });
@@ -260,20 +262,20 @@ describe('ERC721A', function () {
     describe('safeMint', function () {
       it('successfully mints a single token', async function () {
         const mintTx = await this.erc721a['safeMint(address,uint256)'](this.receiver.address, 1);
-        await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 0);
+        await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 1);
         await expect(mintTx)
           .to.emit(this.receiver, 'Received')
-          .withArgs(this.owner.address, ZERO_ADDRESS, 0, '0x', GAS_MAGIC_VALUE);
-        expect(await this.erc721a.ownerOf(0)).to.equal(this.receiver.address);
+          .withArgs(this.owner.address, ZERO_ADDRESS, 1, '0x', GAS_MAGIC_VALUE);
+        expect(await this.erc721a.ownerOf(1)).to.equal(this.receiver.address);
       });
 
       it('successfully mints multiple tokens', async function () {
         const mintTx = await this.erc721a['safeMint(address,uint256)'](this.receiver.address, 5);
-        for (let tokenId = 0; tokenId < 5; tokenId++) {
+        for (let tokenId = 1; tokenId <= 5; tokenId++) {
           await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
           await expect(mintTx)
             .to.emit(this.receiver, 'Received')
-            .withArgs(this.owner.address, ZERO_ADDRESS, 0, '0x', GAS_MAGIC_VALUE);
+            .withArgs(this.owner.address, ZERO_ADDRESS, tokenId, '0x', GAS_MAGIC_VALUE);
           expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.receiver.address);
         }
       });
@@ -303,14 +305,14 @@ describe('ERC721A', function () {
 
       it('successfully mints a single token', async function () {
         const mintTx = await this.erc721a.mint(this.receiver.address, 1, data, false);
-        await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 0);
+        await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, 1);
         await expect(mintTx).to.not.emit(this.receiver, 'Received');
-        expect(await this.erc721a.ownerOf(0)).to.equal(this.receiver.address);
+        expect(await this.erc721a.ownerOf(1)).to.equal(this.receiver.address);
       });
 
       it('successfully mints multiple tokens', async function () {
         const mintTx = await this.erc721a.mint(this.receiver.address, 5, data, false);
-        for (let tokenId = 0; tokenId < 5; tokenId++) {
+        for (let tokenId = 1; tokenId <= 5; tokenId++) {
           await expect(mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
           await expect(mintTx).to.not.emit(this.receiver, 'Received');
           expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.receiver.address);
@@ -320,15 +322,19 @@ describe('ERC721A', function () {
       it('does not revert for non-receivers', async function () {
         const nonReceiver = this.erc721a;
         await this.erc721a.mint(nonReceiver.address, 1, data, false);
-        expect(await this.erc721a.ownerOf(0)).to.equal(nonReceiver.address);
+        expect(await this.erc721a.ownerOf(1)).to.equal(nonReceiver.address);
       });
 
       it('rejects mints to the zero address', async function () {
-        await expect(this.erc721a.mint(ZERO_ADDRESS, 1, data, false)).to.be.revertedWith('MintToZeroAddress');
+        await expect(this.erc721a.mint(ZERO_ADDRESS, 1, data, false)).to.be.revertedWith(
+          'MintToZeroAddress'
+        );
       });
 
       it('requires quantity to be greater than 0', async function () {
-        await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith('MintZeroQuantity');
+        await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith(
+          'MintZeroQuantity'
+        );
       });
     });
   });

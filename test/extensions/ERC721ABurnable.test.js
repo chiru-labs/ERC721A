@@ -53,6 +53,15 @@ describe('ERC721ABurnable', function () {
     }
   })
 
+  it('does not affect _totalMinted', async function () {
+    const totalMintedBefore = await this.token.totalMinted();
+    expect(totalMintedBefore).to.equal(this.numTestTokens);
+    for (let i = 0; i < 2; ++i) {
+      await this.token.connect(this.addr1).burn(i);
+    }
+    expect(await this.token.totalMinted()).to.equal(totalMintedBefore);
+  });
+
   it('adjusts owners balances', async function () {
     expect(await this.token.balanceOf(this.addr1.address))
       .to.be.equal(this.numTestTokens - 1);
