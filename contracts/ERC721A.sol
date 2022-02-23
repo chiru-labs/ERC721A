@@ -396,16 +396,24 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
 
             uint256 updatedIndex = startTokenId;
+            uint256 end = updatedIndex + quantity;
 
-            for (uint256 i; i < quantity; i++) {
-                emit Transfer(address(0), to, updatedIndex);
-                if (safe && !_checkOnERC721Received(address(0), to, updatedIndex, _data)) {
-                    revert TransferToNonERC721ReceiverImplementer();
+            if (safe && to.isContract()) {
+                while (updatedIndex < end) {
+                    emit Transfer(address(0), to, updatedIndex);
+                    if (!_checkOnERC721Received(address(0), to, updatedIndex, _data)) {
+                        revert TransferToNonERC721ReceiverImplementer();
+                    }
+                    updatedIndex++;
                 }
-                updatedIndex++;
+                // Reentrancy protection
+                if (_currentIndex != startTokenId) revert();
+            } else {
+                while (updatedIndex < end) {
+                    emit Transfer(address(0), to, updatedIndex);
+                    updatedIndex++;
+                }    
             }
-            // Reentrancy protection.
-            if (safe && _currentIndex != startTokenId) revert();
             _currentIndex = updatedIndex;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
@@ -535,8 +543,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
-     * The call is not executed if the target address is not a contract.
+     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target contract.
      *
      * @param from address representing the previous owner of the given token ID
      * @param to target address that will receive the tokens
@@ -550,20 +557,16 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         uint256 tokenId,
         bytes memory _data
     ) private returns (bool) {
-        if (to.isContract()) {
-            try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
-                return retval == IERC721Receiver(to).onERC721Received.selector;
-            } catch (bytes memory reason) {
-                if (reason.length == 0) {
-                    revert TransferToNonERC721ReceiverImplementer();
-                } else {
-                    assembly {
-                        revert(add(32, reason), mload(reason))
-                    }
+        try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
+            return retval == IERC721Receiver(to).onERC721Received.selector;
+        } catch (bytes memory reason) {
+            if (reason.length == 0) {
+                revert TransferToNonERC721ReceiverImplementer();
+            } else {
+                assembly {
+                    revert(add(32, reason), mload(reason))
                 }
             }
-        } else {
-            return true;
         }
     }
 
