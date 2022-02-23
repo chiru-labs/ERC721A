@@ -399,7 +399,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             uint256 end = updatedIndex + quantity;
 
             if (safe && to.isContract()) {
-                while (updatedIndex < end) {
+                while (updatedIndex != end) {
                     emit Transfer(address(0), to, updatedIndex);
                     if (!_checkOnERC721Received(address(0), to, updatedIndex, _data)) {
                         revert TransferToNonERC721ReceiverImplementer();
@@ -409,7 +409,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                 // Reentrancy protection
                 if (_currentIndex != startTokenId) revert();
             } else {
-                while (updatedIndex < end) {
+                while (updatedIndex != end) {
                     emit Transfer(address(0), to, updatedIndex);
                     updatedIndex++;
                 }    
