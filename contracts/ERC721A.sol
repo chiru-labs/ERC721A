@@ -64,7 +64,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         // Keeps track of burn count with minimal overhead for tokenomics.
         uint64 numberBurned;
         // For miscellaneous variable(s) pertaining to the address
-        // (e.g. number of whitelist mint slots used). 
+        // (e.g. number of whitelist mint slots used).
         // If there are multiple variables, please pack them into a uint64.
         uint64 aux;
     }
@@ -97,17 +97,11 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _currentIndex = uint128(_startTokenId());
+        _currentIndex = _startTokenId();
     }
 
     /**
      * To change the starting tokenId, please override this function.
-     * 
-     * This function must return a constant which is small enough such that
-     * the maximum tokenId that can ever be minted will not exceed 
-     * 2**128 - 1 (max value of uint128).
-     * 
-     * The return type is (uint256) for gas efficiency purposes.
      */
     function _startTokenId() internal view virtual returns (uint256) {
         return 0;
@@ -121,7 +115,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         // Counter underflow is impossible as _burnCounter cannot be incremented
         // more than _currentIndex - _startTokenId() times
         unchecked {
-            return _currentIndex - _burnCounter - _startTokenId();    
+            return _currentIndex - _burnCounter - _startTokenId();
         }
     }
 
@@ -201,8 +195,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                     if (ownership.addr != address(0)) {
                         return ownership;
                     }
-                    // Invariant: 
-                    // There will always be an ownership that has an address and is not burned 
+                    // Invariant:
+                    // There will always be an ownership that has an address and is not burned
                     // before an ownership that does not have an address and is not burned.
                     // Hence, curr will not underflow.
                     while (true) {
@@ -343,7 +337,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _startTokenId() <= tokenId && tokenId < _currentIndex && 
+        return _startTokenId() <= tokenId && tokenId < _currentIndex &&
             !_ownerships[tokenId].burned;
     }
 
@@ -520,7 +514,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
-        unchecked { 
+        unchecked {
             _burnCounter++;
         }
     }
