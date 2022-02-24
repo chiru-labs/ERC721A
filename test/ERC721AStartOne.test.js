@@ -9,11 +9,15 @@ describe('ERC721AStartOne', function () {
   beforeEach(async function () {
     this.ERC721A = await ethers.getContractFactory('ERC721AStartOneMock');
     this.ERC721Receiver = await ethers.getContractFactory('ERC721ReceiverMock');
-    this.erc721a = await this.ERC721A.deploy('Azuki', 'AZUKI');
+    this.erc721a = await this.ERC721A.deploy('Azuki', 'AZUKI', 1);
     await this.erc721a.deployed();
   });
 
   context('with no minted tokens', async function () {
+    it('has correct startingToken', async function () {
+      expect(await this.erc721a.getStartTokenId()).to.equal(1);
+    });
+
     it('has 0 totalSupply', async function () {
       const supply = await this.erc721a.totalSupply();
       expect(supply).to.equal(0);
@@ -88,7 +92,7 @@ describe('ERC721AStartOne', function () {
         expect(await this.erc721a.getAux(this.owner.address)).to.equal('0');
         await this.erc721a.setAux(this.owner.address, uint64Max);
         expect(await this.erc721a.getAux(this.owner.address)).to.equal(uint64Max);
-        
+
         expect(await this.erc721a.getAux(this.addr1.address)).to.equal('0');
         await this.erc721a.setAux(this.addr1.address, '1');
         expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
