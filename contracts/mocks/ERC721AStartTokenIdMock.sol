@@ -17,7 +17,7 @@ contract StartTokenId {
     }
 }
 
-contract ERC721AStartOneMock is StartTokenId, ERC721AMock {
+contract ERC721AStartTokenIdMock is StartTokenId, ERC721AMock {
     constructor(
         string memory name_,
         string memory symbol_,
