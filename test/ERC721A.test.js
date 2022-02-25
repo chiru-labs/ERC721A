@@ -10,11 +10,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
     context(`${contract}`, function () {
       beforeEach(async function () {
         this.ERC721A = await ethers.getContractFactory(contract);
-        this.startTokenId = constructorArgs[2] ? constructorArgs[2] : 0;
+
         this.ERC721Receiver = await ethers.getContractFactory('ERC721ReceiverMock');
         this.erc721a = await this.ERC721A.deploy(...constructorArgs);
 
         await this.erc721a.deployed();
+
+        this.startTokenId = this.erc721a.startTokenId ? (await this.erc721a.startTokenId()).toNumber() : 0;
       });
 
       context('with no minted tokens', async function () {
