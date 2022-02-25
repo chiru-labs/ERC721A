@@ -401,17 +401,15 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             if (safe && to.isContract()) {
                 while (updatedIndex != end) {
                     emit Transfer(address(0), to, updatedIndex);
-                    if (!_checkContractOnERC721Received(address(0), to, updatedIndex, _data)) {
+                    if (!_checkContractOnERC721Received(address(0), to, updatedIndex++, _data)) {
                         revert TransferToNonERC721ReceiverImplementer();
                     }
-                    updatedIndex++;
                 }
                 // Reentrancy protection
                 if (_currentIndex != startTokenId) revert();
             } else {
                 while (updatedIndex != end) {
-                    emit Transfer(address(0), to, updatedIndex);
-                    updatedIndex++;
+                    emit Transfer(address(0), to, updatedIndex++);
                 }    
             }
             _currentIndex = updatedIndex;
