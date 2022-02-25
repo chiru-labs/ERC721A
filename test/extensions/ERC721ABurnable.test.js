@@ -133,6 +133,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       });
     });
   };
+
 describe('ERC721ABurnable', createTestSuite({ contract: 'ERC721ABurnableMock', constructorArgs: ['Azuki', 'AZUKI'] }));
 
 describe(

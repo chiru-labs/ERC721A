@@ -351,7 +351,9 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       });
     });
   };
+
 describe('ERC721A', createTestSuite({ contract: 'ERC721AMock', constructorArgs: ['Azuki', 'AZUKI'] }));
+
 describe(
   'ERC721A override _startTokenId()',
   createTestSuite({ contract: 'ERC721AStartTokenIdMock', constructorArgs: ['Azuki', 'AZUKI', 1] })
