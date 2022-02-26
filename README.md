@@ -54,7 +54,6 @@ contract Azuki is ERC721A {
 
 ## Roadmap
 
-- [] Add flexibility for the first token id to not start at 0
 - [] Support ERC721 Upgradeable
 - [] Add more documentation on benefits of using ERC721A
 - [] Increase test coverage

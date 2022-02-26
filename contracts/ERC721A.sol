@@ -35,7 +35,7 @@ error URIQueryForNonexistentToken();
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
  * the Metadata extension. Built to optimize for lower gas during batch mints.
  *
- * Assumes serials are sequentially minted starting at 0 (e.g. 0, 1, 2, 3..).
+ * Assumes serials are sequentially minted starting at _startTokenId() (defaults to 0, e.g. 0, 1, 2, 3..).
  *
  * Assumes that an owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
  *
@@ -64,7 +64,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         // Keeps track of burn count with minimal overhead for tokenomics.
         uint64 numberBurned;
         // For miscellaneous variable(s) pertaining to the address
-        // (e.g. number of whitelist mint slots used). 
+        // (e.g. number of whitelist mint slots used).
         // If there are multiple variables, please pack them into a uint64.
         uint64 aux;
     }
@@ -97,16 +97,36 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
+        _currentIndex = _startTokenId();
+    }
+
+    /**
+     * To change the starting tokenId, please override this function.
+     */
+    function _startTokenId() internal view virtual returns (uint256) {
+        return 0;
     }
 
     /**
      * @dev See {IERC721Enumerable-totalSupply}.
+     * @dev Burned tokens are calculated here, use _totalMinted() if you want to count just minted tokens.
      */
     function totalSupply() public view returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than _currentIndex times
+        // more than _currentIndex - _startTokenId() times
         unchecked {
-            return _currentIndex - _burnCounter;    
+            return _currentIndex - _burnCounter - _startTokenId();
+        }
+    }
+
+    /**
+     * Returns the total amount of tokens minted in the contract.
+     */
+    function _totalMinted() internal view returns (uint256) {
+        // Counter underflow is impossible as _currentIndex does not decrement,
+        // and it is initialized to _startTokenId()
+        unchecked {
+            return _currentIndex - _startTokenId();
         }
     }
 
@@ -169,14 +189,14 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         uint256 curr = tokenId;
 
         unchecked {
-            if (curr < _currentIndex) {
+            if (_startTokenId() <= curr && curr < _currentIndex) {
                 TokenOwnership memory ownership = _ownerships[curr];
                 if (!ownership.burned) {
                     if (ownership.addr != address(0)) {
                         return ownership;
                     }
-                    // Invariant: 
-                    // There will always be an ownership that has an address and is not burned 
+                    // Invariant:
+                    // There will always be an ownership that has an address and is not burned
                     // before an ownership that does not have an address and is not burned.
                     // Hence, curr will not underflow.
                     while (true) {
@@ -317,7 +337,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return tokenId < _currentIndex && !_ownerships[tokenId].burned;
+        return _startTokenId() <= tokenId && tokenId < _currentIndex &&
+            !_ownerships[tokenId].burned;
     }
 
     function _safeMint(address to, uint256 quantity) internal {
@@ -493,7 +514,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
-        unchecked { 
+        unchecked {
             _burnCounter++;
         }
     }
