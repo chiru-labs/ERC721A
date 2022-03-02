@@ -33,3 +33,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Mister Otter River Club](https://morc.vercel.app/) | [Etherscan](https://etherscan.io/address/0xa8c724a829a48f551950a783c6ec50e728725026) | [Twitter](https://twitter.com/misterotternft) 
 - [Tasty Bones NFT](https://tastybones.xyz/) | [Etherscan](https://etherscan.io/address/0x1b79c7832ed9358E024F9e46E9c8b6f56633691B) | [Twitter](https://twitter.com/tastybonesnft) 
 - [BASΞD VITALIK](https://basedvitalik.io/) | [Etherscan](https://etherscan.io/address/0xea2dc6f116a4c3d6a15f06b4e8ad582a07c3dd9c) | [Twitter](https://twitter.com/art101nft) 
+- [Candy Chain Web Platform](https://candychain.io) | [Etherscan](https://etherscan.io/address/0x3F28468BC569DcC8E58B465Fa4893340aEB1Cc54) | [Twitter](https://twitter.com/Candy_Chain_)
