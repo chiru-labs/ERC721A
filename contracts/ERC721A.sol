@@ -515,20 +515,28 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             _addressData[prevOwnership.addr].numberBurned += 1;
 
             // Keep track of who burned the token, and the timestamp of burning.
-            _ownerships[tokenId].addr = prevOwnership.addr;
-            _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
-            _ownerships[tokenId].burned = true;
+            uint256 packed = uint256(uint160(prevOwnership.addr)) | (block.timestamp << 0xa0) | (1 << 0xe0);
+            assembly {
+                let freemem_pointer := mload(0x40)
+                mstore(freemem_pointer, tokenId)
+                mstore(add(freemem_pointer, 0x20), _ownerships.slot)
+                sstore(keccak256(freemem_pointer, 0x40), packed)
+            }
 
             // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
             // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
             uint256 nextTokenId = tokenId + 1;
-            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
-            if (nextSlot.addr == address(0)) {
+            if (_ownerships[nextTokenId].addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
                 if (nextTokenId != _currentIndex) {
-                    nextSlot.addr = prevOwnership.addr;
-                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
+                    packed = uint256(uint160(prevOwnership.addr)) | (prevOwnership.startTimestamp << 0xa0);
+                    assembly {
+                        let freemem_pointer := mload(0x40)
+                        mstore(freemem_pointer, nextTokenId)
+                        mstore(add(freemem_pointer, 0x20), _ownerships.slot)
+                        sstore(keccak256(freemem_pointer, 0x40), packed)
+                    }
                 }
             }
         }
