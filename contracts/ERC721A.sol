@@ -392,8 +392,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
 
-            _ownerships[startTokenId].addr = to;
-            _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+            uint256 packed = uint256(uint160(to)) | (block.timestamp << 0xa0);
+            assembly {
+                let freemem_pointer := mload(0x40)
+                mstore(freemem_pointer, startTokenId)
+                mstore(add(freemem_pointer, 0x20), _ownerships.slot)
+                sstore(keccak256(freemem_pointer, 0x40), packed)
+            }
 
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;
@@ -454,8 +459,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
 
-            _ownerships[tokenId].addr = to;
-            _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+            uint256 packed = uint256(uint160(to)) | (block.timestamp << 0xa0);
+            assembly {
+                let freemem_pointer := mload(0x40)
+                mstore(freemem_pointer, tokenId)
+                mstore(add(freemem_pointer, 0x20), _ownerships.slot)
+                sstore(keccak256(freemem_pointer, 0x40), packed)
+            }
 
             // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
             // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
@@ -463,9 +473,14 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             if (_ownerships[nextTokenId].addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
-                if (nextTokenId < _currentIndex) {
-                    _ownerships[nextTokenId].addr = prevOwnership.addr;
-                    _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                if (nextTokenId != _currentIndex) {
+                    packed = uint256(uint160(prevOwnership.addr)) | (prevOwnership.startTimestamp << 0xa0);
+                    assembly {
+                        let freemem_pointer := mload(0x40)
+                        mstore(freemem_pointer, nextTokenId)
+                        mstore(add(freemem_pointer, 0x20), _ownerships.slot)
+                        sstore(keccak256(freemem_pointer, 0x40), packed)
+                    }
                 }
             }
         }
@@ -507,12 +522,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
             // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
             uint256 nextTokenId = tokenId + 1;
-            if (_ownerships[nextTokenId].addr == address(0)) {
+            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
+            if (nextSlot.addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
-                if (nextTokenId < _currentIndex) {
-                    _ownerships[nextTokenId].addr = prevOwnership.addr;
-                    _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                if (nextTokenId != _currentIndex) {
+                    nextSlot.addr = prevOwnership.addr;
+                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
                 }
             }
         }
