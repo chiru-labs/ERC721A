@@ -37,3 +37,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Underground Ape Club](https://undergroundape.club/) | [Etherscan](https://etherscan.io/address/0xB94b38fCb227350989f95F54F54f43b5Fcc3ccff) | [Twitter](https://twitter.com/undergroundapes) | [Opensea](https://opensea.io/collection/uacofficial)
 - [Delinquentz](https://delinquentz.io/) | [Etherscan](https://etherscan.io/address/0xE4Ee205AF5113e479A0F2FBd25be2eF0C17f952d) | [Twitter](https://twitter.com/dlnqntz) 
 - [Troverse](https://troverse.io/) | [Etherscan](https://etherscan.io/address/0x762bc5880f128dcac29cffdde1cf7ddf4cfc39ee) | [Twitter](https://twitter.com/TroverseNFT) 
+- [Antonym](https://www.antonymnft.com/) | [Etherscan](https://etherscan.io/address/0x7e3Ef31186D1BEc0D3f35aD701D065743B84C790) | [Twitter](https://twitter.com/AntonymNFT) | [Instagram](https://www.instagram.com/antonym.eth/) | [OpenSea](https://opensea.io/collection/antonymgenesis)
