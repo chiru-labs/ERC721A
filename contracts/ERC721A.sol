@@ -152,7 +152,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Returns the number of tokens minted by `owner`.
      */
     function _numberMinted(address owner) internal view returns (uint256) {
-        if (owner == address(0)) revert MintedQueryForZeroAddress();
         return uint256(_addressData[owner].numberMinted);
     }
 
