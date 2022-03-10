@@ -80,7 +80,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     string private _symbol;
 
     // Mapping from token ID to ownership details
-    // An empty struct value does not necessarily mean the token is unowned. See ownershipOf implementation for details.
+    // An empty struct value does not necessarily mean the token is unowned. See _ownershipOf implementation for details.
     mapping(uint256 => TokenOwnership) internal _ownerships;
 
     // Mapping owner address to address data
@@ -183,7 +183,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Gas spent here starts off proportional to the maximum mint batch size.
      * It gradually moves to O(1) as tokens get transferred around in the collection over time.
      */
-    function ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
+    function _ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
         uint256 curr = tokenId;
 
         unchecked {
@@ -214,7 +214,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
-        return ownershipOf(tokenId).addr;
+        return _ownershipOf(tokenId).addr;
     }
 
     /**
@@ -430,7 +430,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         address to,
         uint256 tokenId
     ) private {
-        TokenOwnership memory prevOwnership = ownershipOf(tokenId);
+        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
 
         bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
             isApprovedForAll(prevOwnership.addr, _msgSender()) ||
@@ -483,7 +483,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Emits a {Transfer} event.
      */
     function _burn(uint256 tokenId) internal virtual {
-        TokenOwnership memory prevOwnership = ownershipOf(tokenId);
+        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
 
         _beforeTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
