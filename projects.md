@@ -39,3 +39,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Troverse](https://troverse.io/) | [Etherscan](https://etherscan.io/address/0x762bc5880f128dcac29cffdde1cf7ddf4cfc39ee) | [Twitter](https://twitter.com/TroverseNFT) 
 - [Antonym](https://www.antonymnft.com/) | [Etherscan](https://etherscan.io/address/0x7e3Ef31186D1BEc0D3f35aD701D065743B84C790) | [Twitter](https://twitter.com/AntonymNFT) | [Instagram](https://www.instagram.com/antonym.eth/) | [OpenSea](https://opensea.io/collection/antonymgenesis)
 - [Human Divergence](https://www.humandivergence.com) | Etherscan | [Twitter](https://twitter.com/humandivergence)
+- [Jokers by SLAM](https://slamjokers.com/) | [Etherscan](https://etherscan.io/address/0xe52f3274779d59e98d5876cf24d263cdf1e5c290) | [Twitter](https://twitter.com/jokersbyslam) | [OpenSea](https://opensea.io/collection/slamjokers)
