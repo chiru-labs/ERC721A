@@ -1,4 +1,6 @@
 const { expect } = require('chai');
+const { constants } = require('@openzeppelin/test-helpers');
+const { ZERO_ADDRESS } = constants;
 
 const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
@@ -16,12 +18,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       });
 
       beforeEach(async function () {
-        const [owner, addr1, addr2] = await ethers.getSigners();
+        const [owner, addr1, addr2, spender] = await ethers.getSigners();
         this.owner = owner;
         this.addr1 = addr1;
         this.addr2 = addr2;
+        this.spender = spender;
         this.numTestTokens = 10;
         this.burnedTokenId = 5;
+        this.notBurnedTokenId = 6;
         await this.erc721aBurnable['safeMint(address,uint256)'](this.addr1.address, this.numTestTokens);
         await this.erc721aBurnable.connect(this.addr1).burn(this.burnedTokenId);
       });
@@ -45,6 +49,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
       it('changes exists', async function () {
         expect(await this.erc721aBurnable.exists(this.burnedTokenId)).to.be.false;
+        expect(await this.erc721aBurnable.exists(this.notBurnedTokenId)).to.be.true;
       });
 
       it('cannot burn a non-existing token', async function () {
@@ -55,6 +60,33 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       it('cannot burn a burned token', async function () {
         const query = this.erc721aBurnable.connect(this.addr1).burn(this.burnedTokenId);
         await expect(query).to.be.revertedWith('OwnerQueryForNonexistentToken');
+      });
+
+      it('cannot burn with wrong caller or spender', async function () {
+        const tokenIdToBurn = this.notBurnedTokenId;
+        
+        // sanity check
+        await this.erc721aBurnable.connect(this.addr1).approve(ZERO_ADDRESS, tokenIdToBurn);
+        await this.erc721aBurnable.connect(this.addr1).setApprovalForAll(this.spender.address, false);
+
+        const query = this.erc721aBurnable.connect(this.spender).burn(tokenIdToBurn);
+        await expect(query).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+      });
+
+      it('spender can burn with specific approved tokenId', async function () {
+        const tokenIdToBurn = this.notBurnedTokenId;
+
+        await this.erc721aBurnable.connect(this.addr1).approve(this.spender.address, tokenIdToBurn);
+        await this.erc721aBurnable.connect(this.spender).burn(tokenIdToBurn);
+        expect(await this.erc721aBurnable.exists(tokenIdToBurn)).to.be.false;
+      });
+
+      it('spender can burn with one-time approval', async function () {
+        const tokenIdToBurn = this.notBurnedTokenId;
+
+        await this.erc721aBurnable.connect(this.addr1).setApprovalForAll(this.spender.address, true);
+        await this.erc721aBurnable.connect(this.spender).burn(tokenIdToBurn);
+        expect(await this.erc721aBurnable.exists(tokenIdToBurn)).to.be.false;
       });
 
       it('cannot transfer a burned token', async function () {
