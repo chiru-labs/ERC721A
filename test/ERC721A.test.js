@@ -260,12 +260,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           beforeEach(function () {
             this.tokenIdToBurn = this.startTokenId;
           })
-          it('can burn if checkApproval is false', async function () {
+          it('can burn if approvalCheck is false', async function () {
             await this.erc721a.connect(this.addr2).burn(this.tokenIdToBurn, false);
             expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.false;
           });
 
-          it('revert if checkApproval is true', async function () {
+          it('revert if approvalCheck is true', async function () {
             await expect(this.erc721a.connect(this.addr2).burn(this.tokenIdToBurn, true)).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
           });
         });
