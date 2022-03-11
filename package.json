@@ -11,6 +11,7 @@
     "node": "hardhat node",
     "test": "hardhat test",
     "test:gas": "REPORT_GAS=true npx hardhat test",
+    "coverage": "REPORT_COVERAGE=true npx hardhat coverage",
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:js": "eslint --ignore-path .gitignore . --fix",
     "lint:sol": "prettier --write \"contracts/**/*.sol\""
@@ -31,7 +32,8 @@
     "hardhat": "^2.8.2",
     "hardhat-gas-reporter": "^1.0.7",
     "prettier": "^2.5.1",
-    "prettier-plugin-solidity": "^1.0.0-beta.19"
+    "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "solidity-coverage": "^0.7.20"
   },
   "repository": {
     "type": "git",

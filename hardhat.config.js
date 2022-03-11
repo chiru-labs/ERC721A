@@ -1,8 +1,12 @@
-require("@nomiclabs/hardhat-waffle");
+require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-ethers');
 
 if (process.env.REPORT_GAS) {
-  require("hardhat-gas-reporter");
+  require('hardhat-gas-reporter');
+}
+
+if (process.env.REPORT_COVERAGE) {
+  require('solidity-coverage');
 }
 
 /**
@@ -10,7 +14,7 @@ if (process.env.REPORT_GAS) {
  */
 module.exports = {
   solidity: {
-    version: "0.8.11",
+    version: '0.8.11',
     settings: {
       optimizer: {
         enabled: true,
@@ -19,8 +23,9 @@ module.exports = {
     },
   },
   gasReporter: {
-    currency: "USD",
+    currency: 'USD',
     gasPrice: 100,
     showTimeSpent: true,
   },
+  plugins: ['solidity-coverage'],
 };
