@@ -266,7 +266,9 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('revert if approvalCheck is true', async function () {
-            await expect(this.erc721a.connect(this.addr2).burn(this.tokenIdToBurn, true)).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+            await expect(
+              this.erc721a.connect(this.addr2).burn(this.tokenIdToBurn, true)
+              ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
           });
         });
       });
