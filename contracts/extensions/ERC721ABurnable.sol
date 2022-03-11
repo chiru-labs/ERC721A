@@ -20,14 +20,6 @@ abstract contract ERC721ABurnable is Context, ERC721A {
      * - The caller must own `tokenId` or be an approved operator.
      */
     function burn(uint256 tokenId) public virtual {
-        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
-
-        bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
-            isApprovedForAll(prevOwnership.addr, _msgSender()) ||
-            getApproved(tokenId) == _msgSender());
-
-        if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-
-        _burn(tokenId);
+        _burn(tokenId, true);
     }
 }
