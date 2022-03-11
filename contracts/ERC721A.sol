@@ -473,6 +473,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
+     * @dev This is equivalent to _burn(tokenId, false)
+     */
+    function _burn(uint256 tokenId) internal virtual {
+        _burn(tokenId, false);
+    }
+
+    /**
      * @dev Destroys `tokenId`.
      * The approval is cleared when the token is burned.
      *
