@@ -255,6 +255,23 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             });
           });
         });
+
+        describe('_burn', async function() {
+          beforeEach(function () {
+            this.tokenIdToBurn = this.startTokenId;
+          });
+
+          it('can burn if approvalCheck is false', async function () {
+            await this.erc721a.connect(this.addr2).burn(this.tokenIdToBurn, false);
+            expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.false;
+          });
+
+          it('revert if approvalCheck is true', async function () {
+            await expect(
+              this.erc721a.connect(this.addr2).burn(this.tokenIdToBurn, true)
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+          });
+        });
       });
 
       context('mint', async function () {

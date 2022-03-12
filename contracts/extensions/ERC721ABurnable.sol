@@ -4,13 +4,12 @@
 pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
-import '@openzeppelin/contracts/utils/Context.sol';
 
 /**
  * @title ERC721A Burnable Token
  * @dev ERC721A Token that can be irreversibly burned (destroyed).
  */
-abstract contract ERC721ABurnable is Context, ERC721A {
+abstract contract ERC721ABurnable is ERC721A {
 
     /**
      * @dev Burns `tokenId`. See {ERC721A-_burn}.
@@ -20,14 +19,6 @@ abstract contract ERC721ABurnable is Context, ERC721A {
      * - The caller must own `tokenId` or be an approved operator.
      */
     function burn(uint256 tokenId) public virtual {
-        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
-
-        bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
-            isApprovedForAll(prevOwnership.addr, _msgSender()) ||
-            getApproved(tokenId) == _msgSender());
-
-        if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-
-        _burn(tokenId);
+        _burn(tokenId, true);
     }
 }

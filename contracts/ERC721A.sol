@@ -473,6 +473,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
+     * @dev This is equivalent to _burn(tokenId, false)
+     */
+    function _burn(uint256 tokenId) internal virtual {
+        _burn(tokenId, false);
+    }
+
+    /**
      * @dev Destroys `tokenId`.
      * The approval is cleared when the token is burned.
      *
@@ -482,8 +489,16 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      *
      * Emits a {Transfer} event.
      */
-    function _burn(uint256 tokenId) internal virtual {
+    function _burn(uint256 tokenId, bool approvalCheck) internal virtual {
         TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
+
+        if (approvalCheck) {
+            bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
+                isApprovedForAll(prevOwnership.addr, _msgSender()) ||
+                getApproved(tokenId) == _msgSender());
+
+            if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
+        }
 
         _beforeTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
 
