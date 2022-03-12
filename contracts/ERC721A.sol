@@ -17,7 +17,6 @@ error ApprovalQueryForNonexistentToken();
 error ApproveToCaller();
 error ApprovalToCurrentOwner();
 error BalanceQueryForZeroAddress();
-error MintedQueryForZeroAddress();
 error BurnedQueryForZeroAddress();
 error AuxQueryForZeroAddress();
 error MintToZeroAddress();
