@@ -101,11 +101,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             expect(await this.erc721a.getAux(this.addr1.address)).to.equal('1');
           });
-
-          it('get and set rejects the zero address', async function () {
-            await expect(this.erc721a.getAux(ZERO_ADDRESS)).to.be.revertedWith('AuxQueryForZeroAddress');
-            await expect(this.erc721a.setAux(ZERO_ADDRESS, '1')).to.be.revertedWith('AuxQueryForZeroAddress');
-          });
         });
 
         describe('ownerOf', async function () {
