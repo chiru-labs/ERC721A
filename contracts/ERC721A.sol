@@ -425,18 +425,19 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     ) private {
         TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
 
-        bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
-            isApprovedForAll(prevOwnership.addr, _msgSender()) ||
+        if (prevOwnership.addr != from) revert TransferFromIncorrectOwner();
+
+        bool isApprovedOrOwner = (_msgSender() == from ||
+            isApprovedForAll(from, _msgSender()) ||
             getApproved(tokenId) == _msgSender());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-        if (prevOwnership.addr != from) revert TransferFromIncorrectOwner();
         if (to == address(0)) revert TransferToZeroAddress();
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
         // Clear approvals from the previous owner
-        _approve(address(0), tokenId, prevOwnership.addr);
+        _approve(address(0), tokenId, from);
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
@@ -455,7 +456,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
                 if (nextTokenId != _currentIndex) {
-                    _ownerships[nextTokenId].addr = prevOwnership.addr;
+                    _ownerships[nextTokenId].addr = from;
                     _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
                 }
             }
@@ -485,28 +486,30 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     function _burn(uint256 tokenId, bool approvalCheck) internal virtual {
         TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
 
+        address from = prevOwnership.addr;
+        
         if (approvalCheck) {
-            bool isApprovedOrOwner = (_msgSender() == prevOwnership.addr ||
-                isApprovedForAll(prevOwnership.addr, _msgSender()) ||
+            bool isApprovedOrOwner = (_msgSender() == from ||
+                isApprovedForAll(from, _msgSender()) ||
                 getApproved(tokenId) == _msgSender());
 
             if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         }
 
-        _beforeTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
+        _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner
-        _approve(address(0), tokenId, prevOwnership.addr);
+        _approve(address(0), tokenId, from);
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
-            _addressData[prevOwnership.addr].balance -= 1;
-            _addressData[prevOwnership.addr].numberBurned += 1;
+            _addressData[from].balance -= 1;
+            _addressData[from].numberBurned += 1;
 
             // Keep track of who burned the token, and the timestamp of burning.
-            _ownerships[tokenId].addr = prevOwnership.addr;
+            _ownerships[tokenId].addr = from;
             _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
             _ownerships[tokenId].burned = true;
 
@@ -517,14 +520,14 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
                 if (nextTokenId != _currentIndex) {
-                    _ownerships[nextTokenId].addr = prevOwnership.addr;
+                    _ownerships[nextTokenId].addr = from;
                     _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
                 }
             }
         }
 
-        emit Transfer(prevOwnership.addr, address(0), tokenId);
-        _afterTokenTransfers(prevOwnership.addr, address(0), tokenId, 1);
+        emit Transfer(from, address(0), tokenId);
+        _afterTokenTransfers(from, address(0), tokenId, 1);
 
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
         unchecked {
