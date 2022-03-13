@@ -454,7 +454,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             if (_ownerships[nextTokenId].addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
-                if (nextTokenId < _currentIndex) {
+                if (nextTokenId != _currentIndex) {
                     _ownerships[nextTokenId].addr = prevOwnership.addr;
                     _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
                 }
@@ -516,7 +516,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             if (_ownerships[nextTokenId].addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
-                if (nextTokenId < _currentIndex) {
+                if (nextTokenId != _currentIndex) {
                     _ownerships[nextTokenId].addr = prevOwnership.addr;
                     _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
                 }
