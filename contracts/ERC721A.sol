@@ -446,18 +446,20 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
 
-            _ownerships[tokenId].addr = to;
-            _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+            TokenOwnership storage currSlot = _ownerships[tokenId];
+            currSlot.addr = to;
+            currSlot.startTimestamp = uint64(block.timestamp);
 
             // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
             // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
             uint256 nextTokenId = tokenId + 1;
-            if (_ownerships[nextTokenId].addr == address(0)) {
+            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
+            if (nextSlot.addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
                 if (nextTokenId != _currentIndex) {
-                    _ownerships[nextTokenId].addr = from;
-                    _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                    nextSlot.addr = from;
+                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
                 }
             }
         }
@@ -487,7 +489,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
 
         address from = prevOwnership.addr;
-        
+
         if (approvalCheck) {
             bool isApprovedOrOwner = (_msgSender() == from ||
                 isApprovedForAll(from, _msgSender()) ||
@@ -505,23 +507,26 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         // ownership above and the recipient's balance can't realistically overflow.
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
-            _addressData[from].balance -= 1;
-            _addressData[from].numberBurned += 1;
+            AddressData storage addressData = _addressData[from];
+            addressData.balance -= 1;
+            addressData.numberBurned += 1;
 
             // Keep track of who burned the token, and the timestamp of burning.
-            _ownerships[tokenId].addr = from;
-            _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
-            _ownerships[tokenId].burned = true;
+            TokenOwnership storage currSlot = _ownerships[tokenId];
+            currSlot.addr = from;
+            currSlot.startTimestamp = uint64(block.timestamp);
+            currSlot.burned = true;
 
             // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
             // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
             uint256 nextTokenId = tokenId + 1;
-            if (_ownerships[nextTokenId].addr == address(0)) {
+            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
+            if (nextSlot.addr == address(0)) {
                 // This will suffice for checking _exists(nextTokenId),
                 // as a burned slot cannot contain the zero address.
                 if (nextTokenId != _currentIndex) {
-                    _ownerships[nextTokenId].addr = from;
-                    _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                    nextSlot.addr = from;
+                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
                 }
             }
         }
