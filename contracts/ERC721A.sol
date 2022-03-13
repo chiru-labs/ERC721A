@@ -17,8 +17,6 @@ error ApprovalQueryForNonexistentToken();
 error ApproveToCaller();
 error ApprovalToCurrentOwner();
 error BalanceQueryForZeroAddress();
-error BurnedQueryForZeroAddress();
-error AuxQueryForZeroAddress();
 error MintToZeroAddress();
 error MintZeroQuantity();
 error OwnerQueryForNonexistentToken();
@@ -156,7 +154,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Returns the number of tokens burned by or on behalf of `owner`.
      */
     function _numberBurned(address owner) internal view returns (uint256) {
-        if (owner == address(0)) revert BurnedQueryForZeroAddress();
         return uint256(_addressData[owner].numberBurned);
     }
 
@@ -164,7 +161,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Returns the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
      */
     function _getAux(address owner) internal view returns (uint64) {
-        if (owner == address(0)) revert AuxQueryForZeroAddress();
         return _addressData[owner].aux;
     }
 
@@ -173,7 +169,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * If there are multiple variables, please pack them into a uint64.
      */
     function _setAux(address owner, uint64 aux) internal {
-        if (owner == address(0)) revert AuxQueryForZeroAddress();
         _addressData[owner].aux = aux;
     }
 
