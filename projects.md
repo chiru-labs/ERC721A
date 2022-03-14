@@ -41,3 +41,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Human Divergence](https://www.humandivergence.com) | Etherscan | [Twitter](https://twitter.com/humandivergence)
 - [Jokers by SLAM](https://slamjokers.com/) | [Etherscan](https://etherscan.io/address/0xe52f3274779d59e98d5876cf24d263cdf1e5c290) | [Twitter](https://twitter.com/jokersbyslam) | [OpenSea](https://opensea.io/collection/slamjokers)
 - [Komorebi No Sekai](https://komorebinosekai.com/) | [Etherscan](https://etherscan.io/address/0x675cddac819d41c37331644047508822d764abed) | [Twitter](https://twitter.com/KomorebiNoSekai) | [OpenSea](https://opensea.io/collection/komorebi-no-sekai)
+- [Beetchy Pandas](https://www.beetchypandas.club/) | Etherscan | [Twitter](https://twitter.com/BeetchyPandas) | Opensea
