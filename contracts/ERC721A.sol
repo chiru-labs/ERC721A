@@ -516,19 +516,6 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
             currSlot.addr = from;
             currSlot.startTimestamp = uint64(block.timestamp);
             currSlot.burned = true;
-
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-            uint256 nextTokenId = tokenId + 1;
-            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
-            if (nextSlot.addr == address(0)) {
-                // This will suffice for checking _exists(nextTokenId),
-                // as a burned slot cannot contain the zero address.
-                if (nextTokenId != _currentIndex) {
-                    nextSlot.addr = from;
-                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
-                }
-            }
         }
 
         emit Transfer(from, address(0), tokenId);
