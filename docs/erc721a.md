@@ -32,6 +32,8 @@ struct TokenOwnership {
 
 Holds ownership data for each token.
 
+`startTimestamp` is the timestamp when the token is minted to, transferred to, or burned by `addr`.
+
 The compiler will pack this into a single 256 bit word in storage.
 
 ### AddressData 
