@@ -59,7 +59,7 @@ You can use them to design tokenomics with very minimal gas overhead.
 | O(1)\* bulk mint | For all tokens | Within fungible tokens |
 | # mint `SSTORE`s | 2              | 1                      |
 
-\* Appriximately O(1) for ERC721A. See [Design](design.md).
+\* Approximately O(1) for ERC721A. See [Design](design.md).
 
 ERC1155 requires centralized indexing services to emulate ERC721-like functionality off-chain.
 
