@@ -18,6 +18,12 @@ For more information on how ERC721A works under the hood, please visit our [blog
 
 **Chiru Labs is not liable for any outcomes as a result of using ERC721A.** DYOR.
 
+<!-- Docs -->
+
+## Docs
+
+https://chiru-labs.github.io/ERC721A/
+
 <!-- Installation -->
 
 ## Installation
