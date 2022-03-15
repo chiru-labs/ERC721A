@@ -1,8 +1,12 @@
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
+[![Docs][docs-shield]][docs-url]
+[![NPM][npm-shield]][npm-url]
+[![CI][ci-shield]][ci-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+<!-- OTHER BADGES -->
+<!-- [![Contributors][contributors-shield]][contributors-url] -->
+<!-- [![Forks][forks-shield]][forks-url] -->
+<!-- [![Stargazers][stars-shield]][stars-url] -->
 
 <!-- ABOUT THE PROJECT -->
 
@@ -110,6 +114,12 @@ Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-l
 
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
+[docs-shield]: https://img.shields.io/badge/docs-%F0%9F%93%84-blue?style=for-the-badge
+[docs-url]: https://chiru-labs.github.io/ERC721A/
+[npm-shield]: https://img.shields.io/npm/v/erc721a.svg?style=for-the-badge
+[npm-url]: https://www.npmjs.com/package/erc721a
+[ci-shield]: https://img.shields.io/github/workflow/status/chiru-labs/ERC721A/ERC721A%20CI?label=build&style=for-the-badge
+[ci-url]: https://github.com/chiru-labs/ERC721A/actions/workflows/run_tests.yml
 [contributors-shield]: https://img.shields.io/github/contributors/chiru-labs/ERC721A.svg?style=for-the-badge
 [contributors-url]: https://github.com/chiru-labs/ERC721A/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/chiru-labs/ERC721A.svg?style=for-the-badge
