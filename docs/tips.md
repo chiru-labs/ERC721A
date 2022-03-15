@@ -36,7 +36,7 @@ To prevent overly expensive transfer fees for tokens that are minted in large ba
 
 - Break up excessively large batches into mini batches internally when minting. 
 
-- Look into [`ERC721AOwnersExplicit`](erc271a-owners-explicit.md). 
+- Look into [`ERC721AOwnersExplicit`](erc721a-owners-explicit.md). 
 
 ## Efficient Tokenomics
 
