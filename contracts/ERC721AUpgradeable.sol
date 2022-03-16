@@ -5,7 +5,7 @@ pragma solidity ^0.8.4;
 
 import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol';
-import '@openzeppelin/contracts-upgrdeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol';
@@ -35,7 +35,13 @@ error URIQueryForNonexistentToken();
  *
  * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
-contract ERC721AUpgradeable is Initializable, ContextUpgradeable, ERC165Upgradeable, IERC721Upgradeable, IERC721MetadataUpgradeable {
+contract ERC721AUpgradeable is
+    Initializable,
+    ContextUpgradeable,
+    ERC165Upgradeable,
+    IERC721Upgradeable,
+    IERC721MetadataUpgradeable
+{
     using AddressUpgradeable for address;
     using StringsUpgradeable for uint256;
 
@@ -88,13 +94,18 @@ contract ERC721AUpgradeable is Initializable, ContextUpgradeable, ERC165Upgradea
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-    constructor(string memory name_, string memory symbol_) {
+    /**
+     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
+     */
+    function __ERC721AUpgradeable_init(string memory name_, string memory symbol_) internal onlyInitializing {
+        __ERC721AUpgradeable_init_unchained(name_, symbol_);
+    }
+
+    function __ERC721AUpgradeable_init_unchained(string memory name_, string memory symbol_) internal onlyInitializing {
         _name = name_;
         _symbol = symbol_;
         _currentIndex = _startTokenId();
     }
-
-    function initialize
 
     /**
      * To change the starting tokenId, please override this function.
@@ -128,10 +139,10 @@ contract ERC721AUpgradeable is Initializable, ContextUpgradeable, ERC165Upgradea
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165Upgradeable, IERC165Upgradeable) returns (bool) {
         return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
+            interfaceId == type(IERC721Upgradeable).interfaceId ||
+            interfaceId == type(IERC721MetadataUpgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -247,7 +258,7 @@ contract ERC721AUpgradeable is Initializable, ContextUpgradeable, ERC165Upgradea
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public override {
-        address owner = ERC721A.ownerOf(tokenId);
+        address owner = ERC721AUpgradeable.ownerOf(tokenId);
         if (to == owner) revert ApprovalToCurrentOwner();
 
         if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender())) {
@@ -328,8 +339,7 @@ contract ERC721AUpgradeable is Initializable, ContextUpgradeable, ERC165Upgradea
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _startTokenId() <= tokenId && tokenId < _currentIndex &&
-            !_ownerships[tokenId].burned;
+        return _startTokenId() <= tokenId && tokenId < _currentIndex && !_ownerships[tokenId].burned;
     }
 
     function _safeMint(address to, uint256 quantity) internal {
@@ -569,8 +579,8 @@ contract ERC721AUpgradeable is Initializable, ContextUpgradeable, ERC165Upgradea
         uint256 tokenId,
         bytes memory _data
     ) private returns (bool) {
-        try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
-            return retval == IERC721Receiver(to).onERC721Received.selector;
+        try IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
+            return retval == IERC721ReceiverUpgradeable(to).onERC721Received.selector;
         } catch (bytes memory reason) {
             if (reason.length == 0) {
                 revert TransferToNonERC721ReceiverImplementer();
