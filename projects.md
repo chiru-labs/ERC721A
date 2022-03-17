@@ -43,3 +43,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Komorebi No Sekai](https://komorebinosekai.com/) | [Etherscan](https://etherscan.io/address/0x675cddac819d41c37331644047508822d764abed) | [Twitter](https://twitter.com/KomorebiNoSekai) | [OpenSea](https://opensea.io/collection/komorebi-no-sekai)
 - [Beetchy Pandas](https://www.beetchypandas.club/) | Etherscan | [Twitter](https://twitter.com/BeetchyPandas) | Opensea
 - [Mooning Monkey](https://mooningmonkey.com/) | [Etherscan](https://etherscan.io/address/0x6206d330d018cfdca00c7e9e210c79d51c6b1d07) | [Twitter](https://twitter.com/MooningMonkeys) | [OpenSea](https://opensea.io/collection/officialmooningmonkey)
+- [Zero Code NFT](https://zerocodenft.com/) | [Etherscan](https://etherscan.io/address/0x34eca06db779169003117e8999b5e008086f4cc3) | [Twitter](https://twitter.com/zero_code_nft) | [OpenSea](https://opensea.io/collection/zerocodenft)
