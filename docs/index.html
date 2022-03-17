@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="//unpkg.com/docsify-themeable/dist/css/theme-simple.css"/>
 <link rel="stylesheet" href="assets/logo/stylesheet.css"/>
 <link rel="stylesheet" href="assets/fontello/css/fontello.css"/>
+<script src="//unpkg.com/docsify-edit-on-github@1.0.3/index.js"></script>
 <style type="text/css">
 /* !important attributes are for consistency in dark theme */
 :root {
@@ -140,7 +141,10 @@ window.$docsify = {
 	themeable: {
 		readyTransition : false,
 		responsiveTables: true
-	}
+	},
+	plugins: [
+      EditOnGithubPlugin.create("https://github.com/chiru-labs/ERC721A/tree/main/docs/", null, "Edit on GitHub")
+    ]
 }
 </script>
 <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
