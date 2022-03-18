@@ -8,9 +8,9 @@
 <link rel="icon" href="assets/img/favicon.png">
 <meta property="og:title" content="ERC721A Documentation">
 <meta property="og:description" content="Mint multiple NFTs for close to the cost of one.">
-<meta property="og:image" content="https://chiru-labs.github.io/ERC721A/assets/img/preview.png">
-<meta property="og:image:url"  content="https://chiru-labs.github.io/ERC721A/assets/img/preview.png">
-<meta property="twitter:image" content="https://chiru-labs.github.io/ERC721A/assets/img/preview.png">
+<meta property="og:image" content="assets/img/preview.png">
+<meta property="og:image:url"  content="assets/img/preview.png">
+<meta property="twitter:image" content="assets/img/preview.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="1200">
@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Poppins:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet"> 
-<link rel="stylesheet" href="//unpkg.com/docsify-themeable/dist/css/theme-simple.css"/>
+<link rel="stylesheet" href="//unpkg.com/docsify-themeable/dist/css/theme-simple.css" crossorigin="anonymous"/>
 <link rel="stylesheet" href="assets/logo/stylesheet.css"/>
 <link rel="stylesheet" href="assets/fontello/css/fontello.css"/>
 <style type="text/css">
@@ -209,7 +209,14 @@ var setupTheme = function () {
 		themeActivate(getLsTheme() || 'auto', forceRefresh);
 	};
 	var delayedReloadTheme = function () {
-		setTimeout(function () { reloadTheme(1) }, 1200);
+		setTimeout(function () {
+			exponentialWait(function () {
+				if (document.querySelector('.markdown-section h1')) {
+					setTimeout(function () { reloadTheme(1) }, 60);
+					return true;
+				}
+			});
+		}, 800);
 	};
 	var reloadChoices = function () {
 		var setClick = function (name) {
