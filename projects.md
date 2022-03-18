@@ -45,3 +45,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Mooning Monkey](https://mooningmonkey.com/) | [Etherscan](https://etherscan.io/address/0x6206d330d018cfdca00c7e9e210c79d51c6b1d07) | [Twitter](https://twitter.com/MooningMonkeys) | [OpenSea](https://opensea.io/collection/officialmooningmonkey)
 - [Zero Code NFT](https://zerocodenft.com/) | [Etherscan](https://etherscan.io/address/0x34eca06db779169003117e8999b5e008086f4cc3) | [Twitter](https://twitter.com/zero_code_nft) | [OpenSea](https://opensea.io/collection/zerocodenft)
 - [mrVroom NFT](https://mrvroomnft.com/) | [Etherscan](https://etherscan.io/address/0x609d11cf2298291F47AB9C851B85d83e83CEC320#code) | [Twitter](https://twitter.com/mrvroomnft)
+- [BadKidz](https://https://badkidz.ca/) | [Etherscan](https://etherscan.io/address/0x0dcb15683842184925091101cd696e1d58c0d871) | [Opensea](https://opensea.io/collection/badkidz-v2) | [Twitter](BadKidz_NFT)
