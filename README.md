@@ -1,8 +1,12 @@
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
+[![Docs][docs-shield]][docs-url]
+[![NPM][npm-shield]][npm-url]
+[![CI][ci-shield]][ci-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+<!-- OTHER BADGES -->
+<!-- [![Contributors][contributors-shield]][contributors-url] -->
+<!-- [![Forks][forks-shield]][forks-url] -->
+<!-- [![Stargazers][stars-shield]][stars-url] -->
 
 <!-- ABOUT THE PROJECT -->
 
@@ -17,6 +21,12 @@ The [Azuki](https://twitter.com/azukizen) team created ERC721A for its sale on 1
 For more information on how ERC721A works under the hood, please visit our [blog](https://www.azuki.com/erc721a). To find other projects that are using ERC721A, please visit [erc721a.org](https://www.erc721a.org) and our [curated projects list](https://github.com/chiru-labs/ERC721A/blob/main/projects.md).
 
 **Chiru Labs is not liable for any outcomes as a result of using ERC721A.** DYOR.
+
+<!-- Docs -->
+
+## Docs
+
+https://chiru-labs.github.io/ERC721A/
 
 <!-- Installation -->
 
@@ -54,7 +64,6 @@ contract Azuki is ERC721A {
 
 ## Roadmap
 
-- [] Add flexibility for the first token id to not start at 0
 - [] Support ERC721 Upgradeable
 - [] Add more documentation on benefits of using ERC721A
 - [] Increase test coverage
@@ -97,6 +106,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 - 2pm.flow (owner) - [@2pmflow](https://twitter.com/2pmflow)
 - location tba (owner) - [@locationtba](https://twitter.com/locationtba)
 - cygaar (maintainer) - [@cygaar_dev](https://twitter.com/cygaar_dev)
+- vectorized.eth (maintainer) - [@vectorized_dev](https://twitter.com/vectorized_dev)
 
 Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-labs/ERC721A)
 
@@ -104,6 +114,12 @@ Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-l
 
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
+[docs-shield]: https://img.shields.io/badge/docs-%F0%9F%93%84-blue?style=for-the-badge
+[docs-url]: https://chiru-labs.github.io/ERC721A/
+[npm-shield]: https://img.shields.io/npm/v/erc721a.svg?style=for-the-badge
+[npm-url]: https://www.npmjs.com/package/erc721a
+[ci-shield]: https://img.shields.io/github/workflow/status/chiru-labs/ERC721A/ERC721A%20CI?label=build&style=for-the-badge
+[ci-url]: https://github.com/chiru-labs/ERC721A/actions/workflows/run_tests.yml
 [contributors-shield]: https://img.shields.io/github/contributors/chiru-labs/ERC721A.svg?style=for-the-badge
 [contributors-url]: https://github.com/chiru-labs/ERC721A/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/chiru-labs/ERC721A.svg?style=for-the-badge

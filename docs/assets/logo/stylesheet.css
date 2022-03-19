@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Styrene B';
+    src: url('subset-StyreneB-Bold.woff2') format('woff2'),
+        url('subset-StyreneB-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
