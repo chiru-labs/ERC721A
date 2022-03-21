@@ -67,7 +67,7 @@ uint256 internal _currentIndex
 
 The next token ID to be minted.
 
-To get the total number of tokens in existence, please see [`_totalSupply`](#totalSupply).
+To get the total number of tokens in existence, please see [`totalSupply`](#totalSupply).
 
 To get the total number of tokens minted, please see [`_totalMinted`](#_totalMinted).
 
@@ -116,6 +116,20 @@ function supportsInterface(
 Returns true if this contract implements the interface defined by `interfaceId`. 
 
 See the corresponding [EIP section](https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified) to learn more about how these ids are created.
+
+### totalSupply
+
+`IERC721Enumerable-totalSupply`
+
+```solidity
+function totalSupply() public view returns (uint256)
+```
+
+Returns the total number of tokens in existence. 
+
+Burned tokens will reduce the count.
+
+To get the total number of tokens minted, please see [`_totalMinted`](#_totalMinted).
 
 ### balanceOf
 
