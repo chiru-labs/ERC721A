@@ -106,7 +106,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 - 2pm.flow (owner) - [@2pmflow](https://twitter.com/2pmflow)
 - location tba (owner) - [@locationtba](https://twitter.com/locationtba)
 - cygaar (maintainer) - [@cygaar_dev](https://twitter.com/cygaar_dev)
-- vectorized.eth (maintainer) - [@vectorized_dev](https://twitter.com/vectorized_dev)
+- vectorized.eth (maintainer) - [@optimizoor](https://twitter.com/optimizoor)
 
 Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-labs/ERC721A)
 
