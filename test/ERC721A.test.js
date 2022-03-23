@@ -1,3 +1,4 @@
+const { deployContract } = require('./helpers.js');
 const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
@@ -9,13 +10,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
     context(`${contract}`, function () {
       beforeEach(async function () {
-        this.ERC721A = await ethers.getContractFactory(contract);
-
-        this.ERC721Receiver = await ethers.getContractFactory('ERC721ReceiverMock');
-        this.erc721a = await this.ERC721A.deploy(...constructorArgs);
-
-        await this.erc721a.deployed();
-
+        this.erc721a = await deployContract(contract, constructorArgs);
+        this.receiver = await deployContract('ERC721ReceiverMock', [RECEIVER_MAGIC_VALUE]);
         this.startTokenId = this.erc721a.startTokenId ? (await this.erc721a.startTokenId()).toNumber() : 0;
       });
 
@@ -167,7 +163,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
               const sender = this.addr2;
               this.from = sender.address;
-              this.receiver = await this.ERC721Receiver.deploy(RECEIVER_MAGIC_VALUE);
               this.to = this.receiver.address;
               await this.erc721a.connect(sender).setApprovalForAll(this.to, true);
               this.transferTx = await this.erc721a.connect(sender)[transferFn](this.from, this.to, this.tokenId);
@@ -275,7 +270,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           this.owner = owner;
           this.addr1 = addr1;
           this.addr2 = addr2;
-          this.receiver = await this.ERC721Receiver.deploy(RECEIVER_MAGIC_VALUE);
         });
 
         describe('safeMint', function () {
