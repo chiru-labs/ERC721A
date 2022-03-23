@@ -1,3 +1,4 @@
+const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
@@ -6,11 +7,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
     context(`${contract}`, function () {
       beforeEach(async function () {
-        this.ERC721ABurnable = await ethers.getContractFactory(contract);
-
-        this.erc721aBurnable = await this.ERC721ABurnable.deploy(...constructorArgs);
-
-        await this.erc721aBurnable.deployed();
+        this.erc721aBurnable = await deployContract(contract, constructorArgs);
 
         this.startTokenId = this.erc721aBurnable.startTokenId
           ? (await this.erc721aBurnable.startTokenId()).toNumber()
