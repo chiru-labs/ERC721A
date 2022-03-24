@@ -361,7 +361,7 @@ Returns the auxillary data for `owner` (e.g. number of whitelist mint slots used
 ### \_setAux
 
 ```solidity
-function _getAux(address owner) internal view returns (uint64)
+function _setAux(address owner, uint64 aux) internal
 ```
 
 Sets the auxillary data for `owner` (e.g. number of whitelist mint slots used).
