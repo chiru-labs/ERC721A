@@ -10,7 +10,24 @@
 
 <!-- ABOUT THE PROJECT -->
 
-## About The Project
+## What's difference?
+
+This is for supporting ERC721A Upgradeable.        
+              
+
+Don't forget when you using upgradable smart contract, you cannot use the origion constrcutor, you need to use `initialize` function instead. Here is the code snippet for new function: `initialize` :           
+
+
+```solidity
+    function initialize(string memory name_, string memory symbol_) public initializer{
+        _name = name_;
+        _symbol = symbol_;
+        _currentIndex = _startTokenId();
+    }
+```           
+         
+
+## About The Project        
 
 The goal of ERC721A is to provide a fully compliant implementation of IERC721 with significant gas savings for minting multiple NFTs in a single transaction. This project and implementation will be updated regularly and will continue to stay up to date with best practices.
 
