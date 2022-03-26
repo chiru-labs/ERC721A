@@ -89,10 +89,8 @@ contract ERC721A is Initializable, ContextUpgradeable, ERC165Upgradeable, IERC72
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-    bool private initialized;
-
     //constructor(string memory name_, string memory symbol_) {
-    function initialize(string memory name_, string memory symbol_) public initializer{
+    function __ERC721A_initialize(string memory name_, string memory symbol_) internal onlyInitializing{
         require(!initialized, "Contract instance has already been initialized");
         initialized = true;
         _name = name_;

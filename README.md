@@ -19,7 +19,7 @@ Don't forget when you using upgradable smart contract, you cannot use the origio
 
 
 ```solidity
-    function initialize(string memory name_, string memory symbol_) public initializer{
+    function __ERC721A_initialize(string memory name_, string memory symbol_) internal onlyInitializing{
         _name = name_;
         _symbol = symbol_;
         _currentIndex = _startTokenId();
