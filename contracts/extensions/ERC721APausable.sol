@@ -7,6 +7,7 @@ import '../ERC721A.sol';
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 error ContractPaused();
+
 /**
  * @dev ERC721A token with pausable token transfers, minting and burning.
  *
