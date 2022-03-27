@@ -69,5 +69,5 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
 describe(
   'ERC721APausable',
-  createTestSuite({ contract: 'ERC721APausableMock', constructorArgs: ['Azuki', 'AZUKI'] })
+  createTestSuite({ contract: 'ERC721APausableMock', constructorArgs: ['Radioactive Pets', 'RPETS'] })
 );
