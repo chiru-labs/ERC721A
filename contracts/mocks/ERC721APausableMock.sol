@@ -14,19 +14,19 @@ contract ERC721APausableMock is ERC721A, ERC721APausable, ERC721ABurnable {
     }
 
     function _beforeTokenTransfers(
-          address from,
-          address to,
-          uint256 startTokenId,
-          uint256 quantity
-      ) internal override(ERC721A, ERC721APausable) virtual {
-      super._beforeTokenTransfers(from, to, startTokenId, quantity);
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual override(ERC721A, ERC721APausable) {
+        super._beforeTokenTransfers(from, to, startTokenId, quantity);
     }
 
     function pause() external {
-      _pause();
+        _pause();
     }
 
     function unpause() external {
-      _unpause();
+        _unpause();
     }
 }

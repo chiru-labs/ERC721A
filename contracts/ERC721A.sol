@@ -326,8 +326,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _startTokenId() <= tokenId && tokenId < _currentIndex &&
-            !_ownerships[tokenId].burned;
+        return _startTokenId() <= tokenId && tokenId < _currentIndex && !_ownerships[tokenId].burned;
     }
 
     function _safeMint(address to, uint256 quantity) internal {

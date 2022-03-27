@@ -1,7 +1,5 @@
 const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
-const { constants } = require('@openzeppelin/test-helpers');
-const { ZERO_ADDRESS } = constants;
 
 const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
@@ -15,7 +13,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       });
 
       beforeEach(async function () {
-        const [owner, addr1, addr2, spender] = await ethers.getSigners();
+        const [owner, addr1, addr2] = await ethers.getSigners();
         this.owner = owner;
         this.addr1 = addr1;
         this.addr2 = addr2;
@@ -26,7 +24,9 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
       it('cannot burn a valid token id while paused', async function () {
         await this.erc721aPausable.connect(this.owner).pause()
-        const query = this.erc721aPausable.connect(this.addr1).burn(this.existingTokenID);
+        const query = this.erc721aPausable
+          .connect(this.addr1)
+          .burn(this.existingTokenID);
 
         await expect(query).to.be.revertedWith('ContractPaused');
         expect(await this.erc721aPausable.ownerOf(this.existingTokenID)).to.be.equal(this.addr1.address);
@@ -56,10 +56,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       it('can burn a valid token id while unpaused', async function () {
         await this.erc721aPausable.connect(this.owner).pause()
         await this.erc721aPausable.connect(this.owner).unpause()
-        const query = this.erc721aPausable.connect(this.addr1).burn(this.existingTokenID);
+        const query = this.erc721aPausable
+          .connect(this.addr1)
+          .burn(this.existingTokenID);
 
         await expect(query).to.not.be.revertedWith('ContractPaused');
-        await expect(this.erc721aPausable.ownerOf(this.existingTokenID)).to.be.revertedWith('OwnerQueryForNonexistentToken');
+        await expect(this.erc721aPausable.ownerOf(this.existingTokenID))
+          .to.be.revertedWith('OwnerQueryForNonexistentToken');
       });
     });
   };

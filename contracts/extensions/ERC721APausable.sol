@@ -4,7 +4,7 @@
 pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
-import "@openzeppelin/contracts/security/Pausable.sol";
+import '@openzeppelin/contracts/security/Pausable.sol';
 
 error ContractPaused();
 
@@ -26,12 +26,12 @@ abstract contract ERC721APausable is ERC721A, Pausable {
      * - the contract must not be paused.
      */
     function _beforeTokenTransfers(
-          address from,
-          address to,
-          uint256 startTokenId,
-          uint256 quantity
-      ) internal override virtual {
-      super._beforeTokenTransfers(from, to, startTokenId, quantity);
-      if (paused()) revert ContractPaused();
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual override {
+        super._beforeTokenTransfers(from, to, startTokenId, quantity);
+        if (paused()) revert ContractPaused();
     }
 }
