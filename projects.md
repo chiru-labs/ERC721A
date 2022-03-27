@@ -47,3 +47,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [mrVroom NFT](https://mrvroomnft.com/) | [Etherscan](https://etherscan.io/address/0x267CfEe6671C776cBdf10AAdCb90dCD9DB242723) | [Twitter](https://twitter.com/mrvroomnft)
 - [BadKidz](https://https://badkidz.ca/) | [Etherscan](https://etherscan.io/address/0x0dcb15683842184925091101cd696e1d58c0d871) | [Opensea](https://opensea.io/collection/badkidz-v2) | [Twitter](BadKidz_NFT)
 - Anoobs | Etherscan | [Twitter](https://twitter.com/anoobsnft)
+- [CryptoFamers](https://www.cryptofamers.io/) | [Etherscan](https://etherscan.io/address/0x496901a8a60218a5c582de36612b8fac84895cd9) | [Twitter](https://twitter.com/CryptoFamers) | [Instagram](https://www.instagram.com/cryptofamers/) | [OpenSea](https://opensea.io/collection/cryptofamers)
