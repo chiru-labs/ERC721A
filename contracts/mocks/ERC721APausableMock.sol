@@ -6,7 +6,7 @@ pragma solidity ^0.8.4;
 import '../extensions/ERC721APausable.sol';
 import '../extensions/ERC721ABurnable.sol';
 
-contract ERC721APausableMock is ERC721A, ERC721APausable {
+contract ERC721APausableMock is ERC721A, ERC721APausable, ERC721ABurnable {
     constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
 
     function safeMint(address to, uint256 quantity) public {

@@ -24,6 +24,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         await this.erc721aPausable['safeMint(address,uint256)'](this.addr1.address, this.numTestTokens);
       });
 
+      it('cannot burn a valid token id while paused', async function () {
+        await this.erc721aPausable.connect(this.owner).pause()
+        const query = this.erc721aPausable.connect(this.addr1).burn(this.existingTokenID);
+
+        await expect(query).to.be.revertedWith('ContractPaused');
+        expect(await this.erc721aPausable.ownerOf(this.existingTokenID)).to.be.equal(this.addr1.address);
+      });
+
       it('cannot transfer a valid token id while paused', async function () {
         await this.erc721aPausable.connect(this.owner).pause()
         const query = this.erc721aPausable
@@ -43,6 +51,15 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         await expect(query).to.not.be.revertedWith('ContractPaused');
         expect(await this.erc721aPausable.ownerOf(this.existingTokenID)).to.be.equal(this.addr2.address);
+      });
+
+      it('can burn a valid token id while unpaused', async function () {
+        await this.erc721aPausable.connect(this.owner).pause()
+        await this.erc721aPausable.connect(this.owner).unpause()
+        const query = this.erc721aPausable.connect(this.addr1).burn(this.existingTokenID);
+
+        await expect(query).to.not.be.revertedWith('ContractPaused');
+        await expect(this.erc721aPausable.ownerOf(this.existingTokenID)).to.be.revertedWith('OwnerQueryForNonexistentToken');
       });
     });
   };
