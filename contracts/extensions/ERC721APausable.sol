@@ -1,6 +1,12 @@
-import "../ERC721A.sol";
+// SPDX-License-Identifier: MIT
+// Creator: Chiru Labs
+
+pragma solidity ^0.8.4;
+
+import '../ERC721A.sol';
 import "@openzeppelin/contracts/security/Pausable.sol";
 
+error ContractPaused();
 /**
  * @dev ERC721A token with pausable token transfers, minting and burning.
  *
@@ -25,6 +31,6 @@ abstract contract ERC721APausable is ERC721A, Pausable {
           uint256 quantity
       ) internal override virtual {
       super._beforeTokenTransfers(from, to, startTokenId, quantity);
-      require(!paused(), "Contract is paused");
+      if (paused()) revert ContractPaused();
     }
 }
