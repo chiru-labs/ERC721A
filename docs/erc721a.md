@@ -87,7 +87,7 @@ mapping(uint256 => TokenOwnership) internal _ownerships
 
 Mapping from token ID to ownership details.
 
-An empty struct does value does not necessarily mean the token is unowned. 
+An empty struct value does not necessarily mean the token is unowned. 
 
 See [`_ownershipOf`](#_ownershipOf).
 
@@ -113,7 +113,7 @@ function supportsInterface(
 ) public view virtual override(ERC165, IERC165) returns (bool)
 ```
 
-Returns true if this contract implements the interface defined by `interfaceId`. 
+Returns `true` if this contract implements the interface defined by `interfaceId`. 
 
 See the corresponding [EIP section](https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified) to learn more about how these ids are created.
 
