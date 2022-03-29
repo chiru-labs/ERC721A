@@ -1,12 +1,11 @@
+const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
 describe('ERC721ABurnableOwnersExplicit', function () {
   beforeEach(async function () {
-    this.ERC721ABurnableOwnersExplicit = await ethers.getContractFactory('ERC721ABurnableOwnersExplicitMock');
-    this.token = await this.ERC721ABurnableOwnersExplicit.deploy('Azuki', 'AZUKI');
-    await this.token.deployed();
+    this.token = await deployContract('ERC721ABurnableOwnersExplicitMock', ['Azuki', 'AZUKI']);
   });
   
   beforeEach(async function () {

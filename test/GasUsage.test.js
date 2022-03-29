@@ -1,8 +1,8 @@
+const { deployContract } = require('./helpers.js');
+
 describe('ERC721A Gas Usage', function () {
   beforeEach(async function () {
-    this.ERC721A = await ethers.getContractFactory('ERC721AGasReporterMock');
-    this.erc721a = await this.ERC721A.deploy('Azuki', 'AZUKI');
-    await this.erc721a.deployed();
+    this.erc721a = await deployContract('ERC721AGasReporterMock', ['Azuki', 'AZUKI']);
     const [owner, addr1] = await ethers.getSigners();
     this.owner = owner;
     this.addr1 = addr1;

@@ -17,8 +17,11 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
      */
     function _setOwnersExplicit(uint256 quantity) internal {
         if (quantity == 0) revert QuantityMustBeNonZero();
-        if (_currentIndex == 0) revert NoTokensMintedYet();
+        if (_currentIndex == _startTokenId()) revert NoTokensMintedYet();
         uint256 _nextOwnerToExplicitlySet = nextOwnerToExplicitlySet;
+        if (_nextOwnerToExplicitlySet == 0) {
+            _nextOwnerToExplicitlySet = _startTokenId();
+        }
         if (_nextOwnerToExplicitlySet >= _currentIndex) revert AllOwnershipsHaveBeenSet();
 
         // Index underflow is impossible.
@@ -33,7 +36,7 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
 
             for (uint256 i = _nextOwnerToExplicitlySet; i <= endIndex; i++) {
                 if (_ownerships[i].addr == address(0) && !_ownerships[i].burned) {
-                    TokenOwnership memory ownership = ownershipOf(i);
+                    TokenOwnership memory ownership = _ownershipOf(i);
                     _ownerships[i].addr = ownership.addr;
                     _ownerships[i].startTimestamp = ownership.startTimestamp;
                 }
