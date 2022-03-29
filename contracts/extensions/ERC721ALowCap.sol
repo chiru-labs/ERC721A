@@ -10,13 +10,12 @@ import '../ERC721A.sol';
  * @dev ERC721A Helper functions for Low Cap (<= 10,000) totalSupply.
  */
 abstract contract ERC721ALowCap is ERC721A {
-
     /**
      * @dev Returns the tokenIds of the address. O(totalSupply) in complexity.
      */
     function tokensOfOwner(address owner) public view returns (uint256[] memory) {
         uint256 holdingAmount = balanceOf(owner);
-        uint256 currSupply    = _currentIndex;
+        uint256 currSupply = _currentIndex;
         uint256 tokenIdsIdx;
         address currOwnershipAddr;
 
@@ -41,7 +40,7 @@ abstract contract ERC721ALowCap is ERC721A {
                 }
 
                 // All tokens have been found, we don't need to keep searching
-                if(tokenIdsIdx == holdingAmount) {
+                if (tokenIdsIdx == holdingAmount) {
                     break;
                 }
             }

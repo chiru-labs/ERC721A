@@ -15,7 +15,7 @@ contract ERC721ABurnableMock is ERC721A, ERC721ABurnable {
     function safeMint(address to, uint256 quantity) public {
         _safeMint(to, quantity);
     }
-    
+
     function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
         return _ownerships[index];
     }

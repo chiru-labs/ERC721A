@@ -11,7 +11,6 @@ import '@openzeppelin/contracts/utils/Context.sol';
  * @dev ERC721A Token that can be irreversibly burned (destroyed).
  */
 abstract contract ERC721ABurnable is Context, ERC721A {
-
     /**
      * @dev Burns `tokenId`. See {ERC721A-_burn}.
      *
