@@ -6,6 +6,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
     context(`${contract}`, function () {
       beforeEach(async function () {
         this.erc721aLowCap = await deployContract(contract, constructorArgs);
+
+        this.startTokenId = this.erc721aLowCap.startTokenId
+          ? (await this.erc721aLowCap.startTokenId()).toNumber()
+          : 0;
       });
 
       context('with minted tokens', async function () {
@@ -25,9 +29,9 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           it('returns the correct token ids', async function () {
             const expected_results = [
               // Address 1 -- Single token
-              { owner: this.addr1, tokens: [0] },
+              { owner: this.addr1, tokens: [this.startTokenId] },
               // Address 3 -- Multiple tokens
-              { owner: this.addr3, tokens: [3, 4, 5] },
+              { owner: this.addr3, tokens: [this.startTokenId + 3, this.startTokenId + 4, this.startTokenId + 5] },
               // Address 4 -- No tokens
               { owner: this.addr4, tokens: [] },
             ];
@@ -39,19 +43,18 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('returns the correct token ids after a transfer interferes with the normal logic', async function () {
-            // Owner of 6,7,8
             await this.erc721aLowCap['safeMint(address,uint256)'](this.owner.address, 3);
 
             // Break sequential order
-            await this.erc721aLowCap['transferFrom(address,address,uint256)'](this.owner.address, this.addr4.address, 7);
+            await this.erc721aLowCap['transferFrom(address,address,uint256)'](this.owner.address, this.addr4.address, this.startTokenId + 7);
 
             // Load balances
             const owner_bn_tokens = await this.erc721aLowCap['tokensOfOwner(address)'](this.owner.address);
             const addr4_bn_tokens = await this.erc721aLowCap['tokensOfOwner(address)'](this.addr4.address);
 
             // Verify the function can still read the correct token ids
-            expect(owner_bn_tokens.map((bn) => bn.toNumber())).to.eql([6, 8]);
-            expect(addr4_bn_tokens.map((bn) => bn.toNumber())).to.eql([7]);
+            expect(owner_bn_tokens.map((bn) => bn.toNumber())).to.eql([ this.startTokenId + 6, this.startTokenId + 8]);
+            expect(addr4_bn_tokens.map((bn) => bn.toNumber())).to.eql([ this.startTokenId + 7]);
           });
         });
       });
@@ -59,3 +62,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 };
 
 describe('ERC721ALowCap', createTestSuite({ contract: 'ERC721ALowCapMock', constructorArgs: ['Azuki', 'AZUKI'] }));
+
+describe(
+  'ERC721ALowCap override _startTokenId()',
+  createTestSuite({ contract: 'ERC721ALowCapStartTokenIdMock', constructorArgs: ['Azuki', 'AZUKI', 1] })
+);

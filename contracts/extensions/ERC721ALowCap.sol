@@ -22,7 +22,7 @@ abstract contract ERC721ALowCap is ERC721A {
         uint256[] memory list = new uint256[](holdingAmount);
 
         unchecked {
-            for (uint256 i; i < currSupply; i++) {
+            for (uint256 i = _startTokenId(); i < currSupply; ++i) {
                 TokenOwnership memory ownership = _ownerships[i];
 
                 if (ownership.burned) {
