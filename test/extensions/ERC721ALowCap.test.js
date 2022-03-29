@@ -7,9 +7,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       beforeEach(async function () {
         this.erc721aLowCap = await deployContract(contract, constructorArgs);
 
-        this.startTokenId = this.erc721aLowCap.startTokenId
-          ? (await this.erc721aLowCap.startTokenId()).toNumber()
-          : 0;
+        this.startTokenId = this.erc721aLowCap.startTokenId ? (await this.erc721aLowCap.startTokenId()).toNumber() : 0;
       });
 
       context('with minted tokens', async function () {
@@ -46,20 +44,24 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             await this.erc721aLowCap['safeMint(address,uint256)'](this.owner.address, 3);
 
             // Break sequential order
-            await this.erc721aLowCap['transferFrom(address,address,uint256)'](this.owner.address, this.addr4.address, this.startTokenId + 7);
+            await this.erc721aLowCap['transferFrom(address,address,uint256)'](
+              this.owner.address,
+              this.addr4.address,
+              this.startTokenId + 7
+            );
 
             // Load balances
             const owner_bn_tokens = await this.erc721aLowCap['tokensOfOwner(address)'](this.owner.address);
             const addr4_bn_tokens = await this.erc721aLowCap['tokensOfOwner(address)'](this.addr4.address);
 
             // Verify the function can still read the correct token ids
-            expect(owner_bn_tokens.map((bn) => bn.toNumber())).to.eql([ this.startTokenId + 6, this.startTokenId + 8]);
-            expect(addr4_bn_tokens.map((bn) => bn.toNumber())).to.eql([ this.startTokenId + 7]);
+            expect(owner_bn_tokens.map((bn) => bn.toNumber())).to.eql([this.startTokenId + 6, this.startTokenId + 8]);
+            expect(addr4_bn_tokens.map((bn) => bn.toNumber())).to.eql([this.startTokenId + 7]);
           });
         });
       });
-  });
-};
+    });
+  };
 
 describe('ERC721ALowCap', createTestSuite({ contract: 'ERC721ALowCapMock', constructorArgs: ['Azuki', 'AZUKI'] }));
 
