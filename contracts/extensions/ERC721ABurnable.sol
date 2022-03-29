@@ -18,6 +18,6 @@ abstract contract ERC721ABurnable is ERC721A {
      * - The caller must own `tokenId` or be an approved operator.
      */
     function burn(uint256 tokenId) public virtual {
-        _burn(tokenId, true);
+        _burn(tokenId);
     }
 }
