@@ -11,7 +11,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         this.erc721aLowCap = await deployContract(contract, constructorArgs);
 
         this.startTokenId = this.erc721aLowCap.startTokenId ? (await this.erc721aLowCap.startTokenId()).toNumber() : 0;
-        offseted = (index) => BigNumber.from(this.startTokenId + index);
+        offseted = (...arr) => arr.map((num) => BigNumber.from(this.startTokenId + num));
       });
 
       context('with minted tokens', async function () {
@@ -25,17 +25,17 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           this.addr1.expected = {
             balance: 1,
-            tokens: [offseted(0)],
+            tokens: offseted(0),
           };
 
           this.addr2.expected = {
             balance: 2,
-            tokens: [offseted(1), offseted(2)],
+            tokens: offseted(1, 2),
           };
 
           this.addr3.expected = {
             balance: 3,
-            tokens: [offseted(3), offseted(4), offseted(5)],
+            tokens: offseted(3, 4, 5),
           };
 
           this.addr4.expected = {
@@ -45,7 +45,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           this.owner.expected = {
             balance: 3,
-            tokens: [offseted(6), offseted(7), offseted(8)],
+            tokens: offseted(6, 7, 8),
           };
 
           this.mintOrder = [this.addr1, this.addr2, this.addr3, this.addr4, owner];
@@ -68,15 +68,15 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           it('returns the correct token ids after a transfer interferes with the normal logic', async function () {
             // Break sequential order by transfering 7th token from owner to addr4
             const tokenIdToTransfer = offseted(7);
-            await this.erc721aLowCap.transferFrom(this.owner.address, this.addr4.address, tokenIdToTransfer);
+            await this.erc721aLowCap.transferFrom(this.owner.address, this.addr4.address, tokenIdToTransfer[0]);
 
             // Load balances
             const ownerTokens = await this.erc721aLowCap.tokensOfOwner(this.owner.address);
             const addr4Tokens = await this.erc721aLowCap.tokensOfOwner(this.addr4.address);
 
             // Verify the function can still read the correct token ids
-            expect(ownerTokens).to.eql([offseted(6), offseted(8)]);
-            expect(addr4Tokens).to.eql([tokenIdToTransfer]);
+            expect(ownerTokens).to.eql(offseted(6, 8));
+            expect(addr4Tokens).to.eql(tokenIdToTransfer);
           });
         });
       });
