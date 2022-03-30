@@ -7,7 +7,7 @@ For users, it is more gas optimal to transfer bulk minted tokens in ascending to
 For example, if you have have bulk minted token IDs (33, 34, ..., 99),  
 you should transfer in the order (33, 34, ..., 99).
 
-The is due to how the lazy-initialization mechanism works initernally:  
+The is due to how the lazy-initialization mechanism works internally:  
 it scans uninitialized slots in descending order until it finds an initialized slot.
 
 ## Popularity
