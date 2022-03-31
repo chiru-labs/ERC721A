@@ -1,8 +1,10 @@
 const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
 const { BigNumber } = require('ethers');
+const { constants } = require('@openzeppelin/test-helpers');
+const { ZERO_ADDRESS } = constants;
 
-const createTestSuite = ({ contract, constructorArgs }) =>
+const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false }) =>
   function () {
     let offseted;
 
@@ -52,8 +54,19 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           for (minter of this.mintOrder) {
             const balance = minter.expected.balance;
-            if (balance === 0) continue;
-            await this.erc721aLowCap['safeMint(address,uint256)'](minter.address, balance);
+            if (balance > 0) {
+              await this.erc721aLowCap['safeMint(address,uint256)'](minter.address, balance);
+            }
+            // sanity check
+            expect(await this.erc721aLowCap.balanceOf(minter.address)).to.equal(minter.expected.balance);
+          }
+
+          if (setOwnersExplicit) {
+            // sanity check
+            expect((await this.erc721aLowCap.getOwnershipAt(offseted(4)[0]))[0]).to.equal(ZERO_ADDRESS);
+            await this.erc721aLowCap.setOwnersExplicit(10);
+            // again, sanity check
+            expect((await this.erc721aLowCap.getOwnershipAt(offseted(4)[0]))[0]).to.equal(this.addr3.address);
           }
         });
 
@@ -78,6 +91,18 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(ownerTokens).to.eql(offseted(6, 8));
             expect(addr4Tokens).to.eql(tokenIdToTransfer);
           });
+
+          it('returns correct token ids with burned tokens', async function () {
+            // Burn tokens
+            const tokenIdToBurn = offseted(7);
+            await this.erc721aLowCap.burn(tokenIdToBurn[0]);
+
+            // Load balances
+            const ownerTokens = await this.erc721aLowCap.tokensOfOwner(this.owner.address);
+
+            // Verify the function can still read the correct token ids
+            expect(ownerTokens).to.eql(offseted(6, 8));
+          });
         });
       });
     });
@@ -88,4 +113,13 @@ describe('ERC721ALowCap', createTestSuite({ contract: 'ERC721ALowCapMock', const
 describe(
   'ERC721ALowCap override _startTokenId()',
   createTestSuite({ contract: 'ERC721ALowCapStartTokenIdMock', constructorArgs: ['Azuki', 'AZUKI', 1] })
+);
+
+describe(
+  'ERC721ALowCapOwnersExplicit',
+  createTestSuite({
+    contract: 'ERC721ALowCapOwnersExplicitMock',
+    constructorArgs: ['Azuki', 'AZUKI'],
+    setOwnersExplicit: true,
+  })
 );
