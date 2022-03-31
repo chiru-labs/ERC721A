@@ -2,7 +2,7 @@ const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
 const { BigNumber } = require('ethers');
 
-const createTestSuite = ({ contract, constructorArgs }) =>
+const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false }) =>
   function () {
     let offseted;
 
@@ -55,6 +55,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             if (balance === 0) continue;
             await this.erc721aLowCap['safeMint(address,uint256)'](minter.address, balance);
           }
+
+          if (setOwnersExplicit) {
+            await this.erc721aLowCap.setOwnersExplicit(10);
+          }
         });
 
         describe('tokensOfOwner', async function () {
@@ -88,4 +92,9 @@ describe('ERC721ALowCap', createTestSuite({ contract: 'ERC721ALowCapMock', const
 describe(
   'ERC721ALowCap override _startTokenId()',
   createTestSuite({ contract: 'ERC721ALowCapStartTokenIdMock', constructorArgs: ['Azuki', 'AZUKI', 1] })
+);
+
+describe(
+  'ERC721ALowCapOwnersExplicit',
+  createTestSuite({ contract: 'ERC721ALowCapOwnersExplicitMock', constructorArgs: ['Azuki', 'AZUKI'] })
 );
