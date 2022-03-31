@@ -12,8 +12,11 @@ contract ERC721ALowCapOwnersExplicitMock is ERC721ALowCapMock, ERC721AOwnersExpl
         string memory symbol_
     ) ERC721ALowCapMock(name_, symbol_) {}
 
-
     function setOwnersExplicit(uint256 quantity) public {
         _setOwnersExplicit(quantity);
+    }
+
+    function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
+        return _ownerships[index];
     }
 }

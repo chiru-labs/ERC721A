@@ -1,6 +1,8 @@
 const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
 const { BigNumber } = require('ethers');
+const { constants } = require('@openzeppelin/test-helpers');
+const { ZERO_ADDRESS } = constants;
 
 const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false }) =>
   function () {
@@ -57,7 +59,11 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
           }
 
           if (setOwnersExplicit) {
+            // sanity check 
+            expect((await this.erc721aLowCap.getOwnershipAt(offseted(4)[0]))[0]).to.equal(ZERO_ADDRESS);
             await this.erc721aLowCap.setOwnersExplicit(10);
+            // again, sanity check 
+            expect((await this.erc721aLowCap.getOwnershipAt(offseted(4)[0]))[0]).to.equal(this.addr3.address);
           }
         });
 
@@ -96,5 +102,5 @@ describe(
 
 describe(
   'ERC721ALowCapOwnersExplicit',
-  createTestSuite({ contract: 'ERC721ALowCapOwnersExplicitMock', constructorArgs: ['Azuki', 'AZUKI'] })
+  createTestSuite({ contract: 'ERC721ALowCapOwnersExplicitMock', constructorArgs: ['Azuki', 'AZUKI'], setOwnersExplicit: true })
 );
