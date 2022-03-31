@@ -88,6 +88,19 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
             expect(ownerTokens).to.eql(offseted(6, 8));
             expect(addr4Tokens).to.eql(tokenIdToTransfer);
           });
+
+          it('returns correct token ids with burned tokens', async function() {
+            // Burn tokens
+            const tokenIdToBurn = offseted(7);
+            await this.erc721aLowCap.burn(tokenIdToBurn[0]);
+
+            // Load balances
+            const ownerTokens = await this.erc721aLowCap.tokensOfOwner(this.owner.address);
+
+            // Verify the function can still read the correct token ids
+            expect(ownerTokens).to.eql(offseted(6, 8));
+          });
+          
         });
       });
     });
