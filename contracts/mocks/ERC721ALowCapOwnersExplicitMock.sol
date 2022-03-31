@@ -7,10 +7,7 @@ import './ERC721ALowCapMock.sol';
 import '../extensions/ERC721AOwnersExplicit.sol';
 
 contract ERC721ALowCapOwnersExplicitMock is ERC721ALowCapMock, ERC721AOwnersExplicit {
-    constructor(
-        string memory name_,
-        string memory symbol_
-    ) ERC721ALowCapMock(name_, symbol_) {}
+    constructor(string memory name_, string memory symbol_) ERC721ALowCapMock(name_, symbol_) {}
 
     function setOwnersExplicit(uint256 quantity) public {
         _setOwnersExplicit(quantity);

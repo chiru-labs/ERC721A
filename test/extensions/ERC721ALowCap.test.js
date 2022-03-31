@@ -62,10 +62,10 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
           }
 
           if (setOwnersExplicit) {
-            // sanity check 
+            // sanity check
             expect((await this.erc721aLowCap.getOwnershipAt(offseted(4)[0]))[0]).to.equal(ZERO_ADDRESS);
             await this.erc721aLowCap.setOwnersExplicit(10);
-            // again, sanity check 
+            // again, sanity check
             expect((await this.erc721aLowCap.getOwnershipAt(offseted(4)[0]))[0]).to.equal(this.addr3.address);
           }
         });
@@ -92,7 +92,7 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
             expect(addr4Tokens).to.eql(tokenIdToTransfer);
           });
 
-          it('returns correct token ids with burned tokens', async function() {
+          it('returns correct token ids with burned tokens', async function () {
             // Burn tokens
             const tokenIdToBurn = offseted(7);
             await this.erc721aLowCap.burn(tokenIdToBurn[0]);
@@ -103,7 +103,6 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
             // Verify the function can still read the correct token ids
             expect(ownerTokens).to.eql(offseted(6, 8));
           });
-          
         });
       });
     });
@@ -118,5 +117,9 @@ describe(
 
 describe(
   'ERC721ALowCapOwnersExplicit',
-  createTestSuite({ contract: 'ERC721ALowCapOwnersExplicitMock', constructorArgs: ['Azuki', 'AZUKI'], setOwnersExplicit: true })
+  createTestSuite({
+    contract: 'ERC721ALowCapOwnersExplicitMock',
+    constructorArgs: ['Azuki', 'AZUKI'],
+    setOwnersExplicit: true,
+  })
 );
