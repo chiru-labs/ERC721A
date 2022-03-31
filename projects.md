@@ -50,3 +50,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - Anoobs | Etherscan | [Twitter](https://twitter.com/anoobsnft)
 - [CryptoFamers](https://www.cryptofamers.io/) | [Etherscan](https://etherscan.io/address/0x496901a8a60218a5c582de36612b8fac84895cd9) | [Twitter](https://twitter.com/CryptoFamers) | [Instagram](https://www.instagram.com/cryptofamers/) | [OpenSea](https://opensea.io/collection/cryptofamers)
 - [Wizards of Etheen](https://https://wizardsofetheen.com/) | [Etherscan](https://etherscan.io/address/0x5139cfee9e8533d9f52be27be183ec60c7222274) | [Opensea](https://opensea.io/collection/the-wizards-of-etheen) | [Twitter](https://twitter.com/WizardsOfEtheen)
+- [Radioactive-Pets](https://radioactivepunks.xyz/) | [Etherscan](https://etherscan.io/address/0x3a7e7b26f779de6d12a675caa34419625aa67159) | [Opensea](https://opensea.io/collection/radioactive-pets) | [Twitter](https://twitter.com/GlowingPunks)
