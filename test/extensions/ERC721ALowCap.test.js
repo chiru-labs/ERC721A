@@ -54,8 +54,11 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
 
           for (minter of this.mintOrder) {
             const balance = minter.expected.balance;
-            if (balance === 0) continue;
-            await this.erc721aLowCap['safeMint(address,uint256)'](minter.address, balance);
+            if (balance > 0) {
+              await this.erc721aLowCap['safeMint(address,uint256)'](minter.address, balance);
+            }
+            // sanity check
+            expect(await this.erc721aLowCap.balanceOf(minter.address)).to.equal(minter.expected.balance);
           }
 
           if (setOwnersExplicit) {
