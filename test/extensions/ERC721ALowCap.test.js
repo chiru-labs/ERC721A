@@ -52,7 +52,7 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
 
           this.mintOrder = [this.addr1, this.addr2, this.addr3, this.addr4, owner];
 
-          for (minter of this.mintOrder) {
+          for (const minter of this.mintOrder) {
             const balance = minter.expected.balance;
             if (balance > 0) {
               await this.erc721aLowCap['safeMint(address,uint256)'](minter.address, balance);
@@ -72,7 +72,7 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
 
         describe('tokensOfOwner', async function () {
           it('returns the correct token ids', async function () {
-            for (minter of this.mintOrder) {
+            for (const minter of this.mintOrder) {
               const tokens = await this.erc721aLowCap.tokensOfOwner(minter.address);
               expect(tokens).to.eql(minter.expected.tokens);
             }
