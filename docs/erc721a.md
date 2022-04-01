@@ -13,7 +13,7 @@ Inherits:
 - [Context](https://docs.openzeppelin.com/contracts/2.x/api/gsn)
 - [IERC721](https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#IERC721) 
 - [IERC721Metadata](https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#IERC721Metadata) 
-- [IERC165](https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#IERC721Metadata)
+- [IERC165](https://docs.openzeppelin.com/contracts/4.x/api/utils#IERC165)
 
 ## Structs
 
