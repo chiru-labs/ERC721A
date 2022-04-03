@@ -4,10 +4,11 @@ ERC721A enables a near constant gas cost for batch minting via a lazy-initializa
 
 Token IDs are minted in sequential order (e.g. 0, 1, 2, 3, ...).
 
-Regardless of the quantity minted, the `_mint` function only performs 2 `SSTORE` operations:
+Regardless of the quantity minted, the `_mint` function only performs 3 `SSTORE` operations:
 
-- Updates the balance for the address.
 - Updates the ownership slot at the starting token ID with the address.
+- Updates the address' balance (20k gas on first write, 5k gas on subsequent writes).
+- Updates the next token ID (20k gas on first write, 5k gas on subsequent writes).
 
 > A `Transfer` event will still be emitted for each NFT minted.   
   However, emitting an event is an order of magnitude cheaper than a `SSTORE` operation.
