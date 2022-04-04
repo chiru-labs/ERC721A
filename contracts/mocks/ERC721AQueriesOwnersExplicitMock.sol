@@ -3,11 +3,11 @@
 
 pragma solidity ^0.8.4;
 
-import './ERC721ALowCapMock.sol';
+import './ERC721AQueriesMock.sol';
 import '../extensions/ERC721AOwnersExplicit.sol';
 
-contract ERC721ALowCapOwnersExplicitMock is ERC721ALowCapMock, ERC721AOwnersExplicit {
-    constructor(string memory name_, string memory symbol_) ERC721ALowCapMock(name_, symbol_) {}
+contract ERC721AQueriesOwnersExplicitMock is ERC721AQueriesMock, ERC721AOwnersExplicit {
+    constructor(string memory name_, string memory symbol_) ERC721AQueriesMock(name_, symbol_) {}
 
     function setOwnersExplicit(uint256 quantity) public {
         _setOwnersExplicit(quantity);

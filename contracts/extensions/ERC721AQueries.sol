@@ -6,10 +6,10 @@ pragma solidity ^0.8.4;
 import '../ERC721A.sol';
 
 /**
- * @title ERC721A Low Cap
+ * @title ERC721A Queries
  * @dev ERC721A Helper functions for Low Cap (<= 10,000) totalSupply.
  */
-abstract contract ERC721ALowCap is ERC721A {
+abstract contract ERC721AQueries is ERC721A {
     /**
      * @dev Returns the tokenIds of the address. O(totalSupply) in complexity.
      */
