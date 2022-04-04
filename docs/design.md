@@ -6,7 +6,7 @@ Token IDs are minted in sequential order (e.g. 0, 1, 2, 3, ...).
 
 Regardless of the quantity minted, the `_mint` function only performs 3 `SSTORE` operations:
 
-- Initialize the ownership slot at the starting token ID with the address.
+- Initializes the ownership slot at the starting token ID with the address.
 - Updates the address' balance.
 - Updates the next token ID.
 
