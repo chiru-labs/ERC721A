@@ -16,7 +16,7 @@ packageJson.version = version;
 fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
 
 const spdxString = '// SPDX-License-Identifier: MIT';
-const versionPrefix = '// ERC721A Contracts Version v';
+const versionPrefix = '// ERC721A Contracts v';
 
 // loop through all files with contracts/**/*.sol pattern
 glob('contracts/**/*.sol', null, function (err, files) {
