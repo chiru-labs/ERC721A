@@ -18,18 +18,17 @@ fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
 const spdxString = '// SPDX-License-Identifier: MIT';
 const versionPrefix = '// ERC721A Contracts Version v';
 
-// loop throu all files with contracts/**/*.sol pattern
+// loop through all files with contracts/**/*.sol pattern
 glob('contracts/**/*.sol', null, function (err, files) {
   files.forEach((file) => {
     // read file content
     const content = fs.readFileSync(file, 'utf8');
-    // replace version after prefix
+
     const versionStringLine = versionPrefix + version;
 
     if (content.includes(versionPrefix)) {
       var updatedContent = content.replace(new RegExp(`${versionPrefix}.*`), `${versionStringLine}`);
-    }
-    else {
+    } else {
       var updatedContent = content.replace(new RegExp(`${spdxString}`), `${spdxString}\n${versionStringLine}`);
     }
 
