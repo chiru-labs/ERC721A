@@ -90,16 +90,16 @@ abstract contract ERC721AQueries is ERC721A {
             } else {
                 tokenIdsMaxLength = 0;
             }
-            if (tokenIdsMaxLength == 0) {
-                return new uint256[](0);
-            }
             uint256[] memory tokenIds = new uint256[](tokenIdsMaxLength);
-            // We need to call `rawOwnershipOf(start)`, 
+            if (tokenIdsMaxLength == 0) {
+                return tokenIds;
+            }
+            // We need to call `rawOwnershipOf(start)`,
             // because the slot at `start` may not be initialized.
             TokenOwnership memory ownership = rawOwnershipOf(start);
             address currOwnershipAddr;
             // If the starting slot exists (i.e. not burned), initialize `currOwnershipAddr`.
-            // `ownership.address` will not be zero, as start is clamped to the valid token ID range.
+            // `ownership.address` will not be zero, as `start` is clamped to the valid token ID range.
             if (!ownership.burned) {
                 currOwnershipAddr = ownership.addr;
             }
