@@ -14,7 +14,8 @@
     "coverage": "REPORT_COVERAGE=true npx hardhat coverage",
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:js": "eslint --ignore-path .gitignore . --fix",
-    "lint:sol": "prettier --write \"contracts/**/*.sol\""
+    "lint:sol": "prettier --write \"contracts/**/*.sol\"",
+    "update-version": "scripts/release/update-version.js"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.2"
