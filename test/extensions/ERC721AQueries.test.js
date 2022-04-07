@@ -196,7 +196,7 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
                   // Start and end truncated. This also tests for start + o > stop - o.
                   await expectCorrect.call(this, this.owner.address, start + o, stop - o);
                 }
-                for (let o = 0; o <= this.currentIndex; ++o) {
+                for (let o = 0, n = parseInt(this.currentIndex) + 1; o <= n; ++o) {
                   // Sliding window.
                   await expectCorrect.call(this, this.owner.address, o, o + ownerTokens.length);
                 }

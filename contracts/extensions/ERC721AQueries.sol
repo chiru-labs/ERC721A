@@ -29,14 +29,15 @@ abstract contract ERC721AQueries is ERC721A {
      *   - `burned = `false`
      */
     function rawOwnershipOf(uint256 tokenId) public view returns (TokenOwnership memory) {
-        if (_exists(tokenId)) {
-            return _ownershipOf(tokenId);
-        }
         TokenOwnership memory ownership;
-        if (_ownerships[tokenId].burned) {
-            ownership = _ownerships[tokenId];
+        if (tokenId < _startTokenId() || tokenId >= _currentIndex) {
+            return ownership;
         }
-        return ownership;
+        ownership = _ownerships[tokenId];
+        if (ownership.burned) {
+            return ownership;
+        }
+        return _ownershipOf(tokenId);
     }
 
     /**
@@ -45,12 +46,12 @@ abstract contract ERC721AQueries is ERC721A {
      */
     function rawOwnershipsOf(uint256[] memory tokenIds) external view returns (TokenOwnership[] memory) {
         unchecked {
-            uint256 n = tokenIds.length;
-            TokenOwnership[] memory a = new TokenOwnership[](n);
-            for (uint256 i; i != n; ++i) {
-                a[i] = rawOwnershipOf(tokenIds[i]);
+            uint256 tokenIdsLength = tokenIds.length;
+            TokenOwnership[] memory ownerships = new TokenOwnership[](tokenIdsLength);
+            for (uint256 i; i != tokenIdsLength; ++i) {
+                ownerships[i] = rawOwnershipOf(tokenIds[i]);
             }
-            return a;
+            return ownerships;
         }
     }
 
@@ -78,27 +79,31 @@ abstract contract ERC721AQueries is ERC721A {
             if (stop > stopLimit) {
                 stop = stopLimit;
             }
-            uint256 n = balanceOf(owner);
-            // Set `n = min(balanceOf(owner), stop - start)`,
+            uint256 tokenIdsMaxLength = balanceOf(owner);
+            // Set `tokenIdsMaxLength = min(balanceOf(owner), stop - start)`,
             // to cater for cases where `balanceOf(owner)` is too big.
             if (start < stop) {
-                uint256 d = stop - start;
-                if (d < n) {
-                    n = d;
+                uint256 windowLength = stop - start;
+                if (windowLength < tokenIdsMaxLength) {
+                    tokenIdsMaxLength = windowLength;
                 }
             } else {
-                n = 0;
+                tokenIdsMaxLength = 0;
             }
-            uint256[] memory a = new uint256[](n);
+            if (tokenIdsMaxLength == 0) {
+                return new uint256[](0);
+            }
+            uint256[] memory tokenIds = new uint256[](tokenIdsMaxLength);
             // We need to call `rawOwnershipOf(start)`, 
             // because the slot at `start` may not be initialized.
             TokenOwnership memory ownership = rawOwnershipOf(start);
             address currOwnershipAddr;
-            // If the starting slot exists, initialize `currOwnershipAddr`.
-            if (ownership.addr != address(0) && !ownership.burned) {
+            // If the starting slot exists (i.e. not burned), initialize `currOwnershipAddr`.
+            // `ownership.address` will not be zero, as start is clamped to the valid token ID range.
+            if (!ownership.burned) {
                 currOwnershipAddr = ownership.addr;
             }
-            for (uint256 i = start; i != stop && tokenIdsIdx != n; ++i) {
+            for (uint256 i = start; i != stop && tokenIdsIdx != tokenIdsMaxLength; ++i) {
                 ownership = _ownerships[i];
                 if (ownership.burned) {
                     continue;
@@ -107,17 +112,14 @@ abstract contract ERC721AQueries is ERC721A {
                     currOwnershipAddr = ownership.addr;
                 }
                 if (currOwnershipAddr == owner) {
-                    a[tokenIdsIdx++] = i;
+                    tokenIds[tokenIdsIdx++] = i;
                 }
             }
-            // The assembly requires a non-empty array.
-            if (n != 0) {
-                // Downsize the array to fit.
-                assembly {
-                    mstore(a, tokenIdsIdx)
-                }
+            // Downsize the array to fit.
+            assembly {
+                mstore(tokenIds, tokenIdsIdx)
             }
-            return a;
+            return tokenIds;
         }
     }
 
@@ -135,10 +137,10 @@ abstract contract ERC721AQueries is ERC721A {
         unchecked {
             uint256 tokenIdsIdx;
             address currOwnershipAddr;
-            uint256 n = balanceOf(owner);
-            uint256[] memory a = new uint256[](n);
+            uint256 tokenIdsLength = balanceOf(owner);
+            uint256[] memory tokenIds = new uint256[](tokenIdsLength);
             TokenOwnership memory ownership;
-            for (uint256 i = _startTokenId(); tokenIdsIdx != n; ++i) {
+            for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
                 ownership = _ownerships[i];
                 if (ownership.burned) {
                     continue;
@@ -147,10 +149,10 @@ abstract contract ERC721AQueries is ERC721A {
                     currOwnershipAddr = ownership.addr;
                 }
                 if (currOwnershipAddr == owner) {
-                    a[tokenIdsIdx++] = i;
+                    tokenIds[tokenIdsIdx++] = i;
                 }
             }
-            return a;
+            return tokenIds;
         }
     }
 }
