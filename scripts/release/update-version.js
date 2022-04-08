@@ -26,10 +26,11 @@ glob('contracts/**/*.sol', null, function (err, files) {
 
     const versionStringLine = versionPrefix + version;
 
+    let updatedContent;
     if (content.includes(versionPrefix)) {
-      var updatedContent = content.replace(new RegExp(`${versionPrefix}.*`), `${versionStringLine}`);
+      updatedContent = content.replace(new RegExp(`${versionPrefix}.*`), `${versionStringLine}`);
     } else {
-      var updatedContent = content.replace(new RegExp(`${spdxString}`), `${spdxString}\n${versionStringLine}`);
+      updatedContent = content.replace(new RegExp(`${spdxString}`), `${spdxString}\n${versionStringLine}`);
     }
 
     // write updated file
