@@ -18,22 +18,22 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
         offseted = (...arr) => arr.map((num) => BigNumber.from(this.startTokenId + num));
       });
 
-      const expectRawOwnershipBurned = function (rawOwnership, address) {
-        expect(rawOwnership.burned).to.eql(true);
-        expect(rawOwnership.addr).to.eql(address);
-        expect(rawOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
+      const expectExplicitOwnershipBurned = function (explicitOwnership, address) {
+        expect(explicitOwnership.burned).to.eql(true);
+        expect(explicitOwnership.addr).to.eql(address);
+        expect(explicitOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
       };
 
-      const expectRawOwnershipNotExists = function (rawOwnership) {
-        expect(rawOwnership.burned).to.eql(false);
-        expect(rawOwnership.addr).to.eql(ZERO_ADDRESS);
-        expect(rawOwnership.startTimestamp).to.eql(BigNumber.from(0));
+      const expectExplicitOwnershipNotExists = function (explicitOwnership) {
+        expect(explicitOwnership.burned).to.eql(false);
+        expect(explicitOwnership.addr).to.eql(ZERO_ADDRESS);
+        expect(explicitOwnership.startTimestamp).to.eql(BigNumber.from(0));
       };
 
-      const expectRawOwnershipExists = function (rawOwnership, address) {
-        expect(rawOwnership.burned).to.eql(false);
-        expect(rawOwnership.addr).to.eql(address);
-        expect(rawOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
+      const expectExplicitOwnershipExists = function (explicitOwnership, address) {
+        expect(explicitOwnership.burned).to.eql(false);
+        expect(explicitOwnership.addr).to.eql(address);
+        expect(explicitOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
       };
 
       context('with no minted tokens', async function () {
@@ -57,19 +57,19 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
           });
         });
 
-        describe('rawOwnershipOf', async function () {
+        describe('explicitOwnershipOf', async function () {
           it('returns empty struct', async function () {
-            expectRawOwnershipNotExists(await this.erc721aQueries.rawOwnershipOf(0));
-            expectRawOwnershipNotExists(await this.erc721aQueries.rawOwnershipOf(1));
+            expectExplicitOwnershipNotExists(await this.erc721aQueries.explicitOwnershipOf(0));
+            expectExplicitOwnershipNotExists(await this.erc721aQueries.explicitOwnershipOf(1));
           });
         });
 
-        describe('rawOwnershipsOf', async function () {
+        describe('explicitOwnershipsOf', async function () {
           it('returns empty structs', async function () {
             const tokenIds = [0, 1, 2, 3];
-            const rawOwnerships = await this.erc721aQueries.rawOwnershipsOf(tokenIds);
-            for (let i = 0; i < rawOwnerships.length; ++i) {
-              expectRawOwnershipNotExists(rawOwnerships[i]);
+            const explicitOwnerships = await this.erc721aQueries.explicitOwnershipsOf(tokenIds);
+            for (let i = 0; i < explicitOwnerships.length; ++i) {
+              expectExplicitOwnershipNotExists(explicitOwnerships[i]);
             }
           });
         });
@@ -193,7 +193,7 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
                   await expectCorrect.call(this, this.owner.address, start + o, stop);
                   // End truncated.
                   await expectCorrect.call(this, this.owner.address, start, stop - o);
-                  // Start and end truncated. This also tests for start + o > stop - o.
+                  // Start and end truncated. This also tests for start + o >= stop - o.
                   await expectCorrect.call(this, this.owner.address, start + o, stop - o);
                 }
                 for (let o = 0, n = parseInt(this.currentIndex) + 1; o <= n; ++o) {
@@ -215,72 +215,72 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
           });
         });
 
-        describe('rawOwnershipOf', async function () {
+        describe('explicitOwnershipOf', async function () {
           it('token exists', async function () {  
             const tokenId = this.owner.expected.tokens[0];
-            const rawOwnership = await this.erc721aQueries.rawOwnershipOf(tokenId);
-            expectRawOwnershipExists(rawOwnership, this.owner.address);
+            const explicitOwnership = await this.erc721aQueries.explicitOwnershipOf(tokenId);
+            expectExplicitOwnershipExists(explicitOwnership, this.owner.address);
           });
 
           it('after a token burn', async function () {
             const tokenId = this.owner.expected.tokens[0];
             await this.erc721aQueries.burn(tokenId);
-            const rawOwnership = await this.erc721aQueries.rawOwnershipOf(tokenId);
-            expectRawOwnershipBurned(rawOwnership, this.owner.address);
+            const explicitOwnership = await this.erc721aQueries.explicitOwnershipOf(tokenId);
+            expectExplicitOwnershipBurned(explicitOwnership, this.owner.address);
           });
 
           it('after a token transfer', async function () {
             const tokenId = this.owner.expected.tokens[0];
             await this.erc721aQueries.transferFrom(this.owner.address, this.addr4.address, tokenId);
-            const rawOwnership = await this.erc721aQueries.rawOwnershipOf(tokenId);
-            expectRawOwnershipExists(rawOwnership, this.addr4.address);
+            const explicitOwnership = await this.erc721aQueries.explicitOwnershipOf(tokenId);
+            expectExplicitOwnershipExists(explicitOwnership, this.addr4.address);
           });
 
           it('out of bounds', async function () {
-            const rawOwnership = await this.erc721aQueries.rawOwnershipOf(this.currentIndex);
-            expectRawOwnershipNotExists(rawOwnership);
+            const explicitOwnership = await this.erc721aQueries.explicitOwnershipOf(this.currentIndex);
+            expectExplicitOwnershipNotExists(explicitOwnership);
           });
         });
 
-        describe('rawOwnershipsOf', async function () {
+        describe('explicitOwnershipsOf', async function () {
           it('tokens exist', async function () {
             const tokenIds = [].concat(this.owner.expected.tokens, this.addr3.expected.tokens);
-            const rawOwnerships = await this.erc721aQueries.rawOwnershipsOf(tokenIds);
+            const explicitOwnerships = await this.erc721aQueries.explicitOwnershipsOf(tokenIds);
             for (let i = 0; i < tokenIds.length; ++i) {
               const tokenId = await this.erc721aQueries.ownerOf(tokenIds[i]);
-              expectRawOwnershipExists(rawOwnerships[i], tokenId);
+              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
             }
           });
 
           it('after a token burn', async function () {
             const tokenIds = [].concat(this.owner.expected.tokens, this.addr3.expected.tokens);
             await this.erc721aQueries.burn(tokenIds[0]);
-            const rawOwnerships = await this.erc721aQueries.rawOwnershipsOf(tokenIds);
-            expectRawOwnershipBurned(rawOwnerships[0], this.owner.address);
+            const explicitOwnerships = await this.erc721aQueries.explicitOwnershipsOf(tokenIds);
+            expectExplicitOwnershipBurned(explicitOwnerships[0], this.owner.address);
             for (let i = 1; i < tokenIds.length; ++i) {
               const tokenId = await this.erc721aQueries.ownerOf(tokenIds[i]);
-              expectRawOwnershipExists(rawOwnerships[i], tokenId);
+              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
             }
           });
 
           it('after a token transfer', async function () {
             const tokenIds = [].concat(this.owner.expected.tokens, this.addr3.expected.tokens);
             await this.erc721aQueries.transferFrom(this.owner.address, this.addr4.address, tokenIds[0]);
-            const rawOwnerships = await this.erc721aQueries.rawOwnershipsOf(tokenIds);
-            expectRawOwnershipExists(rawOwnerships[0], this.addr4.address);
+            const explicitOwnerships = await this.erc721aQueries.explicitOwnershipsOf(tokenIds);
+            expectExplicitOwnershipExists(explicitOwnerships[0], this.addr4.address);
             for (let i = 1; i < tokenIds.length; ++i) {
               const tokenId = await this.erc721aQueries.ownerOf(tokenIds[i]);
-              expectRawOwnershipExists(rawOwnerships[i], tokenId);
+              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
             }
           });
 
           it('out of bounds', async function () {
             const tokenIds = [].concat([this.currentIndex], this.addr3.expected.tokens);
-            const rawOwnerships = await this.erc721aQueries.rawOwnershipsOf(tokenIds);
-            expectRawOwnershipNotExists(rawOwnerships[0]);
+            const explicitOwnerships = await this.erc721aQueries.explicitOwnershipsOf(tokenIds);
+            expectExplicitOwnershipNotExists(explicitOwnerships[0]);
             for (let i = 1; i < tokenIds.length; ++i) {
               const tokenId = await this.erc721aQueries.ownerOf(tokenIds[i]);
-              expectRawOwnershipExists(rawOwnerships[i], tokenId);
+              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
             }
           });
         });

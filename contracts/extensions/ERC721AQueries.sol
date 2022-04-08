@@ -28,7 +28,7 @@ abstract contract ERC721AQueries is ERC721A {
      *   - `startTimestamp` = `<Timestamp of start of ownership>`
      *   - `burned = `false`
      */
-    function rawOwnershipOf(uint256 tokenId) public view returns (TokenOwnership memory) {
+    function explicitOwnershipOf(uint256 tokenId) public view returns (TokenOwnership memory) {
         TokenOwnership memory ownership;
         if (tokenId < _startTokenId() || tokenId >= _currentIndex) {
             return ownership;
@@ -42,14 +42,14 @@ abstract contract ERC721AQueries is ERC721A {
 
     /**
      * @dev Returns an array of `TokenOwnership` structs at `tokenIds` in order.
-     * See {ERC721AQueries-rawOwnershipOf}
+     * See {ERC721AQueries-explicitOwnershipOf}
      */
-    function rawOwnershipsOf(uint256[] memory tokenIds) external view returns (TokenOwnership[] memory) {
+    function explicitOwnershipsOf(uint256[] memory tokenIds) external view returns (TokenOwnership[] memory) {
         unchecked {
             uint256 tokenIdsLength = tokenIds.length;
             TokenOwnership[] memory ownerships = new TokenOwnership[](tokenIdsLength);
             for (uint256 i; i != tokenIdsLength; ++i) {
-                ownerships[i] = rawOwnershipOf(tokenIds[i]);
+                ownerships[i] = explicitOwnershipOf(tokenIds[i]);
             }
             return ownerships;
         }
@@ -94,9 +94,9 @@ abstract contract ERC721AQueries is ERC721A {
             if (tokenIdsMaxLength == 0) {
                 return tokenIds;
             }
-            // We need to call `rawOwnershipOf(start)`,
+            // We need to call `explicitOwnershipOf(start)`,
             // because the slot at `start` may not be initialized.
-            TokenOwnership memory ownership = rawOwnershipOf(start);
+            TokenOwnership memory ownership = explicitOwnershipOf(start);
             address currOwnershipAddr;
             // If the starting slot exists (i.e. not burned), initialize `currOwnershipAddr`.
             // `ownership.address` will not be zero, as `start` is clamped to the valid token ID range.
