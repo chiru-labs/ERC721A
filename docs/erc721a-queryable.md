@@ -1,6 +1,6 @@
-# ERC721AQueries
+# ERC721AQueryable
 
-[`erc721a/contracts/extensions/ERC721AQueries.sol`](https://github.com/chiru-labs/ERC721A/blob/main/contracts/extensions/ERC721AQueries.sol)
+[`erc721a/contracts/extensions/ERC721AQueryable.sol`](https://github.com/chiru-labs/ERC721A/blob/main/contracts/extensions/ERC721AQueryable.sol)
 
 ERC721A subclass with convenience query functions.
 
