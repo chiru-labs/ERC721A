@@ -57,9 +57,11 @@ You can use them to design tokenomics with very minimal gas overhead.
 | O(1) ownerOf     | Yes            | No ownerOf             |
 | O(1) balanceOf   | For all tokens | Within fungible tokens |
 | O(1)\* bulk mint | For all tokens | Within fungible tokens |
-| # mint `SSTORE`s | 3              | 1                      |
+| # mint `SSTORE`s | 3              | 1 <sup>&#8224;</sup>   |
 
 \* Approximately O(1) for ERC721A. See [Design](design.md).
+
+<sup>&#8224;</sup> For unique collections, ERC1155 needs a counter which needs 1 more `SSTORE`.
 
 ERC1155 requires centralized indexing services to emulate ERC721-like functionality off-chain.
 

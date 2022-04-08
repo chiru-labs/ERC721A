@@ -462,7 +462,7 @@ Emits a `Transfer` event.
 `IERC721-Transfer`
 
 ```solidity
-Transfer(address from, address to, uint256 tokenId)
+event Transfer(address from, address to, uint256 tokenId)
 ```
 
 Emitted when `tokenId` token is transferred from `from` to `to`.
@@ -472,7 +472,7 @@ Emitted when `tokenId` token is transferred from `from` to `to`.
 `IERC721-Approval`
 
 ```solidity
-Approval(address owner, address approved, uint256 tokenId)
+event Approval(address owner, address approved, uint256 tokenId)
 ```
 
 Emitted when `owner` enables `approved` to manage the `tokenId` token.
@@ -482,7 +482,7 @@ Emitted when `owner` enables `approved` to manage the `tokenId` token.
 `IERC721-ApprovalForAll`
 
 ```solidity
-ApprovalForAll(address owner, address operator, bool approved)
+event ApprovalForAll(address owner, address operator, bool approved)
 ```
 
 Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
