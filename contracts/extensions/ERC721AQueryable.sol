@@ -5,11 +5,13 @@ pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
 
+error InvalidQueryRange();
+
 /**
- * @title ERC721A Queries
+ * @title ERC721A Queryable
  * @dev ERC721A subclass with convenience query functions.
  */
-abstract contract ERC721AQueries is ERC721A {
+abstract contract ERC721AQueryable is ERC721A {
     /**
      * @dev Returns the `TokenOwnership` struct at `tokenId` without reverting.
      *
@@ -42,7 +44,7 @@ abstract contract ERC721AQueries is ERC721A {
 
     /**
      * @dev Returns an array of `TokenOwnership` structs at `tokenIds` in order.
-     * See {ERC721AQueries-explicitOwnershipOf}
+     * See {ERC721AQueryable-explicitOwnershipOf}
      */
     function explicitOwnershipsOf(uint256[] memory tokenIds) external view returns (TokenOwnership[] memory) {
         unchecked {
@@ -61,7 +63,7 @@ abstract contract ERC721AQueries is ERC721A {
      * (i.e. `start <= tokenId < stop`).
      *
      * This function allows for tokens to be queried if the collection
-     * grows too big for a single call of {ERC721AQueries-tokensOfOwner}.
+     * grows too big for a single call of {ERC721AQueryable-tokensOfOwner}.
      */
     function tokensOfOwnerIn(
         address owner,
@@ -69,6 +71,7 @@ abstract contract ERC721AQueries is ERC721A {
         uint256 stop
     ) external view returns (uint256[] memory) {
         unchecked {
+            if (start >= stop) revert InvalidQueryRange();
             uint256 tokenIdsIdx;
             uint256 stopLimit = _currentIndex;
             // Set `start = max(start, _startTokenId())`.
@@ -83,9 +86,9 @@ abstract contract ERC721AQueries is ERC721A {
             // Set `tokenIdsMaxLength = min(balanceOf(owner), stop - start)`,
             // to cater for cases where `balanceOf(owner)` is too big.
             if (start < stop) {
-                uint256 windowLength = stop - start;
-                if (windowLength < tokenIdsMaxLength) {
-                    tokenIdsMaxLength = windowLength;
+                uint256 rangeLength = stop - start;
+                if (rangeLength < tokenIdsMaxLength) {
+                    tokenIdsMaxLength = rangeLength;
                 }
             } else {
                 tokenIdsMaxLength = 0;
@@ -129,7 +132,7 @@ abstract contract ERC721AQueries is ERC721A {
      * This function scans the ownership mapping and is O(totalSupply) in complexity.
      * It is meant to be called off-chain.
      *
-     * See {ERC721AQueries-tokensOfOwnerIn} for splitting the scan into
+     * See {ERC721AQueryable-tokensOfOwnerIn} for splitting the scan into
      * multiple smaller scans if the collection is large enough to cause
      * an out-of-gas error (10K pfp collections should be fine).
      */
