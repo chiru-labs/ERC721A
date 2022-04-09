@@ -82,3 +82,7 @@ in the range \[`start`, `stop`)
 
 This function allows for tokens to be queried if the collection
 grows too big for a single call of [`tokensOfOwner`](#tokensOfOwner).
+
+Requirements:
+
+- `start` < `stop`.
