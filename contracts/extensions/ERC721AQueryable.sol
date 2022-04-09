@@ -64,6 +64,10 @@ abstract contract ERC721AQueryable is ERC721A {
      *
      * This function allows for tokens to be queried if the collection
      * grows too big for a single call of {ERC721AQueryable-tokensOfOwner}.
+     *
+     * Requirements:
+     *
+     * - `start` < `stop`
      */
     function tokensOfOwnerIn(
         address owner,
