@@ -1,10 +1,13 @@
 - [Overview](/)
 - [Design](design.md)
 - [Tips](tips.md)
+- [Upgradeable](upgradeable.md)
 - API
   - [ERC721A](erc721a.md)
   - [ERC721ABurnable](erc721a-burnable.md)
   - [ERC721AOwnersExplicit](erc721a-owners-explicit.md)
+  - [ERC721APausable](erc721a-pausable.md)
+  - [ERC721AQueryable](erc721a-queryable.md)
 - **Theme**
 <div id="theme">
 <div class="choice" name="light">
