@@ -53,6 +53,10 @@ contract ERC721AMock is ERC721A {
         _mint(to, quantity, _data, safe);
     }
 
+    function slimMint(address to, uint256 quantity) public {
+        _mint(to, quantity);
+    }
+
     function burn(uint256 tokenId, bool approvalCheck) public {
         _burn(tokenId, approvalCheck);
     }

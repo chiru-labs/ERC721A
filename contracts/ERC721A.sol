@@ -406,6 +406,38 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
+     * @dev Equivalent to _mint(to, quantity, '', false).
+     */
+    function _mint(address to, uint256 quantity) internal {
+        uint256 startTokenId = _currentIndex;
+        if (to == address(0)) revert MintToZeroAddress();
+        if (quantity == 0) revert MintZeroQuantity();
+
+        _beforeTokenTransfers(address(0), to, startTokenId, quantity);
+
+        // Overflows are incredibly unrealistic.
+        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
+        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        unchecked {
+            _addressData[to].balance += uint64(quantity);
+            _addressData[to].numberMinted += uint64(quantity);
+
+            _ownerships[startTokenId].addr = to;
+            _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+
+            uint256 updatedIndex = startTokenId;
+            uint256 end = updatedIndex + quantity;
+
+            do {
+                emit Transfer(address(0), to, updatedIndex++);
+            } while (updatedIndex != end);
+
+            _currentIndex = updatedIndex;
+        }
+        _afterTokenTransfers(address(0), to, startTokenId, quantity);
+    }
+
+    /**
      * @dev Transfers `tokenId` from `from` to `to`.
      *
      * Requirements:

@@ -318,41 +318,60 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
 
         describe('mint', function () {
-          const data = '0x42';
+          const subTests = function (description, isSlim) {
+            describe(description, async function () {
+              const mint = async function (to, quantity) {
+                if (isSlim) {
+                  return await this.erc721a.slimMint(to, quantity);
+                } else {
+                  return await this.erc721a.mint(to, quantity, '0x42', false);
+                }
+              };
 
-          it('successfully mints a single token', async function () {
-            const mintTx = await this.erc721a.mint(this.receiver.address, 1, data, false);
-            await expect(mintTx)
-              .to.emit(this.erc721a, 'Transfer')
-              .withArgs(ZERO_ADDRESS, this.receiver.address, this.startTokenId);
-            await expect(mintTx).to.not.emit(this.receiver, 'Received');
-            expect(await this.erc721a.ownerOf(this.startTokenId)).to.equal(this.receiver.address);
-          });
+              it('successfully mints a single token', async function () {
+                const mintTx = await mint.call(this, this.receiver.address, 1);
+                await expect(mintTx)
+                  .to.emit(this.erc721a, 'Transfer')
+                  .withArgs(ZERO_ADDRESS, this.receiver.address, this.startTokenId);
+                await expect(mintTx).to.not.emit(this.receiver, 'Received');
+                expect(await this.erc721a.ownerOf(this.startTokenId))
+                  .to.equal(this.receiver.address);
+              });
 
-          it('successfully mints multiple tokens', async function () {
-            const mintTx = await this.erc721a.mint(this.receiver.address, 5, data, false);
-            for (let tokenId = this.startTokenId; tokenId < 5 + this.startTokenId; tokenId++) {
-              await expect(mintTx)
-                .to.emit(this.erc721a, 'Transfer')
-                .withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
-              await expect(mintTx).to.not.emit(this.receiver, 'Received');
-              expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.receiver.address);
-            }
-          });
+              it('successfully mints multiple tokens', async function () {
+                const mintTx = await mint.call(this, this.receiver.address, 5);
+                for (let tokenId = this.startTokenId; tokenId < 5 + this.startTokenId; tokenId++) {
+                  await expect(mintTx)
+                    .to.emit(this.erc721a, 'Transfer')
+                    .withArgs(ZERO_ADDRESS, this.receiver.address, tokenId);
+                  await expect(mintTx).to.not.emit(this.receiver, 'Received');
+                  expect(await this.erc721a.ownerOf(tokenId))
+                    .to.equal(this.receiver.address);
+                }
+              });
 
-          it('does not revert for non-receivers', async function () {
-            const nonReceiver = this.erc721a;
-            await this.erc721a.mint(nonReceiver.address, 1, data, false);
-            expect(await this.erc721a.ownerOf(this.startTokenId)).to.equal(nonReceiver.address);
-          });
+              it('does not revert for non-receivers', async function () {
+                const nonReceiver = this.erc721a;
+                await mint.call(this, nonReceiver.address, 1);
+                expect(await this.erc721a.ownerOf(this.startTokenId))
+                  .to.equal(nonReceiver.address);
+              });
 
-          it('rejects mints to the zero address', async function () {
-            await expect(this.erc721a.mint(ZERO_ADDRESS, 1, data, false)).to.be.revertedWith('MintToZeroAddress');
-          });
+              it('rejects mints to the zero address', async function () {
+                await expect(mint.call(this, ZERO_ADDRESS, 1))
+                  .to.be.revertedWith('MintToZeroAddress');
+              });
 
-          it('requires quantity to be greater than 0', async function () {
-            await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith('MintZeroQuantity');
-          });
+              it('requires quantity to be greater than 0', async function () {
+                await expect(mint.call(this, this.owner.address, 0))
+                  .to.be.revertedWith('MintZeroQuantity');
+              });  
+            });
+          };
+
+          subTests('_mint(address,uint256,bytes,bool)', false);
+
+          subTests('_mint(address,uint256)', true);
         });
       });
     });
