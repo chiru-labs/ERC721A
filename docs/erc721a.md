@@ -74,7 +74,7 @@ To get the total number of tokens minted, please see [`_totalMinted`](#_totalMin
 ### \_burnCounter
 
 ```solidity
-uint256 internal _currentIndex
+uint256 internal _burnCounter
 ```
 
 The number of tokens burned.
