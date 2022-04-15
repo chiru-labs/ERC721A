@@ -6,9 +6,9 @@ Token IDs are minted in sequential order (e.g. 0, 1, 2, 3, ...).
 
 Regardless of the quantity minted, the `_mint` function only performs 3 `SSTORE` operations:
 
-- Initializes the ownership slot at the starting token ID with the address.
-- Updates the address' balance.
-- Updates the next token ID.
+- Initialize the ownership slot at the starting token ID with the address.
+- Update the address' balance.
+- Update the next token ID.
 
 > A `Transfer` event will still be emitted for each NFT minted.   
   However, emitting an event is an order of magnitude cheaper than a `SSTORE` operation.
@@ -41,9 +41,31 @@ To illustrate, we compare OpenZeppelin's ERC721 with ERC721A.
 
 Even for conservatively small batch sizes (e.g. 5), we can observe decent savings over the barebones implementation. 
 
-In practice, the Mint BASEFEE for ERC721 can be even higher.
+In practice, the Mint BASEFEE for ERC721 can be much higher. 
 
+When consecutive blocks hit the block gas limit, [the BASEFEE increases exponentially](https://ethereum.org/en/developers/docs/gas/#base-fee). 
 
+#### First Transfer vs Subsequent Transfers
+
+The main overhead of transferring a token **only occurs during its very first transfer** for an uninitialized slot. 
+
+|                            | ERC721       | ERC721A        |
+| -------------------------- | ------------ | -------------- |
+| First transfer             | 45331 gas    | 96078 gas      |
+| Subsequent transfers       | 45331 gas    | 49164 gas      |
+
+Here, we bulk mint 10 tokens, and compare the transfer costs of the 5th token in the batch.
+
+To keep the cost of the `SSTORE` writing to the balance mapping constant, we ensure that the destination addresses have non-zero balances during all transfers.
+
+The first transfer with ERC721A will incur the storage overheads:
+
+- 2 extra `SSTORE`s (initialize current slot and next slot, both of which are empty).
+- 5 extra `SLOAD`s (read previous slots and next slot).
+
+Subsequent transfers with ERC721A will only incur the storage overheads:
+
+- 1 extra `SLOAD` (read next slot).
 
 ## Balance Mapping
 
