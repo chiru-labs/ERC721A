@@ -13,7 +13,7 @@ contract ERC721AGasReporterMock is ERC721A {
     }
 
     function mintOne(address to) public {
-        _mint(to, 1, '', false);
+        _mint(to, 1);
     }
 
     function safeMintTen(address to) public {
@@ -21,6 +21,6 @@ contract ERC721AGasReporterMock is ERC721A {
     }
 
     function mintTen(address to) public {
-        _mint(to, 10, '', false);
+        _mint(to, 10);
     }
 }
