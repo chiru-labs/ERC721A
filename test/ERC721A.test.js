@@ -318,10 +318,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
 
         describe('mint', function () {
-          const data = '0x42';
-
           it('successfully mints a single token', async function () {
-            const mintTx = await this.erc721a.mint(this.receiver.address, 1, data, false);
+            const mintTx = await this.erc721a.mint(this.receiver.address, 1);
             await expect(mintTx)
               .to.emit(this.erc721a, 'Transfer')
               .withArgs(ZERO_ADDRESS, this.receiver.address, this.startTokenId);
@@ -330,7 +328,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('successfully mints multiple tokens', async function () {
-            const mintTx = await this.erc721a.mint(this.receiver.address, 5, data, false);
+            const mintTx = await this.erc721a.mint(this.receiver.address, 5);
             for (let tokenId = this.startTokenId; tokenId < 5 + this.startTokenId; tokenId++) {
               await expect(mintTx)
                 .to.emit(this.erc721a, 'Transfer')
@@ -342,16 +340,16 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           it('does not revert for non-receivers', async function () {
             const nonReceiver = this.erc721a;
-            await this.erc721a.mint(nonReceiver.address, 1, data, false);
+            await this.erc721a.mint(nonReceiver.address, 1);
             expect(await this.erc721a.ownerOf(this.startTokenId)).to.equal(nonReceiver.address);
           });
 
           it('rejects mints to the zero address', async function () {
-            await expect(this.erc721a.mint(ZERO_ADDRESS, 1, data, false)).to.be.revertedWith('MintToZeroAddress');
+            await expect(this.erc721a.mint(ZERO_ADDRESS, 1)).to.be.revertedWith('MintToZeroAddress');
           });
 
           it('requires quantity to be greater than 0', async function () {
-            await expect(this.erc721a.mint(this.owner.address, 0, data, false)).to.be.revertedWith('MintZeroQuantity');
+            await expect(this.erc721a.mint(this.owner.address, 0)).to.be.revertedWith('MintZeroQuantity');
           });
         });
       });

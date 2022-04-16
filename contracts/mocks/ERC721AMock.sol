@@ -36,21 +36,12 @@ contract ERC721AMock is ERC721A {
         _safeMint(to, quantity);
     }
 
-    function safeMint(
-        address to,
-        uint256 quantity,
-        bytes memory _data
-    ) public {
+    function safeMint(address to, uint256 quantity, bytes memory _data) public {
         _safeMint(to, quantity, _data);
     }
 
-    function mint(
-        address to,
-        uint256 quantity,
-        bytes memory _data,
-        bool safe
-    ) public {
-        _mint(to, quantity, _data, safe);
+    function mint(address to, uint256 quantity) public {
+        _mint(to, quantity);
     }
 
     function burn(uint256 tokenId, bool approvalCheck) public {
