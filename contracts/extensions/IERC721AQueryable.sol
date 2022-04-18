@@ -9,6 +9,8 @@ import '../IERC721A.sol';
  * @dev Interface of an ERC721AQueryable compliant contract.
  */
 interface IERC721AQueryable is IERC721A {
+    error InvalidQueryRange();
+
     /**
      * @dev Returns the `TokenOwnership` struct at `tokenId` without reverting.
      *

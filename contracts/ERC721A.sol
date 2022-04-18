@@ -10,20 +10,6 @@ import '@openzeppelin/contracts/utils/Context.sol';
 import '@openzeppelin/contracts/utils/Strings.sol';
 import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
 
-error ApprovalCallerNotOwnerNorApproved();
-error ApprovalQueryForNonexistentToken();
-error ApproveToCaller();
-error ApprovalToCurrentOwner();
-error BalanceQueryForZeroAddress();
-error MintToZeroAddress();
-error MintZeroQuantity();
-error OwnerQueryForNonexistentToken();
-error TransferCallerNotOwnerNorApproved();
-error TransferFromIncorrectOwner();
-error TransferToNonERC721ReceiverImplementer();
-error TransferToZeroAddress();
-error URIQueryForNonexistentToken();
-
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
  * the Metadata extension. Built to optimize for lower gas during batch mints.
@@ -316,7 +302,7 @@ contract ERC721A is Context, ERC165, IERC721A {
      *
      * Requirements:
      *
-     * - If `to` refers to a smart contract, it must implement 
+     * - If `to` refers to a smart contract, it must implement
      *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
      * - `quantity` must be greater than 0.
      *

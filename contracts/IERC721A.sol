@@ -10,6 +10,19 @@ import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
  * @dev Interface of an ERC721A compliant contract.
  */
 interface IERC721A is IERC721, IERC721Metadata {
+    error ApprovalCallerNotOwnerNorApproved();
+    error ApprovalQueryForNonexistentToken();
+    error ApproveToCaller();
+    error ApprovalToCurrentOwner();
+    error BalanceQueryForZeroAddress();
+    error MintToZeroAddress();
+    error MintZeroQuantity();
+    error OwnerQueryForNonexistentToken();
+    error TransferCallerNotOwnerNorApproved();
+    error TransferFromIncorrectOwner();
+    error TransferToNonERC721ReceiverImplementer();
+    error TransferToZeroAddress();
+    error URIQueryForNonexistentToken();
 
     // Compiler will pack this into a single 256bit word.
     struct TokenOwnership {
