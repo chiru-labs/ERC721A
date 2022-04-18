@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.4;
 
-import '../interfaces/IERC721ABurnable.sol';
+import './IERC721ABurnable.sol';
 import '../ERC721A.sol';
 
 /**

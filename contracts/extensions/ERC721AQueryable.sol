@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.4;
 
-import '../interfaces/IERC721AQueryable.sol';
+import './IERC721AQueryable.sol';
 import '../ERC721A.sol';
 
 error InvalidQueryRange();

@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.4;
 
-import './interfaces/IERC721A.sol';
+import './IERC721A.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
 import '@openzeppelin/contracts/utils/Context.sol';
