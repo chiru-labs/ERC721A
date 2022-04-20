@@ -18,6 +18,7 @@ error ApprovalToCurrentOwner();
 error BalanceQueryForZeroAddress();
 error MintToZeroAddress();
 error MintZeroQuantity();
+error MintExistingId();
 error OwnerQueryForNonexistentToken();
 error TransferCallerNotOwnerNorApproved();
 error TransferFromIncorrectOwner();
@@ -178,22 +179,20 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         uint256 curr = tokenId;
 
         unchecked {
-            if (_startTokenId() <= curr && curr < _currentIndex) {
-                TokenOwnership memory ownership = _ownerships[curr];
-                if (!ownership.burned) {
+            TokenOwnership memory ownership = _ownerships[curr];
+            if (!ownership.burned) {
+                if (ownership.addr != address(0)) {
+                    return ownership;
+                }
+                // Invariant:
+                // There will always be an ownership that has an address and is not burned
+                // before an ownership that does not have an address and is not burned.
+                // Hence, curr will not underflow.
+                while (true) {
+                    curr--;
+                    ownership = _ownerships[curr];
                     if (ownership.addr != address(0)) {
                         return ownership;
-                    }
-                    // Invariant:
-                    // There will always be an ownership that has an address and is not burned
-                    // before an ownership that does not have an address and is not burned.
-                    // Hence, curr will not underflow.
-                    while (true) {
-                        curr--;
-                        ownership = _ownerships[curr];
-                        if (ownership.addr != address(0)) {
-                            return ownership;
-                        }
                     }
                 }
             }
@@ -429,6 +428,23 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
+    function _mintId(address to, uint256 _tokenId) internal {
+        if (to == address(0)) revert MintToZeroAddress();
+        if(_ownerships[_tokenId].addr != address(0)) revert MintExistingId();
+
+        _beforeTokenTransfers(address(0), to, _tokenId, 1);
+
+        _addressData[to].balance++;
+        _addressData[to].numberMinted++;
+
+        _ownerships[_tokenId].addr = to;
+        _ownerships[_tokenId].startTimestamp = uint64(block.timestamp);
+        _ownerships[_tokenId].burned = false;
+
+        _afterTokenTransfers(address(0), to, _tokenId, 1);
+        emit Transfer(address(0), to, _tokenId);
+    }
+
     /**
      * @dev Transfers `tokenId` from `from` to `to`.
      *
@@ -534,7 +550,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
             // Keep track of who burned the token, and the timestamp of burning.
             TokenOwnership storage currSlot = _ownerships[tokenId];
-            currSlot.addr = from;
+            currSlot.addr = address(0);
             currSlot.startTimestamp = uint64(block.timestamp);
             currSlot.burned = true;
 
