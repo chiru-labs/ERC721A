@@ -89,10 +89,10 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
-    constructor(string memory name_, string memory symbol_) {
+    constructor(string memory name_, string memory symbol_, uint256 _startId) {
         _name = name_;
         _symbol = symbol_;
-        _currentIndex = _startTokenId();
+        _currentIndex = _startId;
     }
 
     /**
