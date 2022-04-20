@@ -1,5 +1,5 @@
 {
-  "name": "erc721a",
+  "name": "@hotcrosscom/erc721a",
   "version": "3.2.0",
   "description": "ERC721A contract for Solidity",
   "files": [
@@ -35,14 +35,14 @@
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solidity-coverage": "^0.7.20"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/chiru-labs/ERC721A.git"
-  },
-  "author": "chiru-labs",
-  "license": "ISC",
+  "repository": "git@github.com:hotcrosscom/ERC721A.git",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chiru-labs/ERC721A/issues"
+    "url": "https://github.com/hotcrosscom/ERC721A/issues"
   },
-  "homepage": "https://github.com/chiru-labs/ERC721A#readme"
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "homepage": "https://github.com/hotcrosscom/ERC721A#readme"
 }
