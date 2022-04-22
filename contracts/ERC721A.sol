@@ -211,21 +211,21 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC721Metadata-name}.
      */
-    function name() public view virtual override returns (string memory) {
+    function name() public view virtual override external returns (string memory) {
         return _name;
     }
 
     /**
      * @dev See {IERC721Metadata-symbol}.
      */
-    function symbol() public view virtual override returns (string memory) {
+    function symbol() public view virtual override external returns (string memory) {
         return _symbol;
     }
 
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+    function tokenURI(uint256 tokenId) public view virtual override external returns (string memory) {
         if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
         string memory baseURI = _baseURI();
@@ -244,7 +244,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC721-approve}.
      */
-    function approve(address to, uint256 tokenId) public override {
+    function approve(address to, uint256 tokenId) public external override {
         address owner = ERC721A.ownerOf(tokenId);
         if (to == owner) revert ApprovalToCurrentOwner();
 
@@ -267,7 +267,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     /**
      * @dev See {IERC721-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(address operator, bool approved) public virtual external override {
         if (operator == _msgSender()) revert ApproveToCaller();
 
         _operatorApprovals[_msgSender()][operator] = approved;
@@ -288,7 +288,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override external {
         _transfer(from, to, tokenId);
     }
 
@@ -299,7 +299,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override {
+    ) public virtual override external {
         safeTransferFrom(from, to, tokenId, '');
     }
 
