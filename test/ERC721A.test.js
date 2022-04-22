@@ -15,6 +15,24 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         this.startTokenId = this.erc721a.startTokenId ? (await this.erc721a.startTokenId()).toNumber() : 0;
       });
 
+      describe('EIP-165 support', async function () {
+        it('supports IERC721', async function () {
+          expect(await this.erc721a.supportsInterface('0x80ac58cd')).to.eq(true);
+        })
+
+        it('supports ERC721Metadata', async function () {
+          expect(await this.erc721a.supportsInterface('0x5b5e139f')).to.eq(true);
+        })
+
+        it('does not support ERC721Enumerable', async function () {
+          expect(await this.erc721a.supportsInterface('0x780e9d63')).to.eq(false);
+        })
+
+        it('does not support random interface', async function () {
+          expect(await this.erc721a.supportsInterface('0x00000042')).to.eq(false);
+        })
+      })
+
       context('with no minted tokens', async function () {
         it('has 0 totalSupply', async function () {
           const supply = await this.erc721a.totalSupply();
@@ -38,6 +56,27 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           await this.erc721a['safeMint(address,uint256)'](addr2.address, 2);
           await this.erc721a['safeMint(address,uint256)'](addr3.address, 3);
         });
+
+        describe('ERC721Metadata support', async function () {
+          it('responds with the right name', async function () {
+            expect(await this.erc721a.name()).to.eq('Azuki');
+          })
+
+          it('responds with the right symbol', async function () {
+            expect(await this.erc721a.symbol()).to.eq('AZUKI');
+          })
+
+          describe('tokenURI', async function () {
+            it('sends an emtpy uri by default', async function () {
+              const uri = await this.erc721a['tokenURI(uint256)'](1);
+              expect(uri).to.eq('');
+            })
+
+            it('reverts when tokenid is invalid', async function () {
+              await expect(this.erc721a['tokenURI(uint256)'](42)).to.be.reverted;
+            })
+          })
+        })
 
         describe('exists', async function () {
           it('verifies valid tokens', async function () {
