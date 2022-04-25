@@ -28,6 +28,12 @@ For more information on how ERC721A works under the hood, please visit our [blog
 
 https://chiru-labs.github.io/ERC721A/
 
+<!-- Upgradeable Version -->
+
+## Upgradeable Version
+
+https://github.com/chiru-labs/ERC721A-Upgradeable
+
 <!-- Installation -->
 
 ## Installation
@@ -64,7 +70,7 @@ contract Azuki is ERC721A {
 
 ## Roadmap
 
-- [] Support ERC721 Upgradeable
+- [] Improve general repo and code quality (workflows, comments, etc.)
 - [] Add more documentation on benefits of using ERC721A
 - [] Increase test coverage
 
