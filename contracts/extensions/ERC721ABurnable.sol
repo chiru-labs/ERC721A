@@ -3,13 +3,14 @@
 
 pragma solidity ^0.8.4;
 
+import './IERC721ABurnable.sol';
 import '../ERC721A.sol';
 
 /**
  * @title ERC721A Burnable Token
  * @dev ERC721A Token that can be irreversibly burned (destroyed).
  */
-abstract contract ERC721ABurnable is ERC721A {
+abstract contract ERC721ABurnable is ERC721A, IERC721ABurnable {
     /**
      * @dev Burns `tokenId`. See {ERC721A-_burn}.
      *

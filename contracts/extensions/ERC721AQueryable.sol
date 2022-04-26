@@ -3,15 +3,14 @@
 
 pragma solidity ^0.8.4;
 
+import './IERC721AQueryable.sol';
 import '../ERC721A.sol';
-
-error InvalidQueryRange();
 
 /**
  * @title ERC721A Queryable
  * @dev ERC721A subclass with convenience query functions.
  */
-abstract contract ERC721AQueryable is ERC721A {
+abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
     /**
      * @dev Returns the `TokenOwnership` struct at `tokenId` without reverting.
      *
