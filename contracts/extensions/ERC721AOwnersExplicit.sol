@@ -5,11 +5,22 @@ pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
 
-error AllOwnershipsHaveBeenSet();
-error QuantityMustBeNonZero();
-error NoTokensMintedYet();
-
 abstract contract ERC721AOwnersExplicit is ERC721A {
+    /**
+     * No more ownership slots to explicity initialize.
+     */
+    error AllOwnershipsHaveBeenSet();
+    
+    /**
+     * The `quantity` must be more than zero.
+     */
+    error QuantityMustBeNonZero();
+    
+    /**
+     * At least one token needs to be minted.
+     */
+    error NoTokensMintedYet();
+
     uint256 public nextOwnerToExplicitlySet;
 
     /**

@@ -9,6 +9,9 @@ import '../IERC721A.sol';
  * @dev Interface of an ERC721AQueryable compliant contract.
  */
 interface IERC721AQueryable is IERC721A {
+    /**
+     * Invalid query range (`start` >= `stop`).
+     */
     error InvalidQueryRange();
 
     /**
