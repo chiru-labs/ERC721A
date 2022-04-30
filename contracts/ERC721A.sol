@@ -327,8 +327,11 @@ contract ERC721A is Context, ERC165, IERC721A {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
 
-            _ownerships[startTokenId].addr = to;
-            _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+            assembly {
+                mstore(0x00, startTokenId)
+                mstore(0x20, _ownerships.slot)
+                sstore(keccak256(0x00, 0x40), or(to, shl(160, timestamp())))
+            }
 
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;
@@ -343,9 +346,18 @@ contract ERC721A is Context, ERC165, IERC721A {
                 // Reentrancy protection
                 if (_currentIndex != startTokenId) revert();
             } else {
-                do {
-                    emit Transfer(address(0), to, updatedIndex++);
-                } while (updatedIndex < end);
+                assembly {
+                    // emit Transfer(from, to, updatedIndex)
+                    log4(0, 0, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                        0, to, updatedIndex)
+                    updatedIndex := add(updatedIndex, 1)
+
+                    for {} lt(updatedIndex, end) { updatedIndex := add(updatedIndex, 1) } {
+                        // emit Transfer(from, to, updatedIndex)
+                        log4(0, 0, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                            0, to, updatedIndex)
+                    }
+                }
             }
             _currentIndex = updatedIndex;
         }
@@ -376,17 +388,29 @@ contract ERC721A is Context, ERC165, IERC721A {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
 
-            _ownerships[startTokenId].addr = to;
-            _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+            assembly {
+                mstore(0x00, startTokenId)
+                mstore(0x20, _ownerships.slot)
+                // _ownerships[startTokenId].addr = to;
+                // _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+                sstore(keccak256(0x00, 0x40), or(to, shl(160, timestamp())))
 
-            uint256 updatedIndex = startTokenId;
-            uint256 end = updatedIndex + quantity;
+                let updatedIndex := startTokenId
+                let end := add(updatedIndex, quantity)
 
-            do {
-                emit Transfer(address(0), to, updatedIndex++);
-            } while (updatedIndex < end);
+                // emit Transfer(from, to, updatedIndex)
+                log4(0, 0, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                    0, to, updatedIndex)
+                updatedIndex := add(updatedIndex, 1)
 
-            _currentIndex = updatedIndex;
+                for {} lt(updatedIndex, end) { updatedIndex := add(updatedIndex, 1) } {
+                    // emit Transfer(from, to, updatedIndex)
+                    log4(0, 0, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                        0, to, updatedIndex)
+                }
+
+                sstore(_currentIndex.slot, updatedIndex)
+            }
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -429,25 +453,34 @@ contract ERC721A is Context, ERC165, IERC721A {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
 
-            TokenOwnership storage currSlot = _ownerships[tokenId];
-            currSlot.addr = to;
-            currSlot.startTimestamp = uint64(block.timestamp);
+            uint256 prevStartTimestamp = prevOwnership.startTimestamp;
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-            uint256 nextTokenId = tokenId + 1;
-            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
-            if (nextSlot.addr == address(0)) {
-                // This will suffice for checking _exists(nextTokenId),
-                // as a burned slot cannot contain the zero address.
-                if (nextTokenId != _currentIndex) {
-                    nextSlot.addr = from;
-                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
+            assembly {
+                mstore(0x00, tokenId)
+                mstore(0x20, _ownerships.slot)
+                // _ownerships[tokenId].addr = to;
+                // _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+                sstore(keccak256(0x00, 0x40), or(to, shl(160, timestamp())))
+
+                let nextTokenId := add(tokenId, 1)
+                mstore(0x00, nextTokenId)
+                let nextTokenSlotHash := keccak256(0x00, 0x40)
+                // if (_ownerships[nextTokenId].addr == address(0)) {...}
+                if iszero(and(sload(nextTokenSlotHash), 0xffffffffffffffffffffffffffffffffffffffff)) {
+                    // This will suffice for checking _exists(nextTokenId),
+                    // as a burned slot cannot contain the zero address.
+                    // if (nextTokenId != _currentIndex) {...}
+                    if lt(nextTokenId, sload(_currentIndex.slot)) {
+                        // _ownerships[nextTokenId].addr = from;
+                        // _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                        sstore(nextTokenSlotHash, or(from, shl(160, prevStartTimestamp)))
+                    }
                 }
+                // emit Transfer(from, to, tokenId)
+                log4(0, 0, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                    from, to, tokenId)
             }
         }
-
-        emit Transfer(from, to, tokenId);
         _afterTokenTransfers(from, to, tokenId, 1);
     }
 
@@ -494,27 +527,38 @@ contract ERC721A is Context, ERC165, IERC721A {
             addressData.balance -= 1;
             addressData.numberBurned += 1;
 
-            // Keep track of who burned the token, and the timestamp of burning.
-            TokenOwnership storage currSlot = _ownerships[tokenId];
-            currSlot.addr = from;
-            currSlot.startTimestamp = uint64(block.timestamp);
-            currSlot.burned = true;
+            uint256 prevStartTimestamp = prevOwnership.startTimestamp;
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-            uint256 nextTokenId = tokenId + 1;
-            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
-            if (nextSlot.addr == address(0)) {
-                // This will suffice for checking _exists(nextTokenId),
-                // as a burned slot cannot contain the zero address.
-                if (nextTokenId != _currentIndex) {
-                    nextSlot.addr = from;
-                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
+            // Keep track of who burned the token, and the timestamp of burning.
+            assembly {
+                mstore(0x00, tokenId)
+                mstore(0x20, _ownerships.slot)
+                // _ownerships[tokenId].addr = to;
+                // _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+                // _ownerships[tokenId].burn = true;
+                sstore(keccak256(0x00, 0x40), or(or(from, shl(160, timestamp())),
+                    0x100000000000000000000000000000000000000000000000000000000))
+                
+                let nextTokenId := add(tokenId, 1)
+                mstore(0x00, nextTokenId)
+                let nextTokenSlotHash := keccak256(0x00, 0x40)
+                // if (_ownerships[nextTokenId].addr == address(0)) {...}
+                if iszero(and(sload(nextTokenSlotHash), 0xffffffffffffffffffffffffffffffffffffffff)) {
+                    // This will suffice for checking _exists(nextTokenId),
+                    // as a burned slot cannot contain the zero address.
+                    // if (nextTokenId != _currentIndex) {...}
+                    if lt(nextTokenId, sload(_currentIndex.slot)) {
+                        // _ownerships[nextTokenId].addr = from;
+                        // _ownerships[nextTokenId].startTimestamp = prevOwnership.startTimestamp;
+                        sstore(nextTokenSlotHash, or(from, shl(160, prevStartTimestamp)))
+                    }
                 }
+                // emit Transfer(from, address(0), tokenId)
+                log4(0, 0, 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                    from, 0, tokenId)
             }
         }
 
-        emit Transfer(from, address(0), tokenId);
         _afterTokenTransfers(from, address(0), tokenId, 1);
 
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
