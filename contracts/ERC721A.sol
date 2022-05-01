@@ -324,10 +324,23 @@ contract ERC721A is Context, ERC165, IERC721A {
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
         // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
-            _addressData[to].balance += uint64(quantity);
-            _addressData[to].numberMinted += uint64(quantity);
-
             assembly {
+                mstore(0x00, to)
+                mstore(0x20, _addressData.slot)
+                let addressDataSlotHash := keccak256(0x00, 0x40)
+                let addressDataRaw := sload(addressDataSlotHash)
+                // _addressData[to].balance += uint64(quantity);
+                // _addressData[to].numberMinted += uint64(quantity);
+                addressDataRaw := or(
+                    and(add(addressDataRaw, quantity), 0xffffffffffffffff),
+                    or(
+                        shl(64, and(add(shr(64, addressDataRaw), quantity), 0xffffffffffffffff)),
+                        and(addressDataRaw, 
+                            0xffffffffffffffffffffffffffffffff00000000000000000000000000000000)
+                    )
+                )
+                sstore(addressDataSlotHash, addressDataRaw)
+
                 mstore(0x00, startTokenId)
                 mstore(0x20, _ownerships.slot)
                 sstore(keccak256(0x00, 0x40), or(to, shl(160, timestamp())))
@@ -385,14 +398,27 @@ contract ERC721A is Context, ERC165, IERC721A {
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
         // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
-            _addressData[to].balance += uint64(quantity);
-            _addressData[to].numberMinted += uint64(quantity);
-
             assembly {
-                mstore(0x00, startTokenId)
-                mstore(0x20, _ownerships.slot)
+                // _addressData[to].balance += uint64(quantity);
+                // _addressData[to].numberMinted += uint64(quantity);
+                mstore(0x00, to)
+                mstore(0x20, _addressData.slot)
+                let addressDataSlotHash := keccak256(0x00, 0x40)
+                let addressDataRaw := sload(addressDataSlotHash)
+                addressDataRaw := or(
+                    and(add(addressDataRaw, quantity), 0xffffffffffffffff),
+                    or(
+                        shl(64, and(add(shr(64, addressDataRaw), quantity), 0xffffffffffffffff)),
+                        and(addressDataRaw, 
+                            0xffffffffffffffffffffffffffffffff00000000000000000000000000000000)
+                    )
+                )
+                sstore(addressDataSlotHash, addressDataRaw)
+
                 // _ownerships[startTokenId].addr = to;
                 // _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+                mstore(0x00, startTokenId)
+                mstore(0x20, _ownerships.slot)
                 sstore(keccak256(0x00, 0x40), or(to, shl(160, timestamp())))
 
                 let updatedIndex := startTokenId
@@ -450,16 +476,23 @@ contract ERC721A is Context, ERC165, IERC721A {
         // ownership above and the recipient's balance can't realistically overflow.
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
-            _addressData[from].balance -= 1;
-            _addressData[to].balance += 1;
-
             uint256 prevStartTimestamp = prevOwnership.startTimestamp;
 
             assembly {
-                mstore(0x00, tokenId)
-                mstore(0x20, _ownerships.slot)
+                // _addressData[from].balance -= 1;
+                // _addressData[to].balance += 1;
+                mstore(0x00, from)
+                mstore(0x20, _addressData.slot)
+                let addressDataSlotHash := keccak256(0x00, 0x40)
+                sstore(addressDataSlotHash, sub(sload(addressDataSlotHash), 1))
+                mstore(0x00, to)
+                addressDataSlotHash := keccak256(0x00, 0x40)
+                sstore(addressDataSlotHash, add(sload(addressDataSlotHash), 1))
+
                 // _ownerships[tokenId].addr = to;
                 // _ownerships[tokenId].startTimestamp = uint64(block.timestamp);
+                mstore(0x00, tokenId)
+                mstore(0x20, _ownerships.slot)
                 sstore(keccak256(0x00, 0x40), or(to, shl(160, timestamp())))
 
                 let nextTokenId := add(tokenId, 1)
@@ -523,14 +556,19 @@ contract ERC721A is Context, ERC165, IERC721A {
         // ownership above and the recipient's balance can't realistically overflow.
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
-            AddressData storage addressData = _addressData[from];
-            addressData.balance -= 1;
-            addressData.numberBurned += 1;
-
             uint256 prevStartTimestamp = prevOwnership.startTimestamp;
 
             // Keep track of who burned the token, and the timestamp of burning.
             assembly {
+                // _addressData[from].balance -= 1;
+                // _addressData[from].numberBurned += 1;
+                mstore(0x00, from)
+                mstore(0x20, _addressData.slot)
+                let addressDataSlotHash := keccak256(0x00, 0x40)
+                let addressDataRaw := sload(addressDataSlotHash)
+                addressDataRaw := add(sub(addressDataRaw, 1), 0x100000000000000000000000000000000)
+                sstore(addressDataSlotHash, addressDataRaw)
+
                 mstore(0x00, tokenId)
                 mstore(0x20, _ownerships.slot)
                 // _ownerships[tokenId].addr = to;
