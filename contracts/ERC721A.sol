@@ -331,14 +331,7 @@ contract ERC721A is Context, ERC165, IERC721A {
                 mstore(0x20, _addressData.slot)
                 let addressDataSlotHash := keccak256(0x00, 0x40)
                 let addressDataRaw := sload(addressDataSlotHash)
-                addressDataRaw := or(
-                    and(add(addressDataRaw, quantity), 0xffffffffffffffff),
-                    or(
-                        shl(64, and(add(shr(64, addressDataRaw), quantity), 0xffffffffffffffff)),
-                        and(addressDataRaw, 
-                            0xffffffffffffffffffffffffffffffff00000000000000000000000000000000)
-                    )
-                )
+                addressDataRaw := add(add(addressDataRaw, quantity), shl(64, quantity))
                 sstore(addressDataSlotHash, addressDataRaw)
 
                 mstore(0x00, startTokenId)
@@ -405,14 +398,7 @@ contract ERC721A is Context, ERC165, IERC721A {
                 mstore(0x20, _addressData.slot)
                 let addressDataSlotHash := keccak256(0x00, 0x40)
                 let addressDataRaw := sload(addressDataSlotHash)
-                addressDataRaw := or(
-                    and(add(addressDataRaw, quantity), 0xffffffffffffffff),
-                    or(
-                        shl(64, and(add(shr(64, addressDataRaw), quantity), 0xffffffffffffffff)),
-                        and(addressDataRaw, 
-                            0xffffffffffffffffffffffffffffffff00000000000000000000000000000000)
-                    )
-                )
+                addressDataRaw := add(add(addressDataRaw, quantity), shl(64, quantity))
                 sstore(addressDataSlotHash, addressDataRaw)
 
                 // _ownerships[startTokenId].addr = to;
@@ -481,8 +467,6 @@ contract ERC721A is Context, ERC165, IERC721A {
             assembly {
                 // _addressData[from].balance -= 1;
                 // _addressData[to].balance += 1;
-                // Since the balance is at the first slot, we can simply add and sub to 
-                // the raw uint256.
                 mstore(0x00, from)
                 mstore(0x20, _addressData.slot)
                 let addressDataSlotHash := keccak256(0x00, 0x40)
@@ -564,8 +548,6 @@ contract ERC721A is Context, ERC165, IERC721A {
             assembly {
                 // _addressData[from].balance -= 1;
                 // _addressData[from].numberBurned += 1;
-                // Since the balance is at the first slot, we can simply sub to 
-                // the raw uint256. We can also directly add to the burned count.
                 mstore(0x00, from)
                 mstore(0x20, _addressData.slot)
                 let addressDataSlotHash := keccak256(0x00, 0x40)
