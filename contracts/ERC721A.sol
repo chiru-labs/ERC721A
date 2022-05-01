@@ -325,12 +325,12 @@ contract ERC721A is Context, ERC165, IERC721A {
         // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
             assembly {
+                // _addressData[to].balance += uint64(quantity);
+                // _addressData[to].numberMinted += uint64(quantity);
                 mstore(0x00, to)
                 mstore(0x20, _addressData.slot)
                 let addressDataSlotHash := keccak256(0x00, 0x40)
                 let addressDataRaw := sload(addressDataSlotHash)
-                // _addressData[to].balance += uint64(quantity);
-                // _addressData[to].numberMinted += uint64(quantity);
                 addressDataRaw := or(
                     and(add(addressDataRaw, quantity), 0xffffffffffffffff),
                     or(
@@ -481,6 +481,8 @@ contract ERC721A is Context, ERC165, IERC721A {
             assembly {
                 // _addressData[from].balance -= 1;
                 // _addressData[to].balance += 1;
+                // Since the balance is at the first slot, we can simply add and sub to 
+                // the raw uint256.
                 mstore(0x00, from)
                 mstore(0x20, _addressData.slot)
                 let addressDataSlotHash := keccak256(0x00, 0x40)
@@ -562,6 +564,8 @@ contract ERC721A is Context, ERC165, IERC721A {
             assembly {
                 // _addressData[from].balance -= 1;
                 // _addressData[from].numberBurned += 1;
+                // Since the balance is at the first slot, we can simply sub to 
+                // the raw uint256. We can also directly add to the burned count.
                 mstore(0x00, from)
                 mstore(0x20, _addressData.slot)
                 let addressDataSlotHash := keccak256(0x00, 0x40)
