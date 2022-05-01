@@ -334,6 +334,8 @@ contract ERC721A is Context, ERC165, IERC721A {
                 addressDataRaw := add(add(addressDataRaw, quantity), shl(64, quantity))
                 sstore(addressDataSlotHash, addressDataRaw)
 
+                // _ownerships[startTokenId].addr = to;
+                // _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
                 mstore(0x00, startTokenId)
                 mstore(0x20, _ownerships.slot)
                 sstore(keccak256(0x00, 0x40), or(to, shl(160, timestamp())))
