@@ -102,7 +102,8 @@ interface IERC721A is IERC721, IERC721Metadata {
 
     /**
      * @dev Returns the total amount of tokens stored by the contract.
-     * @dev Burned tokens are calculated here, use _totalMinted() if you want to count just minted tokens.
+     * 
+     * Burned tokens are calculated here, use `_totalMinted()` if you want to count just minted tokens.
      */
     function totalSupply() external view returns (uint256);
 }
