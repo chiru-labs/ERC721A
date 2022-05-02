@@ -407,6 +407,8 @@ Equivalent to `_mint(to, quantity, data, true)`.
 
 The `data` parameter is forwarded in `IERC721Receiver.onERC721Received` to contract recipients (optional, default: `""`).
 
+**Safe minting includes a built in gas-optimized reentrancy guard since V3.**
+
 See [`_mint`](#_mint).
 
 ### \_mint
@@ -414,19 +416,11 @@ See [`_mint`](#_mint).
 ```solidity
 function _mint(
     address to,
-    uint256 quantity,
-    bytes memory _data,
-    bool safe
+    uint256 quantity
 ) internal
 ```
 
 Mints `quantity` tokens and transfers them to `to`.
-
-The `data` parameter is forwarded in `IERC721Receiver.onERC721Received` to contract recipients.  
-
-If `safe` is set to `true`, contract recipients are checked to be aware of the ERC721 protocol to prevent tokens from being forever locked (set to `""` if unused).
-
-**Safe minting is reentrant safe and doubles as an gas-optimized reentrancy guard since V3.**
 
 > To prevent excessive first-time token transfer costs, please limit the `quantity` to a reasonable number (e.g. `30`). 
 
