@@ -403,11 +403,9 @@ function _safeMint(
 ) internal
 ```
 
-Equivalent to `_mint(to, quantity, data, true)`. 
-
 The `data` parameter is forwarded in `IERC721Receiver.onERC721Received` to contract recipients (optional, default: `""`).
 
-**Safe minting includes a built in gas-optimized reentrancy guard since V3.**
+**Safe minting is reentrancy safe since V3.**
 
 See [`_mint`](#_mint).
 
