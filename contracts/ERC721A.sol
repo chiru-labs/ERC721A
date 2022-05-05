@@ -140,7 +140,7 @@ contract ERC721A is Context, ERC165, IERC721A {
         uint256 curr = tokenId;
 
         unchecked {
-            if (_startTokenId() <= curr && curr < _currentIndex) {
+            if (_startTokenId() <= curr) if (curr < _currentIndex) {
                 TokenOwnership memory ownership = _ownerships[curr];
                 if (!ownership.burned) {
                     if (ownership.addr != address(0)) {
@@ -210,7 +210,7 @@ contract ERC721A is Context, ERC165, IERC721A {
         address owner = ERC721A.ownerOf(tokenId);
         if (to == owner) revert ApprovalToCurrentOwner();
 
-        if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender())) {
+        if (_msgSender() != owner) if(!isApprovedForAll(owner, _msgSender())) {
             revert ApprovalCallerNotOwnerNorApproved();
         }
 
@@ -275,7 +275,7 @@ contract ERC721A is Context, ERC165, IERC721A {
         bytes memory _data
     ) public virtual override {
         _transfer(from, to, tokenId);
-        if (to.isContract() && !_checkContractOnERC721Received(from, to, tokenId, _data)) {
+        if (to.isContract()) if(!_checkContractOnERC721Received(from, to, tokenId, _data)) {
             revert TransferToNonERC721ReceiverImplementer();
         }
     }
