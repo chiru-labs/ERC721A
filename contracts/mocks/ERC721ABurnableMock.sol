@@ -24,4 +24,8 @@ contract ERC721ABurnableMock is ERC721A, ERC721ABurnable {
     function totalMinted() public view returns (uint256) {
         return _totalMinted();
     }
+
+    function numberBurned(address owner) public view returns (uint256) {
+        return _numberBurned(owner);
+    }
 }

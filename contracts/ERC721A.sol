@@ -44,14 +44,14 @@ contract ERC721A is IERC721A {
     // Mapping from token ID to ownership details
     // An empty struct value does not necessarily mean the token is unowned. 
     // See _ownershipOf implementation for details.
-    // (addr) | (startTimestamp << 160) | (burned << 224) | (nextTokenDataSet << 225) 
+    // `packed = (addr) | (startTimestamp << 160) | (burned << 224) | (nextInitialized << 225)`.
     mapping(uint256 => uint256) internal _packedOwnerships;
 
     // Mapping owner address to address data.
-    // (balance) | (numberMinted << 64) | (numberBurned << 128) | (aux << 192) 
+    // `packed = (balance) | (numberMinted << 64) | (numberBurned << 128) | (aux << 192)`. 
     mapping(address => uint256) private _packedAddressData;
 
-    // Mapping from token ID to approved address
+    // Mapping from token ID to approved address.
     mapping(uint256 => address) private _tokenApprovals;
 
     // Mapping from owner to operator approvals
@@ -144,31 +144,28 @@ contract ERC721A is IERC721A {
         _packedAddressData[owner] = packed;
     }
 
-    function _packedOwnershipOf(uint256 tokenId) private view returns (uint256) {
+    /**
+     * Returns the packed ownership data of `tokenId`.
+     */
+    function _packedOwnershipOf(uint256 tokenId) internal view returns (uint256) {
         uint256 curr = tokenId;
 
         unchecked {
             if (_startTokenId() <= curr) if (curr < _currentIndex) {
                 uint256 packed = _packedOwnerships[curr];
-                uint256 burned = packed & (1 << 224);
-                uint256 addr;
-                if (burned == 0) {
-                    addr = packed & ((1 << 160) - 1);
-                    if (addr != 0) {
-                        return packed;
-                    }
+                // If not burned.
+                if (packed & (1 << 224) == 0) {
                     // Invariant:
                     // There will always be an ownership that has an address and is not burned
                     // before an ownership that does not have an address and is not burned.
                     // Hence, curr will not underflow.
-                    while (true) {
-                        curr--;
-                        packed = _packedOwnerships[curr];
-                        addr = packed & ((1 << 160) - 1);
-                        if (addr != 0) {
-                            return packed;
-                        }
+                    //
+                    // We can directly compare the packed value.
+                    // If the address is zero, packed is zero.
+                    while (packed == 0) {
+                        packed = _packedOwnerships[--curr];
                     }
+                    return packed;
                 }
             }
         }
@@ -178,7 +175,7 @@ contract ERC721A is IERC721A {
     /**
      * Returns the unpacked `TokenOwnership` struct from `packed`.
      */
-    function _unpackedOwnership(uint256 packed) private pure returns (TokenOwnership memory ownership) {
+    function _unpackedOwnership(uint256 packed) internal pure returns (TokenOwnership memory ownership) {
         ownership.addr = address(uint160(packed));
         ownership.startTimestamp = uint64(packed >> 160);
         ownership.burned = packed & (1 << 224) != 0;
@@ -203,7 +200,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
-        return _ownershipOf(tokenId).addr;
+        return address(uint160(_packedOwnershipOf(tokenId)));
     }
 
     /**
@@ -243,7 +240,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public override {
-        address owner = ERC721A.ownerOf(tokenId);
+        address owner = address(uint160(_packedOwnershipOf(tokenId)));
         if (to == owner) revert ApprovalToCurrentOwner();
 
         if (_msgSenderERC721A() != owner) if(!isApprovedForAll(owner, _msgSenderERC721A())) {
@@ -325,8 +322,8 @@ contract ERC721A is IERC721A {
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _startTokenId() <= tokenId && tokenId < _currentIndex && 
-            ((_packedOwnerships[tokenId] >> 224) & 1 == 0);
+        return _startTokenId() <= tokenId && tokenId < _currentIndex && // If within bounds,
+            _packedOwnerships[tokenId] & (1 << 224) == 0; // and not burned.
     }
 
     /**
@@ -362,9 +359,30 @@ contract ERC721A is IERC721A {
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
         // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
-            _packedAddressData[to] = (_packedAddressData[to] + quantity) + (quantity << 64);
+            // Updates:
+            // - `balance += quantity`.
+            // - `numberMinted += quantity`.
+            //
+            // We can directly add to the balance and number minted.
+            _packedAddressData[to] += quantity | (quantity << 64);
 
-            _packedOwnerships[startTokenId] = uint256(uint160(to)) | (block.timestamp << 160);
+            { // Scoped for extra gas optimization.
+                uint256 packed;
+                assembly {
+                    // For branchless optimization.
+                    //
+                    // Updates:
+                    // - `address` to the owner. 
+                    // - `startTimestamp` to the timestamp of minting.
+                    // - `burned` to `false`.
+                    // - `nextInitialized` to `quantity == 1`.
+                    //
+                    // uint256(uint160(to)) | (block.timestamp << 160) | ((quantity == 1 ? 1 : 0) << 225)
+                    packed := or(or(to, shl(160, timestamp())), shl(225, eq(quantity, 1)))
+                }
+                // Write to storage outside of assembly to make the code transpiler friendly.
+                _packedOwnerships[startTokenId] = packed;    
+            }
 
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;
@@ -409,9 +427,30 @@ contract ERC721A is IERC721A {
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
         // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
-            _packedAddressData[to] = (_packedAddressData[to] + quantity) + (quantity << 64);
+            // Updates:
+            // - `balance += quantity`.
+            // - `numberMinted += quantity`.
+            //
+            // We can directly add to the balance and number minted.
+            _packedAddressData[to] += quantity | (quantity << 64);
 
-            _packedOwnerships[startTokenId] = uint256(uint160(to)) | (block.timestamp << 160);
+            { // Scoped for extra gas optimization.
+                uint256 packed;
+                assembly {
+                    // For branchless optimization.
+                    //
+                    // Updates:
+                    // - `address` to the owner. 
+                    // - `startTimestamp` to the timestamp of minting.
+                    // - `burned` to `false`.
+                    // - `nextInitialized` to `quantity == 1`.
+                    //
+                    // uint256(uint160(to)) | (block.timestamp << 160) | ((quantity == 1 ? 1 : 0) << 225)
+                    packed := or(or(to, shl(160, timestamp())), shl(225, eq(quantity, 1)))
+                }
+                // Write to storage outside of assembly to make the code transpiler friendly.
+                _packedOwnerships[startTokenId] = packed;    
+            }
 
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;
@@ -461,21 +500,35 @@ contract ERC721A is IERC721A {
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
             // We can directly increment and decrement the balances.
-            --_packedAddressData[from];
-            ++_packedAddressData[to];
+            --_packedAddressData[from]; // Updates: `balance -= 1`.
+            ++_packedAddressData[to]; // Updates: `balance += 1`.
 
-            _packedOwnerships[tokenId] = uint256(uint160(to)) | (block.timestamp << 160);
+            { // Scoped for extra gas optimization.
+                uint256 packed;
+                assembly {
+                    // Updates:
+                    // - `address` to the next owner. 
+                    // - `startTimestamp` to the timestamp of transfering.
+                    // - `burned` to `false`.
+                    // - `nextInitialized` to `true`.
+                    //
+                    // uint256(uint160(to)) | (block.timestamp << 160) | (1 << 225)
+                    packed := or(or(to, shl(160, timestamp())), shl(225, 1))
+                }
+                // Write to storage outside of assembly to make the code transpiler friendly.
+                _packedOwnerships[tokenId] = packed;    
+            }
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-            uint256 nextTokenId = tokenId + 1;
-            uint256 packedNextSlot = _packedOwnerships[nextTokenId];
-            if (packedNextSlot == 0) {
-                // This will suffice for checking _exists(nextTokenId),
-                // as a burned slot cannot contain the zero address.
-                if (nextTokenId != _currentIndex) {
-                    _packedOwnerships[nextTokenId] = (uint256(uint160(from)) | 
-                        (prevOwnershipPacked & (((1 << 64) - 1) << 160)));
+            // If the next slot may not have been initialized.
+            if (prevOwnershipPacked & (1 << 225) == 0) { 
+                uint256 nextTokenId = tokenId + 1;
+                // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                if (_packedOwnerships[nextTokenId] == 0) {
+                    // If the next slot is within bounds. 
+                    if (nextTokenId != _currentIndex) {
+                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
+                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                    }
                 }
             }
         }
@@ -523,22 +576,39 @@ contract ERC721A is IERC721A {
         // ownership above and the recipient's balance can't realistically overflow.
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
         unchecked {
-            // Decrement the balance, increment the number burned.
-            _packedAddressData[from] = (_packedAddressData[from] - 1) + (1 << 128);
+            // Updates:
+            // - `balance -= 1`.
+            // - `numberBurned += 1`.
+            //
+            // We can directly decrement the balance, and increment the number burned.
+            _packedAddressData[from] += (1 << 128) - 1;
 
-            // Keep track of the previous owner, and the timestamp of burning.
-            _packedOwnerships[tokenId] = uint256(uint160(from)) | (block.timestamp << 160) | (1 << 224);
+            { // Scoped for extra gas optimization.
+                uint256 packed;
+                assembly {
+                    // Updates:
+                    // - `address` to the last owner.
+                    // - `startTimestamp` to the timestamp of burning.
+                    // - `burned` to `true`.
+                    // - `nextInitialized` to `true`.
+                    //
+                    // uint256(uint160(from)) | (block.timestamp << 160) | (1 << 224) | (1 << 225)
+                    packed := or(or(from, shl(160, timestamp())), or(shl(224, 1), shl(225, 1)))
+                }
+                // Write to storage outside of assembly to make the code transpiler friendly.
+                _packedOwnerships[tokenId] = packed;    
+            }
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-            uint256 nextTokenId = tokenId + 1;
-            uint256 packedNextSlot = _packedOwnerships[nextTokenId];
-            if (packedNextSlot == 0) {
-                // This will suffice for checking _exists(nextTokenId),
-                // as a burned slot cannot contain the zero address.
-                if (nextTokenId != _currentIndex) {
-                    _packedOwnerships[nextTokenId] = (uint256(uint160(from)) | 
-                        (prevOwnershipPacked & (((1 << 64) - 1) << 160)));
+            // If the next slot may not have been initialized.
+            if (prevOwnershipPacked & (1 << 225) == 0) { 
+                uint256 nextTokenId = tokenId + 1;
+                // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                if (_packedOwnerships[nextTokenId] == 0) {
+                    // If the next slot is within bounds. 
+                    if (nextTokenId != _currentIndex) {
+                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
+                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                    }
                 }
             }
         }
