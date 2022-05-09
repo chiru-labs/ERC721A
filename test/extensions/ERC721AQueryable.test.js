@@ -252,8 +252,8 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
             const tokenIds = [].concat(this.owner.expected.tokens, this.addr3.expected.tokens);
             const explicitOwnerships = await this.erc721aQueryable.explicitOwnershipsOf(tokenIds);
             for (let i = 0; i < tokenIds.length; ++i) {
-              const tokenId = await this.erc721aQueryable.ownerOf(tokenIds[i]);
-              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
+              const owner = await this.erc721aQueryable.ownerOf(tokenIds[i]);
+              expectExplicitOwnershipExists(explicitOwnerships[i], owner);
             }
           });
 
@@ -263,8 +263,8 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
             const explicitOwnerships = await this.erc721aQueryable.explicitOwnershipsOf(tokenIds);
             expectExplicitOwnershipBurned(explicitOwnerships[0], this.owner.address);
             for (let i = 1; i < tokenIds.length; ++i) {
-              const tokenId = await this.erc721aQueryable.ownerOf(tokenIds[i]);
-              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
+              const owner = await this.erc721aQueryable.ownerOf(tokenIds[i]);
+              expectExplicitOwnershipExists(explicitOwnerships[i], owner);
             }
           });
 
@@ -274,8 +274,8 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
             const explicitOwnerships = await this.erc721aQueryable.explicitOwnershipsOf(tokenIds);
             expectExplicitOwnershipExists(explicitOwnerships[0], this.addr4.address);
             for (let i = 1; i < tokenIds.length; ++i) {
-              const tokenId = await this.erc721aQueryable.ownerOf(tokenIds[i]);
-              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
+              const owner = await this.erc721aQueryable.ownerOf(tokenIds[i]);
+              expectExplicitOwnershipExists(explicitOwnerships[i], owner);
             }
           });
 
@@ -284,8 +284,8 @@ const createTestSuite = ({ contract, constructorArgs, setOwnersExplicit = false 
             const explicitOwnerships = await this.erc721aQueryable.explicitOwnershipsOf(tokenIds);
             expectExplicitOwnershipNotExists(explicitOwnerships[0]);
             for (let i = 1; i < tokenIds.length; ++i) {
-              const tokenId = await this.erc721aQueryable.ownerOf(tokenIds[i]);
-              expectExplicitOwnershipExists(explicitOwnerships[i], tokenId);
+              const owner = await this.erc721aQueryable.ownerOf(tokenIds[i]);
+              expectExplicitOwnershipExists(explicitOwnerships[i], owner);
             }
           });
         });

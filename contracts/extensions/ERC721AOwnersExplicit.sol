@@ -47,10 +47,11 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
             }
 
             for (uint256 i = _nextOwnerToExplicitlySet; i <= endIndex; i++) {
-                if (_ownerships[i].addr == address(0) && !_ownerships[i].burned) {
+                uint256 packed = _packedOwnerships[i];
+                if (packed == 0) {
                     TokenOwnership memory ownership = _ownershipOf(i);
-                    _ownerships[i].addr = ownership.addr;
-                    _ownerships[i].startTimestamp = ownership.startTimestamp;
+                    _packedOwnerships[i] = (uint256(uint160(ownership.addr)) | 
+                        (uint256(ownership.startTimestamp) << 160));
                 }
             }
 

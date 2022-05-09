@@ -35,7 +35,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         if (tokenId < _startTokenId() || tokenId >= _currentIndex) {
             return ownership;
         }
-        ownership = _ownerships[tokenId];
+        ownership = _ownershipAt(tokenId);
         if (ownership.burned) {
             return ownership;
         }
@@ -111,7 +111,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 currOwnershipAddr = ownership.addr;
             }
             for (uint256 i = start; i != stop && tokenIdsIdx != tokenIdsMaxLength; ++i) {
-                ownership = _ownerships[i];
+                ownership = _ownershipAt(i);
                 if (ownership.burned) {
                     continue;
                 }
@@ -148,7 +148,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
             uint256[] memory tokenIds = new uint256[](tokenIdsLength);
             TokenOwnership memory ownership;
             for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
-                ownership = _ownerships[i];
+                ownership = _ownershipAt(i);
                 if (ownership.burned) {
                     continue;
                 }
