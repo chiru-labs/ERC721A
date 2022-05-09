@@ -420,7 +420,7 @@ contract ERC721A is Context, ERC165, IERC721A {
         _beforeTokenTransfers(from, to, tokenId, 1);
 
         // Clear approvals from the previous owner
-        _approve(address(0), tokenId, from);
+        delete _tokenApprovals[tokenId];
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
@@ -484,7 +484,7 @@ contract ERC721A is Context, ERC165, IERC721A {
         _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner
-        _approve(address(0), tokenId, from);
+        delete _tokenApprovals[tokenId];
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.

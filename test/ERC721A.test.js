@@ -221,12 +221,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               expect(await this.erc721a.getApproved(this.tokenId)).to.be.equal(ZERO_ADDRESS);
             });
 
-            it('emits an Approval event', async function () {
-              await expect(this.transferTx)
-                .to.emit(this.erc721a, 'Approval')
-                .withArgs(this.from, ZERO_ADDRESS, this.tokenId);
-            });
-
             it('adjusts owners balances', async function () {
               expect(await this.erc721a.balanceOf(this.from)).to.be.equal(1);
             });
