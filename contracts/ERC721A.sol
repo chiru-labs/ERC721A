@@ -43,12 +43,22 @@ contract ERC721A is IERC721A {
 
     // Mapping from token ID to ownership details
     // An empty struct value does not necessarily mean the token is unowned. 
-    // See _ownershipOf implementation for details.
-    // `packed = (addr) | (startTimestamp << 160) | (burned << 224) | (nextInitialized << 225)`.
+    // See `_packedOwnershipOf` implementation for details.
+    //
+    // Bits Layout:
+    // - [0..159]   `addr`
+    // - [160..223] `startTimestamp`
+    // - [224]      `burned`
+    // - [225]      `nextInitialized`
     mapping(uint256 => uint256) internal _packedOwnerships;
 
     // Mapping owner address to address data.
-    // `packed = (balance) | (numberMinted << 64) | (numberBurned << 128) | (aux << 192)`. 
+    //
+    // Bits Layout:
+    // - [0..63]    `balance`
+    // - [64..127]  `numberMinted`
+    // - [128..191] `numberBurned`
+    // - [192..255] `aux`
     mapping(address => uint256) private _packedAddressData;
 
     // Mapping from token ID to approved address.
