@@ -529,7 +529,7 @@ contract ERC721A is IERC721A {
                 _packedOwnerships[tokenId] = packed;    
             }
 
-            // If the next slot may not have been initialized.
+            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & (1 << 225) == 0) { 
                 uint256 nextTokenId = tokenId + 1;
                 // If the next slot's address is zero and not burned (i.e. packed value is zero).
@@ -609,7 +609,7 @@ contract ERC721A is IERC721A {
                 _packedOwnerships[tokenId] = packed;    
             }
 
-            // If the next slot may not have been initialized.
+            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & (1 << 225) == 0) { 
                 uint256 nextTokenId = tokenId + 1;
                 // If the next slot's address is zero and not burned (i.e. packed value is zero).
