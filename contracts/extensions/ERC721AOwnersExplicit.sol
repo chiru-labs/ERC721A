@@ -47,9 +47,7 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
             }
 
             for (uint256 i = _nextOwnerToExplicitlySet; i <= endIndex; i++) {
-                if (_packedOwnerships[i] == 0) {
-                    _packedOwnerships[i] = _packedOwnershipOf(i);
-                }
+                _initializeOwnershipAt(i);
             }
 
             nextOwnerToExplicitlySet = endIndex + 1;

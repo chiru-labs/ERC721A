@@ -50,7 +50,7 @@ contract ERC721A is IERC721A {
     // - [160..223] `startTimestamp`
     // - [224]      `burned`
     // - [225]      `nextInitialized`
-    mapping(uint256 => uint256) internal _packedOwnerships;
+    mapping(uint256 => uint256) private _packedOwnerships;
 
     // Mapping owner address to address data.
     //
@@ -157,7 +157,7 @@ contract ERC721A is IERC721A {
     /**
      * Returns the packed ownership data of `tokenId`.
      */
-    function _packedOwnershipOf(uint256 tokenId) internal view returns (uint256) {
+    function _packedOwnershipOf(uint256 tokenId) private view returns (uint256) {
         uint256 curr = tokenId;
 
         unchecked {
@@ -185,7 +185,7 @@ contract ERC721A is IERC721A {
     /**
      * Returns the unpacked `TokenOwnership` struct from `packed`.
      */
-    function _unpackedOwnership(uint256 packed) internal pure returns (TokenOwnership memory ownership) {
+    function _unpackedOwnership(uint256 packed) private pure returns (TokenOwnership memory ownership) {
         ownership.addr = address(uint160(packed));
         ownership.startTimestamp = uint64(packed >> 160);
         ownership.burned = packed & (1 << 224) != 0;
@@ -196,6 +196,15 @@ contract ERC721A is IERC721A {
      */
     function _ownershipAt(uint256 index) internal view returns (TokenOwnership memory) {
         return _unpackedOwnership(_packedOwnerships[index]);
+    }
+
+    /**
+     * @dev Initializes the ownership slot minted at `index` for efficiency purposes.
+     */
+    function _initializeOwnershipAt(uint256 index) internal {
+        if (_packedOwnerships[index] == 0) {
+            _packedOwnerships[index] = _packedOwnershipOf(index);
+        }
     }
 
     /**
