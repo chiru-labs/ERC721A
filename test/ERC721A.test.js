@@ -1,5 +1,6 @@
 const { deployContract } = require('./helpers.js');
 const { expect } = require('chai');
+const { BigNumber } = require('ethers');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
@@ -384,6 +385,16 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           it('requires quantity to be greater than 0', async function () {
             await expect(this.erc721a.mint(this.owner.address, 0)).to.be.revertedWith('MintZeroQuantity');
           });
+        });
+      });
+
+      context('_toString', async function () {
+        it('returns correct value', async function () {
+          expect(await this.erc721a['toString(uint256)']('0')).to.eq('0');
+          expect(await this.erc721a['toString(uint256)']('1')).to.eq('1');
+          expect(await this.erc721a['toString(uint256)']('2')).to.eq('2');
+          const uint256Max = BigNumber.from(2).pow(256).sub(1).toString();
+          expect(await this.erc721a['toString(uint256)'](uint256Max)).to.eq(uint256Max);
         });
       });
     });
