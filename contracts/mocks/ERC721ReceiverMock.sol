@@ -4,9 +4,7 @@
 
 pragma solidity ^0.8.4;
 
-import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-
-contract ERC721ReceiverMock is IERC721Receiver {
+contract ERC721ReceiverMock {
     enum Error {
         None,
         RevertWithMessage,
@@ -27,7 +25,7 @@ contract ERC721ReceiverMock is IERC721Receiver {
         address from,
         uint256 tokenId,
         bytes memory data
-    ) public override returns (bytes4) {
+    ) public returns (bytes4) {
         emit Received(operator, from, tokenId, data, 20000);
         return _retval;
     }
