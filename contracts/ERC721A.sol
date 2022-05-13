@@ -5,11 +5,18 @@
 pragma solidity ^0.8.4;
 
 import './IERC721A.sol';
-import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/utils/Context.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
-import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
+
+/**
+ * @dev ERC721 token receiver interface.
+ */
+interface ERC721A__IERC721Receiver {
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4);
+}
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -21,10 +28,7 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  *
  * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
-contract ERC721A is Context, ERC165, IERC721A {
-    using Address for address;
-    using Strings for uint256;
-
+contract ERC721A is IERC721A {
     // The tokenId of the next token to be minted.
     uint256 internal _currentIndex;
 
@@ -88,11 +92,14 @@ contract ERC721A is Context, ERC165, IERC721A {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        // The interface IDs are constants representing the first 4 bytes of the XOR of 
+        // all function selectors in the interface. See: https://eips.ethereum.org/EIPS/eip-165
+        // e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`
         return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
-            super.supportsInterface(interfaceId);
+            interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
+            interfaceId == 0x80ac58cd || // ERC165 interface ID for ERC721.
+            interfaceId == 0x5b5e139f; // ERC165 interface ID for ERC721Metadata.
     }
 
     /**
@@ -191,7 +198,7 @@ contract ERC721A is Context, ERC165, IERC721A {
         if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
         string memory baseURI = _baseURI();
-        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : '';
+        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, _toString(tokenId))) : '';
     }
 
     /**
@@ -276,7 +283,7 @@ contract ERC721A is Context, ERC165, IERC721A {
         bytes memory _data
     ) public virtual override {
         _transfer(from, to, tokenId);
-        if (to.isContract()) if(!_checkContractOnERC721Received(from, to, tokenId, _data)) {
+        if (to.code.length != 0) if(!_checkContractOnERC721Received(from, to, tokenId, _data)) {
             revert TransferToNonERC721ReceiverImplementer();
         }
     }
@@ -334,7 +341,7 @@ contract ERC721A is Context, ERC165, IERC721A {
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;
 
-            if (to.isContract()) {
+            if (to.code.length != 0) {
                 do {
                     emit Transfer(address(0), to, updatedIndex);
                     if (!_checkContractOnERC721Received(address(0), to, updatedIndex++, _data)) {
@@ -539,8 +546,9 @@ contract ERC721A is Context, ERC165, IERC721A {
         uint256 tokenId,
         bytes memory _data
     ) private returns (bool) {
-        try IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) returns (bytes4 retval) {
-            return retval == IERC721Receiver(to).onERC721Received.selector;
+        try ERC721A__IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) 
+        returns (bytes4 retval) {
+            return retval == ERC721A__IERC721Receiver(to).onERC721Received.selector;
         } catch (bytes memory reason) {
             if (reason.length == 0) {
                 revert TransferToNonERC721ReceiverImplementer();
@@ -596,4 +604,44 @@ contract ERC721A is Context, ERC165, IERC721A {
         uint256 startTokenId,
         uint256 quantity
     ) internal virtual {}
+
+    /**
+     * @dev Returns the message sender (defaults to `msg.sender`).
+     */
+    function _msgSender() internal view virtual returns (address) {
+        return msg.sender;
+    }
+
+    /**
+     * @dev Returns the message data (defaults to `msg.data`).
+     */
+    function _msgData() internal view virtual returns (bytes calldata) {
+        return msg.data;
+    }
+
+    /**
+     * @dev Converts a `uint256` to its ASCII `string` decimal representation.
+     */
+    function _toString(uint256 value) internal pure returns (string memory) {
+        // Inspired by OraclizeAPI's implementation - MIT licence
+        // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
+        unchecked {
+            if (value == 0) {
+                return "0";
+            }
+            uint256 temp = value;
+            uint256 digits;
+            while (temp != 0) {
+                ++digits;
+                temp /= 10;
+            }
+            bytes memory buffer = new bytes(digits);
+            while (value != 0) {
+                --digits;
+                buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+                value /= 10;
+            }
+            return string(buffer);    
+        }
+    }
 }

@@ -17,9 +17,6 @@
     "lint:sol": "prettier --write \"contracts/**/*.sol\"",
     "update-version": "scripts/release/update-version.js"
   },
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2"
-  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
