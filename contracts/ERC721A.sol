@@ -9,7 +9,7 @@ import './IERC721A.sol';
 /**
  * @dev ERC721 token receiver interface.
  */
-interface __ERC721A__IERC721Receiver {
+interface ERC721A__IERC721Receiver {
     function onERC721Received(
         address operator,
         address from,
@@ -93,10 +93,13 @@ contract ERC721A is IERC721A {
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        // The interface IDs are constants representing the first 4 bytes of the XOR of 
+        // all function selectors in the interface. See: https://eips.ethereum.org/EIPS/eip-165
+        // e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`
         return
-            interfaceId == 0x01ffc9a7 || // ERC165 Interface ID for ERC165
-            interfaceId == 0x80ac58cd || // ERC165 Interface ID for ERC721
-            interfaceId == 0x5b5e139f; // ERC165 Interface ID for ERC721Metadata
+            interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
+            interfaceId == 0x80ac58cd || // ERC165 interface ID for ERC721.
+            interfaceId == 0x5b5e139f; // ERC165 interface ID for ERC721Metadata.
     }
 
     /**
@@ -543,9 +546,9 @@ contract ERC721A is IERC721A {
         uint256 tokenId,
         bytes memory _data
     ) private returns (bool) {
-        try __ERC721A__IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) 
+        try ERC721A__IERC721Receiver(to).onERC721Received(_msgSender(), from, tokenId, _data) 
         returns (bytes4 retval) {
-            return retval == __ERC721A__IERC721Receiver(to).onERC721Received.selector;
+            return retval == ERC721A__IERC721Receiver(to).onERC721Received.selector;
         } catch (bytes memory reason) {
             if (reason.length == 0) {
                 revert TransferToNonERC721ReceiverImplementer();
