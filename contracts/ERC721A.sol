@@ -217,7 +217,7 @@ contract ERC721A is IERC721A {
         address owner = ERC721A.ownerOf(tokenId);
         if (to == owner) revert ApprovalToCurrentOwner();
 
-        if (_erc721aMsgSender() != owner) if(!isApprovedForAll(owner, _erc721aMsgSender())) {
+        if (_msgSenderERC721A() != owner) if(!isApprovedForAll(owner, _msgSenderERC721A())) {
             revert ApprovalCallerNotOwnerNorApproved();
         }
 
@@ -238,10 +238,10 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        if (operator == _erc721aMsgSender()) revert ApproveToCaller();
+        if (operator == _msgSenderERC721A()) revert ApproveToCaller();
 
-        _operatorApprovals[_erc721aMsgSender()][operator] = approved;
-        emit ApprovalForAll(_erc721aMsgSender(), operator, approved);
+        _operatorApprovals[_msgSenderERC721A()][operator] = approved;
+        emit ApprovalForAll(_msgSenderERC721A(), operator, approved);
     }
 
     /**
@@ -418,9 +418,9 @@ contract ERC721A is IERC721A {
 
         if (prevOwnership.addr != from) revert TransferFromIncorrectOwner();
 
-        bool isApprovedOrOwner = (_erc721aMsgSender() == from ||
-            isApprovedForAll(from, _erc721aMsgSender()) ||
-            getApproved(tokenId) == _erc721aMsgSender());
+        bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
+            isApprovedForAll(from, _msgSenderERC721A()) ||
+            getApproved(tokenId) == _msgSenderERC721A());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         if (to == address(0)) revert TransferToZeroAddress();
@@ -482,9 +482,9 @@ contract ERC721A is IERC721A {
         address from = prevOwnership.addr;
 
         if (approvalCheck) {
-            bool isApprovedOrOwner = (_erc721aMsgSender() == from ||
-                isApprovedForAll(from, _erc721aMsgSender()) ||
-                getApproved(tokenId) == _erc721aMsgSender());
+            bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
+                isApprovedForAll(from, _msgSenderERC721A()) ||
+                getApproved(tokenId) == _msgSenderERC721A());
 
             if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         }
@@ -546,7 +546,7 @@ contract ERC721A is IERC721A {
         uint256 tokenId,
         bytes memory _data
     ) private returns (bool) {
-        try ERC721A__IERC721Receiver(to).onERC721Received(_erc721aMsgSender(), from, tokenId, _data) 
+        try ERC721A__IERC721Receiver(to).onERC721Received(_msgSenderERC721A(), from, tokenId, _data) 
         returns (bytes4 retval) {
             return retval == ERC721A__IERC721Receiver(to).onERC721Received.selector;
         } catch (bytes memory reason) {
@@ -610,7 +610,7 @@ contract ERC721A is IERC721A {
      * 
      * If you are writing GSN compatible contracts, you need to override this function.
      */
-    function _erc721aMsgSender() internal view virtual returns (address) {
+    function _msgSenderERC721A() internal view virtual returns (address) {
         return msg.sender;
     }
 
