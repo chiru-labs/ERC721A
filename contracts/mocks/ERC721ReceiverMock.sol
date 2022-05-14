@@ -4,7 +4,9 @@
 
 pragma solidity ^0.8.4;
 
-contract ERC721ReceiverMock {
+import '../ERC721A.sol';
+
+contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
     enum Error {
         None,
         RevertWithMessage,
@@ -25,7 +27,7 @@ contract ERC721ReceiverMock {
         address from,
         uint256 tokenId,
         bytes memory data
-    ) public returns (bytes4) {
+    ) public override returns (bytes4) {
         emit Received(operator, from, tokenId, data, 20000);
         return _retval;
     }
