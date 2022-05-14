@@ -7,6 +7,7 @@
   - [ERC721ABurnable](erc721a-burnable.md)
   - [ERC721AOwnersExplicit](erc721a-owners-explicit.md)
   - [ERC721AQueryable](erc721a-queryable.md)
+  - [Interfaces](interfaces.md)
 - **Theme**
 <div id="theme">
 <div class="choice" name="light">
