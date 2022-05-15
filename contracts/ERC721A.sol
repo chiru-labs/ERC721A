@@ -292,7 +292,7 @@ contract ERC721A is IERC721A {
         address owner = address(uint160(_packedOwnershipOf(tokenId)));
         if (to == owner) revert ApprovalToCurrentOwner();
 
-        if (_msgSenderERC721A() != owner) if(!isApprovedForAll(owner, _msgSenderERC721A())) {
+        if (_msgSenderERC721A() != owner) if (!isApprovedForAll(owner, _msgSenderERC721A())) {
             revert ApprovalCallerNotOwnerNorApproved();
         }
 
@@ -623,6 +623,7 @@ contract ERC721A is IERC721A {
             // - `numberBurned += 1`.
             //
             // We can directly decrement the balance, and increment the number burned.
+            // This is equivalent to `packed -= 1; packed += 1 << BITPOS_NUMBER_BURNED;`.
             _packedAddressData[from] += (1 << BITPOS_NUMBER_BURNED) - 1;
 
             { // Scoped for extra gas optimization.
