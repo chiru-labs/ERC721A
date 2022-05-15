@@ -11,12 +11,12 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
      * No more ownership slots to explicity initialize.
      */
     error AllOwnershipsHaveBeenSet();
-    
+
     /**
      * The `quantity` must be more than zero.
      */
     error QuantityMustBeNonZero();
-    
+
     /**
      * At least one token needs to be minted.
      */

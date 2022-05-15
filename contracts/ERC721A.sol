@@ -72,7 +72,7 @@ contract ERC721A is IERC721A {
     string private _symbol;
 
     // Mapping from token ID to ownership details
-    // An empty struct value does not necessarily mean the token is unowned. 
+    // An empty struct value does not necessarily mean the token is unowned.
     // See `_packedOwnershipOf` implementation for details.
     //
     // Bits Layout:
@@ -136,7 +136,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        // The interface IDs are constants representing the first 4 bytes of the XOR of 
+        // The interface IDs are constants representing the first 4 bytes of the XOR of
         // all function selectors in the interface. See: https://eips.ethereum.org/EIPS/eip-165
         // e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`
         return
@@ -191,23 +191,24 @@ contract ERC721A is IERC721A {
         uint256 curr = tokenId;
 
         unchecked {
-            if (_startTokenId() <= curr) if (curr < _currentIndex) {
-                uint256 packed = _packedOwnerships[curr];
-                // If not burned.
-                if (packed & BITMASK_BURNED == 0) {
-                    // Invariant:
-                    // There will always be an ownership that has an address and is not burned
-                    // before an ownership that does not have an address and is not burned.
-                    // Hence, curr will not underflow.
-                    //
-                    // We can directly compare the packed value.
-                    // If the address is zero, packed is zero.
-                    while (packed == 0) {
-                        packed = _packedOwnerships[--curr];
+            if (_startTokenId() <= curr)
+                if (curr < _currentIndex) {
+                    uint256 packed = _packedOwnerships[curr];
+                    // If not burned.
+                    if (packed & BITMASK_BURNED == 0) {
+                        // Invariant:
+                        // There will always be an ownership that has an address and is not burned
+                        // before an ownership that does not have an address and is not burned.
+                        // Hence, curr will not underflow.
+                        //
+                        // We can directly compare the packed value.
+                        // If the address is zero, packed is zero.
+                        while (packed == 0) {
+                            packed = _packedOwnerships[--curr];
+                        }
+                        return packed;
                     }
-                    return packed;
                 }
-            }
         }
         revert OwnerQueryForNonexistentToken();
     }
@@ -286,15 +287,34 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Casts the address to uint256 without masking.
+     */
+    function _addressToUint256(address value) private pure returns (uint256 result) {
+        assembly {
+            result := value
+        }
+    }
+
+    /**
+     * @dev Casts the boolean to uint256 without branching.
+     */
+    function _boolToUint256(bool value) private pure returns (uint256 result) {
+        assembly {
+            result := value
+        }
+    }
+
+    /**
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public override {
         address owner = address(uint160(_packedOwnershipOf(tokenId)));
         if (to == owner) revert ApprovalToCurrentOwner();
 
-        if (_msgSenderERC721A() != owner) if (!isApprovedForAll(owner, _msgSenderERC721A())) {
-            revert ApprovalCallerNotOwnerNorApproved();
-        }
+        if (_msgSenderERC721A() != owner)
+            if (!isApprovedForAll(owner, _msgSenderERC721A())) {
+                revert ApprovalCallerNotOwnerNorApproved();
+            }
 
         _tokenApprovals[tokenId] = to;
         emit Approval(owner, to, tokenId);
@@ -358,9 +378,10 @@ contract ERC721A is IERC721A {
         bytes memory _data
     ) public virtual override {
         _transfer(from, to, tokenId);
-        if (to.code.length != 0) if(!_checkContractOnERC721Received(from, to, tokenId, _data)) {
-            revert TransferToNonERC721ReceiverImplementer();
-        }
+        if (to.code.length != 0)
+            if (!_checkContractOnERC721Received(from, to, tokenId, _data)) {
+                revert TransferToNonERC721ReceiverImplementer();
+            }
     }
 
     /**
@@ -371,7 +392,9 @@ contract ERC721A is IERC721A {
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _startTokenId() <= tokenId && tokenId < _currentIndex && // If within bounds,
+        return
+            _startTokenId() <= tokenId &&
+            tokenId < _currentIndex && // If within bounds,
             _packedOwnerships[tokenId] & BITMASK_BURNED == 0; // and not burned.
     }
 
@@ -385,24 +408,20 @@ contract ERC721A is IERC721A {
     /**
      * @dev Writes the ownership data for mint.
      */
-    function _mintWriteOwnership(address to, uint256 quantity, uint256 startTokenId) private {
-        uint256 packed;
-        assembly {
-            // For branchless optimization.
-            //
-            // Updates:
-            // - `address` to the owner. 
-            // - `startTimestamp` to the timestamp of minting.
-            // - `burned` to `false`.
-            // - `nextInitialized` to `quantity == 1`.
-            //
-            // uint256(uint160(to)) | (block.timestamp << BITPOS_START_TIMESTAMP) 
-            // | ((quantity == 1 ? 1 : 0) << BITPOS_NEXT_INITIALIZED)
-            packed := or(or(to, shl(BITPOS_START_TIMESTAMP, timestamp())), 
-                shl(BITPOS_NEXT_INITIALIZED, eq(quantity, 1)))
-        }
-        // Write to storage outside of assembly to make the code transpiler friendly.
-        _packedOwnerships[startTokenId] = packed; 
+    function _mintWriteOwnership(
+        address to,
+        uint256 quantity,
+        uint256 startTokenId
+    ) private {
+        // Updates:
+        // - `address` to the owner.
+        // - `startTimestamp` to the timestamp of minting.
+        // - `burned` to `false`.
+        // - `nextInitialized` to `quantity == 1`.
+        _packedOwnerships[startTokenId] =
+            _addressToUint256(to) |
+            (block.timestamp << BITPOS_START_TIMESTAMP) |
+            (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
     }
 
     /**
@@ -543,30 +562,22 @@ contract ERC721A is IERC721A {
             --_packedAddressData[from]; // Updates: `balance -= 1`.
             ++_packedAddressData[to]; // Updates: `balance += 1`.
 
-            { // Scoped for extra gas optimization.
-                uint256 packed;
-                assembly {
-                    // Updates:
-                    // - `address` to the next owner. 
-                    // - `startTimestamp` to the timestamp of transfering.
-                    // - `burned` to `false`.
-                    // - `nextInitialized` to `true`.
-                    //
-                    // uint256(uint160(to)) | (block.timestamp << BITPOS_START_TIMESTAMP) 
-                    // | BITMASK_NEXT_INITIALIZED
-                    packed := or(or(to, shl(BITPOS_START_TIMESTAMP, timestamp())), 
-                        BITMASK_NEXT_INITIALIZED)
-                }
-                // Write to storage outside of assembly to make the code transpiler friendly.
-                _packedOwnerships[tokenId] = packed;    
-            }
+            // Updates:
+            // - `address` to the next owner.
+            // - `startTimestamp` to the timestamp of transfering.
+            // - `burned` to `false`.
+            // - `nextInitialized` to `true`.
+            _packedOwnerships[tokenId] =
+                _addressToUint256(to) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
+                BITMASK_NEXT_INITIALIZED;
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
-            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) { 
+            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
                 uint256 nextTokenId = tokenId + 1;
                 // If the next slot's address is zero and not burned (i.e. packed value is zero).
                 if (_packedOwnerships[nextTokenId] == 0) {
-                    // If the next slot is within bounds. 
+                    // If the next slot is within bounds.
                     if (nextTokenId != _currentIndex) {
                         // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
                         _packedOwnerships[nextTokenId] = prevOwnershipPacked;
@@ -626,30 +637,23 @@ contract ERC721A is IERC721A {
             // This is equivalent to `packed -= 1; packed += 1 << BITPOS_NUMBER_BURNED;`.
             _packedAddressData[from] += (1 << BITPOS_NUMBER_BURNED) - 1;
 
-            { // Scoped for extra gas optimization.
-                uint256 packed;
-                assembly {
-                    // Updates:
-                    // - `address` to the last owner.
-                    // - `startTimestamp` to the timestamp of burning.
-                    // - `burned` to `true`.
-                    // - `nextInitialized` to `true`.
-                    //
-                    // uint256(uint160(from)) | (block.timestamp << BITPOS_START_TIMESTAMP) 
-                    // | BITMASK_BURNED | BITMASK_NEXT_INITIALIZED
-                    packed := or(or(from, shl(BITPOS_START_TIMESTAMP, timestamp())), 
-                        or(BITMASK_BURNED, BITMASK_NEXT_INITIALIZED))
-                }
-                // Write to storage outside of assembly to make the code transpiler friendly.
-                _packedOwnerships[tokenId] = packed;    
-            }
+            // Updates:
+            // - `address` to the last owner.
+            // - `startTimestamp` to the timestamp of burning.
+            // - `burned` to `true`.
+            // - `nextInitialized` to `true`.
+            _packedOwnerships[tokenId] =
+                _addressToUint256(from) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
+                BITMASK_NEXT_INITIALIZED |
+                BITMASK_BURNED;
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
-            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) { 
+            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
                 uint256 nextTokenId = tokenId + 1;
                 // If the next slot's address is zero and not burned (i.e. packed value is zero).
                 if (_packedOwnerships[nextTokenId] == 0) {
-                    // If the next slot is within bounds. 
+                    // If the next slot is within bounds.
                     if (nextTokenId != _currentIndex) {
                         // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
                         _packedOwnerships[nextTokenId] = prevOwnershipPacked;
@@ -682,8 +686,9 @@ contract ERC721A is IERC721A {
         uint256 tokenId,
         bytes memory _data
     ) private returns (bool) {
-        try ERC721A__IERC721Receiver(to).onERC721Received(_msgSenderERC721A(), from, tokenId, _data) 
-        returns (bytes4 retval) {
+        try ERC721A__IERC721Receiver(to).onERC721Received(_msgSenderERC721A(), from, tokenId, _data) returns (
+            bytes4 retval
+        ) {
             return retval == ERC721A__IERC721Receiver(to).onERC721Received.selector;
         } catch (bytes memory reason) {
             if (reason.length == 0) {
@@ -743,7 +748,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Returns the message sender (defaults to `msg.sender`).
-     * 
+     *
      * If you are writing GSN compatible contracts, you need to override this function.
      */
     function _msgSenderERC721A() internal view virtual returns (address) {
@@ -758,7 +763,7 @@ contract ERC721A is IERC721A {
         // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
         unchecked {
             if (value == 0) {
-                return "0";
+                return '0';
             }
             uint256 temp = value;
             uint256 digits;
@@ -772,7 +777,7 @@ contract ERC721A is IERC721A {
                 buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
                 value /= 10;
             }
-            return string(buffer);    
+            return string(buffer);
         }
     }
 }
