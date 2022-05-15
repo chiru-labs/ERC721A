@@ -47,14 +47,11 @@ contract ERC721A is IERC721A {
     // The bit position of `startTimestamp` in packed ownership.
     uint256 private constant BITPOS_START_TIMESTAMP = 160;
 
-    // The bit position of the `burned` bit in packed ownership.
-    uint256 private constant BITPOS_BURNED = 224;
-
-    // The bit position of the `nextInitialized` bit in packed ownership.
-    uint256 private constant BITPOS_NEXT_INITIALIZED = 225;
-
     // The bit mask of the `burned` bit in packed ownership.
     uint256 private constant BITMASK_BURNED = 1 << 224;
+    
+    // The bit position of the `nextInitialized` bit in packed ownership.
+    uint256 private constant BITPOS_NEXT_INITIALIZED = 225;
 
     // The bit mask of the `nextInitialized` bit in packed ownership.
     uint256 private constant BITMASK_NEXT_INITIALIZED = 1 << 225;
@@ -645,8 +642,8 @@ contract ERC721A is IERC721A {
             _packedOwnerships[tokenId] =
                 _addressToUint256(from) |
                 (block.timestamp << BITPOS_START_TIMESTAMP) |
-                BITMASK_NEXT_INITIALIZED |
-                BITMASK_BURNED;
+                BITMASK_BURNED | 
+                BITMASK_NEXT_INITIALIZED;
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
