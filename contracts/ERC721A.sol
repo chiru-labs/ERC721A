@@ -617,27 +617,39 @@ contract ERC721A is IERC721A {
     /**
      * @dev Converts a `uint256` to its ASCII `string` decimal representation.
      */
-    function _toString(uint256 value) internal pure returns (string memory buffer) {
-        // Max of uint256 contains 78 characters. 
-        // Allocating the maximum and downsizing costs less gas.
-        buffer = string(new bytes(78));
-        // Assembly for lighter deployment and low gas usage if called on-chain.
+    function _toString(uint256 value) internal pure returns (string memory result) {
         assembly {
-            let digits := 0
-            for { let temp := value } temp { temp := div(temp, 10) } {
-                digits := add(digits, 1)
+            // The maximum value of a uint256 contains 78 digits, 
+            // but we allocate 128 bytes to keep the free memory pointer 32-byte word aliged.
+            // 128 = 32 + 3 * 32. 
+            // We need a minimal of 3 32-byte words to store 78 digits. 
+            let ptr := add(mload(0x40), 128)
+            // Update the free memory pointer to allocate.
+            mstore(0x40, ptr)
+
+            // Cache the end of the memory to calculate the length later.
+            let end := ptr
+            
+            // We write the string from rightmost digit to leftmost digit.
+            // This is essentially a do-while loop that also handles the zero case.
+            // Costs a bit more vs early return for the zero case, but otherwise cheaper.
+            let temp := value
+            ptr := sub(ptr, 1)
+            mstore8(ptr, add(48, mod(temp, 10))) // 48 is the ASCII index of '0'.
+            temp := div(temp, 10)
+            for {} temp {} {
+                ptr := sub(ptr, 1)
+                mstore8(ptr, add(48, mod(temp, 10)))
+                temp := div(temp, 10)
             }
-            // Mininum number of digits is 1.
-            digits := or(iszero(digits), digits)
-            // Store the length of the string.
-            mstore(buffer, digits)
-            // Starting location of the digit string's bytes.
-            let loc := add(buffer, 0x20)
-            for { let temp := value } digits { temp := div(temp, 10) } {
-                digits := sub(digits, 1)
-                // Directly store the byte in the memory.
-                mstore8(add(loc, digits), add(48, mod(temp, 10)))
-            }
+
+            temp := sub(end, ptr)
+            // Move the pointer 32 bytes lower to make room for the length.
+            ptr := sub(ptr, 32)
+            // Store the length.
+            mstore(ptr, temp)
+            // Assign the string's memory location to the result.
+            result := ptr
         }
     }
 }
