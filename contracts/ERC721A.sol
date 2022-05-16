@@ -622,7 +622,8 @@ contract ERC721A is IERC721A {
             // The maximum value of a uint256 contains 78 digits, 
             // but we allocate 128 bytes to keep the free memory pointer 32-byte word aliged.
             // 128 = 32 + 3 * 32. 
-            // We need a minimal of 3 32-byte words to store 78 digits. 
+            // We need a minimal of 3 32-byte words to store 78 digits, 
+            // and 1 more 32-byte word to store the length. 
             let ptr := add(mload(0x40), 128)
             // Update the free memory pointer to allocate.
             mstore(0x40, ptr)
