@@ -643,11 +643,11 @@ contract ERC721A is IERC721A {
                 temp := div(temp, 10)
             }
 
-            temp := sub(end, ptr)
+            let length := sub(end, ptr)
             // Move the pointer 32 bytes lower to make room for the length.
             ptr := sub(ptr, 32)
             // Store the length.
-            mstore(ptr, temp)
+            mstore(ptr, length)
             // Assign the string's memory location to the result.
             result := ptr
         }
