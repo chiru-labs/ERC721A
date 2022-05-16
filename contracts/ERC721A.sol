@@ -617,26 +617,27 @@ contract ERC721A is IERC721A {
     /**
      * @dev Converts a `uint256` to its ASCII `string` decimal representation.
      */
-    function _toString(uint256 value) internal pure returns (string memory) {
-        // Inspired by OraclizeAPI's implementation - MIT licence
-        // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
-        unchecked {
-            if (value == 0) {
-                return "0";
+    function _toString(uint256 value) internal pure returns (string memory buffer) {
+        // Max of uint256 contains 78 characters. 
+        // Allocating the maximum and downsizing costs less gas.
+        buffer = string(new bytes(78));
+        // Assembly for lighter deployment and low gas usage if called on-chain.
+        assembly {
+            let digits := 0
+            for { let temp := value } temp { temp := div(temp, 10) } {
+                digits := add(digits, 1)
             }
-            uint256 temp = value;
-            uint256 digits;
-            while (temp != 0) {
-                ++digits;
-                temp /= 10;
+            // Mininum number of digits is 1.
+            digits := or(iszero(digits), digits)
+            // Store the length of the string.
+            mstore(buffer, digits)
+            // Starting location of the digit string's bytes.
+            let loc := add(buffer, 0x20)
+            for { let temp := value } digits { temp := div(temp, 10) } {
+                digits := sub(digits, 1)
+                // Directly store the byte in the memory.
+                mstore8(add(loc, digits), add(48, mod(temp, 10)))
             }
-            bytes memory buffer = new bytes(digits);
-            while (value != 0) {
-                --digits;
-                buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
-                value /= 10;
-            }
-            return string(buffer);    
         }
     }
 }
