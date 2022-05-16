@@ -631,12 +631,16 @@ contract ERC721A is IERC721A {
             let end := ptr
             
             // We write the string from rightmost digit to leftmost digit.
-            // This is essentially a do-while loop that also handles the zero case.
-            // Costs a bit more vs early return for the zero case, but otherwise cheaper.
+            // The following essentially a do-while loop that also handles the zero case.
+            // Costs a bit more vs early return for the zero case, 
+            // but otherwise cheaper in terms of deployment and overall runtime costs.
             let temp := value
             ptr := sub(ptr, 1)
-            mstore8(ptr, add(48, mod(temp, 10))) // 48 is the ASCII index of '0'.
+            // Write the character to the pointer.
+            // 48 is the ASCII index of '0'.
+            mstore8(ptr, add(48, mod(temp, 10))) 
             temp := div(temp, 10)
+            
             for {} temp {} {
                 ptr := sub(ptr, 1)
                 mstore8(ptr, add(48, mod(temp, 10)))
