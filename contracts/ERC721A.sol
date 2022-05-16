@@ -433,7 +433,7 @@ contract ERC721A is IERC721A {
             // - `numberMinted += quantity`.
             //
             // We can directly add to the balance and number minted.
-            _packedAddressData[to] += quantity | (quantity << BITPOS_NUMBER_MINTED);
+            _packedAddressData[to] += quantity * ((1 << BITPOS_NUMBER_MINTED) | 1);
 
             // Updates:
             // - `address` to the owner.
@@ -493,7 +493,7 @@ contract ERC721A is IERC721A {
             // - `numberMinted += quantity`.
             //
             // We can directly add to the balance and number minted.
-            _packedAddressData[to] += quantity | (quantity << BITPOS_NUMBER_MINTED);
+            _packedAddressData[to] += quantity * ((1 << BITPOS_NUMBER_MINTED) | 1);
 
             // Updates:
             // - `address` to the owner.
