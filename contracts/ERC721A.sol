@@ -403,25 +403,6 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Writes the ownership data for mint.
-     */
-    function _mintWriteOwnership(
-        address to,
-        uint256 quantity,
-        uint256 startTokenId
-    ) private {
-        // Updates:
-        // - `address` to the owner.
-        // - `startTimestamp` to the timestamp of minting.
-        // - `burned` to `false`.
-        // - `nextInitialized` to `quantity == 1`.
-        _packedOwnerships[startTokenId] =
-            _addressToUint256(to) |
-            (block.timestamp << BITPOS_START_TIMESTAMP) |
-            (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
-    }
-
-    /**
      * @dev Safely mints `quantity` tokens and transfers them to `to`.
      *
      * Requirements:
@@ -454,7 +435,15 @@ contract ERC721A is IERC721A {
             // We can directly add to the balance and number minted.
             _packedAddressData[to] += quantity | (quantity << BITPOS_NUMBER_MINTED);
 
-            _mintWriteOwnership(to, quantity, startTokenId);
+            // Updates:
+            // - `address` to the owner.
+            // - `startTimestamp` to the timestamp of minting.
+            // - `burned` to `false`.
+            // - `nextInitialized` to `quantity == 1`.
+            _packedOwnerships[startTokenId] =
+                _addressToUint256(to) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
+                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
 
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;
@@ -506,7 +495,15 @@ contract ERC721A is IERC721A {
             // We can directly add to the balance and number minted.
             _packedAddressData[to] += quantity | (quantity << BITPOS_NUMBER_MINTED);
 
-            _mintWriteOwnership(to, quantity, startTokenId);
+            // Updates:
+            // - `address` to the owner.
+            // - `startTimestamp` to the timestamp of minting.
+            // - `burned` to `false`.
+            // - `nextInitialized` to `quantity == 1`.
+            _packedOwnerships[startTokenId] =
+                _addressToUint256(to) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
+                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
 
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;

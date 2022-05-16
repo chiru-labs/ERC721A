@@ -124,7 +124,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         const timestampAfter = parseInt(ownershipAfter.startTimestamp);
         expect(timestampBefore).to.be.lt(timestampToMine);
         expect(timestampAfter).to.be.gte(timestampToMine);
-        expect(timestampAfter).to.be.gt(timestampBefore);
         expect(timestampToMine).to.be.eq(timestampMined);
       });
 

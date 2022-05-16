@@ -239,7 +239,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             it('startTimestamp updated correctly', async function () {
               expect(this.timestampBefore).to.be.lt(this.timestampToMine);
               expect(this.timestampAfter).to.be.gte(this.timestampToMine);
-              expect(this.timestampAfter).to.be.gt(this.timestampBefore);
               expect(this.timestampToMine).to.be.eq(this.timestampMined);
             });
           };
