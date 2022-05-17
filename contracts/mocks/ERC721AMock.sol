@@ -56,4 +56,8 @@ contract ERC721AMock is ERC721A {
     function toString(uint256 x) public pure returns (string memory) {
         return _toString(x);
     }
+
+    function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
+        return _ownershipAt(index);
+    }
 }

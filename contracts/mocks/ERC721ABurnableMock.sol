@@ -18,10 +18,14 @@ contract ERC721ABurnableMock is ERC721A, ERC721ABurnable {
     }
 
     function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
-        return _ownerships[index];
+        return _ownershipAt(index);
     }
 
     function totalMinted() public view returns (uint256) {
         return _totalMinted();
+    }
+
+    function numberBurned(address owner) public view returns (uint256) {
+        return _numberBurned(owner);
     }
 }

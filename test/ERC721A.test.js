@@ -1,4 +1,4 @@
-const { deployContract } = require('./helpers.js');
+const { deployContract, getBlockTimestamp, mineBlockTimestamp } = require('./helpers.js');
 const { expect } = require('chai');
 const { BigNumber } = require('ethers');
 const { constants } = require('@openzeppelin/test-helpers');
@@ -205,7 +205,17 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               this.from = sender.address;
               this.to = this.receiver.address;
               await this.erc721a.connect(sender).setApprovalForAll(this.to, true);
+
+              const ownershipBefore = await this.erc721a.getOwnershipAt(this.tokenId);
+              this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
+              this.timestampToMine = (await getBlockTimestamp()) + 100;
+              await mineBlockTimestamp(this.timestampToMine);
+              this.timestampMined = await getBlockTimestamp();
+
               this.transferTx = await this.erc721a.connect(sender)[transferFn](this.from, this.to, this.tokenId);
+
+              const ownershipAfter = await this.erc721a.getOwnershipAt(this.tokenId);
+              this.timestampAfter = parseInt(ownershipAfter.startTimestamp);
             });
 
             it('transfers the ownership of the given token ID to the given address', async function () {
@@ -224,6 +234,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             it('adjusts owners balances', async function () {
               expect(await this.erc721a.balanceOf(this.from)).to.be.equal(1);
+            });
+
+            it('startTimestamp updated correctly', async function () {
+              expect(this.timestampBefore).to.be.lt(this.timestampToMine);
+              expect(this.timestampAfter).to.be.gte(this.timestampToMine);
+              expect(this.timestampToMine).to.be.eq(this.timestampMined);
             });
           };
 

@@ -73,7 +73,6 @@ interface IERC721A {
      */
     error URIQueryForNonexistentToken();
 
-    // Compiler will pack this into a single 256bit word.
     struct TokenOwnership {
         // The address of the owner.
         address addr;
@@ -83,23 +82,9 @@ interface IERC721A {
         bool burned;
     }
 
-    // Compiler will pack this into a single 256bit word.
-    struct AddressData {
-        // Realistically, 2**64-1 is more than enough.
-        uint64 balance;
-        // Keeps track of mint count with minimal overhead for tokenomics.
-        uint64 numberMinted;
-        // Keeps track of burn count with minimal overhead for tokenomics.
-        uint64 numberBurned;
-        // For miscellaneous variable(s) pertaining to the address
-        // (e.g. number of whitelist mint slots used).
-        // If there are multiple variables, please pack them into a uint64.
-        uint64 aux;
-    }
-
     /**
      * @dev Returns the total amount of tokens stored by the contract.
-     * 
+     *
      * Burned tokens are calculated here, use `_totalMinted()` if you want to count just minted tokens.
      */
     function totalSupply() external view returns (uint256);

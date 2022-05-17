@@ -1,4 +1,4 @@
-const { deployContract } = require('../helpers.js');
+const { deployContract, getBlockTimestamp, mineBlockTimestamp } = require('../helpers.js');
 const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
@@ -27,6 +27,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           this.addr1 = addr1;
           this.addr2 = addr2;
           this.addr3 = addr3;
+
+          this.timestampBefore = await getBlockTimestamp();
+          this.timestampToMine = (this.timestampBefore) + 100;
+          await mineBlockTimestamp(this.timestampToMine);
+          this.timestampMined = await getBlockTimestamp();
+
           // After the following mints, our ownership array will look like this:
           // | 1 | 2 | Empty | 3 | Empty | Empty |
           await this.erc721aOwnersExplicit['safeMint(address,uint256)'](addr1.address, 1);
@@ -94,6 +100,16 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             await expect(this.erc721aOwnersExplicit.setOwnersExplicit(1)).to.be.revertedWith(
               'AllOwnershipsHaveBeenSet'
             );
+          });
+
+          it('sets startTimestamps correctly', async function () {
+            await this.erc721aOwnersExplicit.setOwnersExplicit(6);
+            expect(this.timestampToMine).to.be.eq(this.timestampMined);
+            for (let tokenId = this.startTokenId; tokenId < 6 + this.startTokenId; tokenId++) {
+              let owner = await this.erc721aOwnersExplicit.getOwnershipAt(tokenId);
+              expect(owner.startTimestamp).to.be.gt(this.timestampBefore);
+              expect(owner.startTimestamp).to.be.gte(this.timestampToMine);
+            }
           });
         });
       });

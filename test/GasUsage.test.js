@@ -39,4 +39,15 @@ describe('ERC721A Gas Usage', function () {
       }
     });
   });
+
+  context('transferFrom', function () {
+    it('transfer to and from two addresses', async function () {
+      await this.erc721a.mintTen(this.addr1.address);
+      await this.erc721a.mintTen(this.owner.address);
+      for (let i = 0; i < 10; ++i) {
+        await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 1);
+        await this.erc721a.connect(this.owner).transferFrom(this.owner.address, this.addr1.address, 1);
+      }  
+    });
+  });
 });
