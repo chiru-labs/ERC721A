@@ -1,4 +1,4 @@
-const { deployContract } = require('../helpers.js');
+const { deployContract, getBlockTimestamp, mineBlockTimestamp } = require('../helpers.js');
 const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
@@ -42,6 +42,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(supplyNow).to.equal(supplyBefore - (i + 1));
           }
         });
+      });
+
+      it('changes numberBurned', async function () {
+        expect(await this.erc721aBurnable.numberBurned(this.addr1.address)).to.equal(1);
+        await this.erc721aBurnable.connect(this.addr1).burn(this.startTokenId);
+        expect(await this.erc721aBurnable.numberBurned(this.addr1.address)).to.equal(2);
       });
 
       it('changes exists', async function () {
@@ -104,6 +110,21 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
       it('adjusts owners balances', async function () {
         expect(await this.erc721aBurnable.balanceOf(this.addr1.address)).to.be.equal(this.numTestTokens - 1);
+      });
+
+      it('startTimestamp updated correctly', async function () {
+        const tokenIdToBurn = this.burnedTokenId + 1;
+        const ownershipBefore = await this.erc721aBurnable.getOwnershipAt(tokenIdToBurn);
+        const timestampBefore = parseInt(ownershipBefore.startTimestamp);
+        const timestampToMine = (await getBlockTimestamp()) + 100;
+        await mineBlockTimestamp(timestampToMine);
+        const timestampMined = await getBlockTimestamp();
+        await this.erc721aBurnable.connect(this.addr1).burn(tokenIdToBurn);
+        const ownershipAfter = await this.erc721aBurnable.getOwnershipAt(tokenIdToBurn);
+        const timestampAfter = parseInt(ownershipAfter.startTimestamp);
+        expect(timestampBefore).to.be.lt(timestampToMine);
+        expect(timestampAfter).to.be.gte(timestampToMine);
+        expect(timestampToMine).to.be.eq(timestampMined);
       });
 
       describe('ownerships correctly set', async function () {
