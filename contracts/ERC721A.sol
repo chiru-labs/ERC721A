@@ -57,10 +57,10 @@ contract ERC721A is IERC721A {
     uint256 private constant BITMASK_NEXT_INITIALIZED = 1 << 225;
 
     // The tokenId of the next token to be minted.
-    uint256 internal _currentIndex;
+    uint256 private _currentIndex;
 
     // The number of tokens burned.
-    uint256 internal _burnCounter;
+    uint256 private _burnCounter;
 
     // Token name
     string private _name;
@@ -101,32 +101,49 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * To change the starting tokenId, please override this function.
+     * @dev Returns the starting token ID. 
+     * To change the starting token ID, please override this function.
      */
     function _startTokenId() internal view virtual returns (uint256) {
         return 0;
     }
 
     /**
-     * @dev Burned tokens are calculated here, use _totalMinted() if you want to count just minted tokens.
+     * @dev Returns the next token ID to be minted.
+     */
+    function _nextTokenId() internal view returns (uint256) {
+        return _currentIndex;
+    }
+
+    /**
+     * @dev Returns the total number of tokens in existence.
+     * Burned tokens will reduce the count. 
+     * To get the total number of tokens minted, please see `_totalMinted`.
      */
     function totalSupply() public view override returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than _currentIndex - _startTokenId() times
+        // more than `_currentIndex - _startTokenId()` times.
         unchecked {
             return _currentIndex - _burnCounter - _startTokenId();
         }
     }
 
     /**
-     * Returns the total amount of tokens minted in the contract.
+     * @dev Returns the total amount of tokens minted in the contract.
      */
     function _totalMinted() internal view returns (uint256) {
         // Counter underflow is impossible as _currentIndex does not decrement,
-        // and it is initialized to _startTokenId()
+        // and it is initialized to `_startTokenId()`
         unchecked {
             return _currentIndex - _startTokenId();
         }
+    }
+
+    /**
+     * @dev Returns the total number of tokens burned.
+     */
+    function _totalBurned() internal view returns (uint256) {
+        return _burnCounter;
     }
 
     /**
