@@ -50,6 +50,18 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         expect(await this.erc721aBurnable.numberBurned(this.addr1.address)).to.equal(2);
       });
 
+      it('changes totalBurned', async function () {
+        const totalBurnedBefore = (await this.erc721aBurnable.totalBurned()).toNumber();
+        expect(totalBurnedBefore).to.equal(1);
+
+        for (let i = 0; i < 2 + this.startTokenId; ++i) {
+          await this.erc721aBurnable.connect(this.addr1).burn(i + this.startTokenId);
+
+          const totalBurnedNow = (await this.erc721aBurnable.totalBurned()).toNumber();
+          expect(totalBurnedNow).to.equal(totalBurnedBefore + (i + 1));
+        }
+      });
+
       it('changes exists', async function () {
         expect(await this.erc721aBurnable.exists(this.burnedTokenId)).to.be.false;
         expect(await this.erc721aBurnable.exists(this.notBurnedTokenId)).to.be.true;
@@ -67,7 +79,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
       it('cannot burn with wrong caller or spender', async function () {
         const tokenIdToBurn = this.notBurnedTokenId;
-        
+
         // sanity check
         await this.erc721aBurnable.connect(this.addr1).approve(ZERO_ADDRESS, tokenIdToBurn);
         await this.erc721aBurnable.connect(this.addr1).setApprovalForAll(this.spender.address, false);

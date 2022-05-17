@@ -17,6 +17,10 @@ contract ERC721AMock is ERC721A {
         return _totalMinted();
     }
 
+    function totalBurned() public view returns (uint256) {
+        return _totalBurned();
+    }
+
     function getAux(address owner) public view returns (uint64) {
         return _getAux(owner);
     }
@@ -47,6 +51,10 @@ contract ERC721AMock is ERC721A {
 
     function mint(address to, uint256 quantity) public {
         _mint(to, quantity);
+    }
+
+    function burn(uint256 tokenId) public {
+        _burn(tokenId);
     }
 
     function burn(uint256 tokenId, bool approvalCheck) public {
