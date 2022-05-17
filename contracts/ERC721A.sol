@@ -769,7 +769,7 @@ contract ERC721A is IERC721A {
             // Cache the end of the memory to calculate the length later.
             let end := ptr
 
-            // We write the string from rightmost digit to leftmost digit.
+            // We write the string from the rightmost digit to the leftmost digit.
             // The following is essentially a do-while loop that also handles the zero case.
             // Costs a bit more than early returning for the zero case,
             // but cheaper in terms of deployment and runtime costs.
@@ -782,7 +782,7 @@ contract ERC721A is IERC721A {
                 mstore8(ptr, add(48, mod(temp, 10)))
                 temp := div(temp, 10)
             } temp { 
-                // Keep dividing temp until zero.
+                // Keep dividing `temp` until zero.
                 temp := div(temp, 10)
             } { // Body of the for loop.
                 ptr := sub(ptr, 1)
