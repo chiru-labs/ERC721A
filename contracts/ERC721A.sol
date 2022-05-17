@@ -617,20 +617,20 @@ contract ERC721A is IERC721A {
     /**
      * @dev Converts a `uint256` to its ASCII `string` decimal representation.
      */
-    function _toString(uint256 value) internal pure returns (string memory result) {
+    function _toString(uint256 value) internal pure returns (string memory ptr) {
         assembly {
             // The maximum value of a uint256 contains 78 digits, 
             // but we allocate 128 bytes to keep the free memory pointer 32-byte word aliged.
             // 128 = 32 + 3 * 32. 
             // We need a minimal of 3 32-byte words to store 78 digits, 
             // and 1 more 32-byte word to store the length. 
-            let ptr := add(mload(0x40), 128)
+            ptr := add(mload(0x40), 128)
             // Update the free memory pointer to allocate.
             mstore(0x40, ptr)
 
             // Cache the end of the memory to calculate the length later.
             let end := ptr
-            
+
             // We write the string from rightmost digit to leftmost digit.
             // The following is essentially a do-while loop that also handles the zero case.
             // Costs a bit more vs early return for the zero case, 
@@ -641,7 +641,7 @@ contract ERC721A is IERC721A {
             // 48 is the ASCII index of '0'.
             mstore8(ptr, add(48, mod(temp, 10))) 
             temp := div(temp, 10)
-            
+
             for {} temp {} {
                 ptr := sub(ptr, 1)
                 mstore8(ptr, add(48, mod(temp, 10)))
@@ -653,8 +653,6 @@ contract ERC721A is IERC721A {
             ptr := sub(ptr, 32)
             // Store the length.
             mstore(ptr, length)
-            // Assign the string's memory location to the result.
-            result := ptr
         }
     }
 }
