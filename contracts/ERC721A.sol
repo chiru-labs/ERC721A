@@ -774,17 +774,20 @@ contract ERC721A is IERC721A {
             // The following is essentially a do-while loop that also handles the zero case.
             // Costs a bit more vs early return for the zero case, 
             // but otherwise cheaper in terms of deployment and overall runtime costs.
-            let temp := value
-            ptr := sub(ptr, 1)
-            // Write the character to the pointer.
-            // 48 is the ASCII index of '0'.
-            mstore8(ptr, add(48, mod(temp, 10))) 
-            temp := div(temp, 10)
-
-            for {} temp {} {
+            for { 
+                // Initialize and perform the first pass without check.
+                let temp := value
                 ptr := sub(ptr, 1)
+                // Write the character to the pointer.
+                // 48 is the ASCII index of '0'.
                 mstore8(ptr, add(48, mod(temp, 10)))
                 temp := div(temp, 10)
+            } temp { 
+                // Keep dividing temp until zero.
+                temp := div(temp, 10) 
+            } { 
+                ptr := sub(ptr, 1)
+                mstore8(ptr, add(48, mod(temp, 10)))
             }
 
             let length := sub(end, ptr)
