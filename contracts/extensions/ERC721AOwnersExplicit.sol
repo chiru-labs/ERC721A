@@ -10,47 +10,57 @@ abstract contract ERC721AOwnersExplicit is ERC721A {
     /**
      * No more ownership slots to explicity initialize.
      */
-    error AllOwnershipsHaveBeenSet();
+    error AllOwnershipsInitialized();
 
     /**
      * The `quantity` must be more than zero.
      */
-    error QuantityMustBeNonZero();
+    error InitializeZeroQuantity();
 
     /**
      * At least one token needs to be minted.
      */
     error NoTokensMintedYet();
 
-    uint256 public nextOwnerToExplicitlySet;
+    // The next token ID to explicity initialize ownership data.
+    uint256 private _currentIndexOwnersExplicit;
 
     /**
-     * @dev Explicitly set `owners` to eliminate loops in future calls of ownerOf().
+     * @dev Returns the next token ID to be explicity initialized.
      */
-    function _setOwnersExplicit(uint256 quantity) internal {
-        if (quantity == 0) revert QuantityMustBeNonZero();
-        if (_currentIndex == _startTokenId()) revert NoTokensMintedYet();
-        uint256 _nextOwnerToExplicitlySet = nextOwnerToExplicitlySet;
-        if (_nextOwnerToExplicitlySet == 0) {
-            _nextOwnerToExplicitlySet = _startTokenId();
+    function _nextTokenIdOwnersExplicit() internal view returns (uint256) {
+        uint256 tokenId = _currentIndexOwnersExplicit;
+        if (tokenId == 0) {
+            tokenId = _startTokenId();
         }
-        if (_nextOwnerToExplicitlySet >= _currentIndex) revert AllOwnershipsHaveBeenSet();
+        return tokenId;
+    }
+
+    /**
+     * @dev Explicitly initialize ownerships to eliminate loops in future calls of `ownerOf()`.
+     */
+    function _initializeOwnersExplicit(uint256 quantity) internal {
+        if (quantity == 0) revert InitializeZeroQuantity();
+        uint256 stopLimit = _nextTokenId();
+        if (stopLimit == _startTokenId()) revert NoTokensMintedYet();
+        uint256 start = _nextTokenIdOwnersExplicit();
+        if (start >= stopLimit) revert AllOwnershipsInitialized();
 
         // Index underflow is impossible.
         // Counter or index overflow is incredibly unrealistic.
         unchecked {
-            uint256 endIndex = _nextOwnerToExplicitlySet + quantity - 1;
+            uint256 stop = start + quantity;
 
             // Set the end index to be the last token index
-            if (endIndex + 1 > _currentIndex) {
-                endIndex = _currentIndex - 1;
+            if (stop > stopLimit) {
+                stop = stopLimit;
             }
 
-            for (uint256 i = _nextOwnerToExplicitlySet; i <= endIndex; i++) {
+            for (uint256 i = start; i < stop; i++) {
                 _initializeOwnershipAt(i);
             }
 
-            nextOwnerToExplicitlySet = endIndex + 1;
+            _currentIndexOwnersExplicit = stop;
         }
     }
 }

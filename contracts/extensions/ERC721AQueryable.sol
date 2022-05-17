@@ -32,7 +32,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      */
     function explicitOwnershipOf(uint256 tokenId) public view override returns (TokenOwnership memory) {
         TokenOwnership memory ownership;
-        if (tokenId < _startTokenId() || tokenId >= _currentIndex) {
+        if (tokenId < _startTokenId() || tokenId >= _nextTokenId()) {
             return ownership;
         }
         ownership = _ownershipAt(tokenId);
@@ -77,12 +77,12 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         unchecked {
             if (start >= stop) revert InvalidQueryRange();
             uint256 tokenIdsIdx;
-            uint256 stopLimit = _currentIndex;
+            uint256 stopLimit = _nextTokenId();
             // Set `start = max(start, _startTokenId())`.
             if (start < _startTokenId()) {
                 start = _startTokenId();
             }
-            // Set `stop = min(stop, _currentIndex)`.
+            // Set `stop = min(stop, stopLimit)`.
             if (stop > stopLimit) {
                 stop = stopLimit;
             }

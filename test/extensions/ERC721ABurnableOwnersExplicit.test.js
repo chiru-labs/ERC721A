@@ -19,10 +19,10 @@ describe('ERC721ABurnableOwnersExplicit', function () {
     await this.token['safeMint(address,uint256)'](addr3.address, 3);
     await this.token.connect(this.addr1).burn(0);
     await this.token.connect(this.addr3).burn(4);
-    await this.token.setOwnersExplicit(6);
+    await this.token.initializeOwnersExplicit(6);
   });
 
-  it('ownerships correctly set', async function () {
+  it('ownerships correctly initialized', async function () {
     for (let tokenId = 0; tokenId < 6; tokenId++) {
       let owner = await this.token.getOwnershipAt(tokenId);
       expect(owner[0]).to.not.equal(ZERO_ADDRESS);
