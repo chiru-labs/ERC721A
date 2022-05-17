@@ -5,4 +5,7 @@ libs = ['lib']
 gas_reports = ["*"]
 solc_version = "0.8.11"
 
+[intense]
+fuzz_runs = 10000
+
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
