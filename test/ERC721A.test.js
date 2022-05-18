@@ -83,6 +83,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await expect(this.erc721a['tokenURI(uint256)'](42)).to.be.reverted;
             });
           });
+
+          describe('baseURI', async function () {
+            it('sends an emtpy uri by default', async function () {
+              expect(await this.erc721a.baseURI()).to.eq('');
+            });
+          });
         });
 
         describe('exists', async function () {
@@ -282,27 +288,31 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             });
           };
 
-          context('successful transfers to contract', function () {
-            describe('transferFrom to contract', function () {
-              testSuccessfulTransfer('transferFrom');
-            });
+          context('successful transfers', function () {
+            context('transferFrom', function () {
+              describe('to contract', function () {
+                testSuccessfulTransfer('transferFrom');
+              });
 
-            describe('transferFrom to EOA', function () {
-              testSuccessfulTransfer('transferFrom', false);
-            });
-
-            describe('safeTransferFrom to contract', function () {
-              testSuccessfulTransfer('safeTransferFrom(address,address,uint256)');
-
-              it('validates ERC721Received', async function () {
-                await expect(this.transferTx)
-                  .to.emit(this.receiver, 'Received')
-                  .withArgs(this.addr2.address, this.addr2.address, 1 + this.startTokenId, '0x', GAS_MAGIC_VALUE);
+              describe('to EOA', function () {
+                testSuccessfulTransfer('transferFrom', false);
               });
             });
 
-            describe('safeTransferFrom to EOA', function () {
-              testSuccessfulTransfer('safeTransferFrom(address,address,uint256)', false);
+            context('safeTransferFrom', function () {
+              describe('to contract', function () {
+                testSuccessfulTransfer('safeTransferFrom(address,address,uint256)');
+
+                it('validates ERC721Received', async function () {
+                  await expect(this.transferTx)
+                    .to.emit(this.receiver, 'Received')
+                    .withArgs(this.addr2.address, this.addr2.address, 1 + this.startTokenId, '0x', GAS_MAGIC_VALUE);
+                });
+              });
+
+              describe('to EOA', function () {
+                testSuccessfulTransfer('safeTransferFrom(address,address,uint256)', false);
+              });
             });
           });
 
@@ -316,10 +326,9 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
               it('reverts for non-receivers', async function () {
                 const nonReceiver = this.erc721a;
+                // prettier-ignore
                 await expect(
-                  this.erc721a
-                    .connect(this.addr1)
-                    ['safeTransferFrom(address,address,uint256)'](
+                  this.erc721a.connect(this.addr1)['safeTransferFrom(address,address,uint256)'](
                       this.addr1.address,
                       nonReceiver.address,
                       this.startTokenId
