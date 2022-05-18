@@ -307,7 +307,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
                 it('validates ERC721Received', async function () {
                   await expect(this.transferTx)
-                    .to.emit(this.to, 'Received')
+                    .to.emit(this.receiver, 'Received')
                     .withArgs(this.addr2.address, this.addr2.address, this.tokenId, '0x', GAS_MAGIC_VALUE);
                 });
               });
@@ -334,6 +334,30 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                       this.addr1.address,
                       nonReceiver.address,
                       this.startTokenId
+                    )
+                ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');
+              });
+
+              it('reverts if receiver reverted', async function () {
+                // prettier-ignore
+                await expect(
+                  this.erc721a.connect(this.addr1)['safeTransferFrom(address,address,uint256,bytes)'](
+                      this.addr1.address,
+                      this.receiver.address,
+                      this.startTokenId,
+                      '0x01'
+                    )
+                ).to.be.revertedWith('reverted in receiver contract!');
+              });
+
+              it('reverts if receiver returns wrong value', async function () {
+                // prettier-ignore
+                await expect(
+                  this.erc721a.connect(this.addr1)['safeTransferFrom(address,address,uint256,bytes)'](
+                      this.addr1.address,
+                      this.receiver.address,
+                      this.startTokenId,
+                      '0x02'
                     )
                 ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');
               });
@@ -519,6 +543,18 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await expect(this.erc721a['safeMint(address,uint256)'](nonReceiver.address, 1)).to.be.revertedWith(
                 'TransferToNonERC721ReceiverImplementer'
               );
+            });
+
+            it('reverts if receiver reverted', async function () {
+              await expect(
+                this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, '0x01')
+              ).to.be.revertedWith('reverted in receiver contract!');
+            });
+
+            it('reverts if receiver returns wrong value', async function () {
+              await expect(
+                this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, '0x02')
+              ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');
             });
           });
         });

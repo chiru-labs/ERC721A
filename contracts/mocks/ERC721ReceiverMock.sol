@@ -28,6 +28,14 @@ contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
         uint256 tokenId,
         bytes memory data
     ) public override returns (bytes4) {
+        if (bytes1(data) == 0x01) {
+            revert('reverted in receiver contract!');
+        }
+
+        if (bytes1(data) == 0x02) {
+            return 0x0;
+        }
+
         emit Received(operator, from, tokenId, data, 20000);
         return _retval;
     }
