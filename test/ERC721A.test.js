@@ -222,8 +222,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
               const sender = this.addr2;
               this.from = sender.address;
-              this.to = transferToContract ? this.receiver.address : this.addr4.address;
-              await this.erc721a.connect(sender).setApprovalForAll(this.to, true);
+              this.to = transferToContract ? this.receiver : this.addr4;
+              await this.erc721a.connect(sender).setApprovalForAll(this.to.address, true);
 
               const ownershipBefore = await this.erc721a.getOwnershipAt(this.tokenId);
               this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
@@ -231,20 +231,22 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await mineBlockTimestamp(this.timestampToMine);
               this.timestampMined = await getBlockTimestamp();
 
-              this.transferTx = await this.erc721a.connect(sender)[transferFn](this.from, this.to, this.tokenId);
+              // prettier-ignore
+              this.transferTx = await this.erc721a
+                .connect(sender)[transferFn](this.from, this.to.address, this.tokenId);
 
               const ownershipAfter = await this.erc721a.getOwnershipAt(this.tokenId);
               this.timestampAfter = parseInt(ownershipAfter.startTimestamp);
             });
 
             it('transfers the ownership of the given token ID to the given address', async function () {
-              expect(await this.erc721a.ownerOf(this.tokenId)).to.be.equal(this.to);
+              expect(await this.erc721a.ownerOf(this.tokenId)).to.be.equal(this.to.address);
             });
 
             it('emits a Transfer event', async function () {
               await expect(this.transferTx)
                 .to.emit(this.erc721a, 'Transfer')
-                .withArgs(this.from, this.to, this.tokenId);
+                .withArgs(this.from, this.to.address, this.tokenId);
             });
 
             it('clears the approval for the token ID', async function () {
@@ -305,8 +307,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
                 it('validates ERC721Received', async function () {
                   await expect(this.transferTx)
-                    .to.emit(this.receiver, 'Received')
-                    .withArgs(this.addr2.address, this.addr2.address, 1 + this.startTokenId, '0x', GAS_MAGIC_VALUE);
+                    .to.emit(this.to, 'Received')
+                    .withArgs(this.addr2.address, this.addr2.address, this.tokenId, '0x', GAS_MAGIC_VALUE);
                 });
               });
 
@@ -365,38 +367,43 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       });
 
       context('test mint functionality', function () {
+        beforeEach(async function () {
+          const [owner, addr1] = await ethers.getSigners();
+          this.owner = owner;
+          this.addr1 = addr1;
+        });
+
         const testSuccessfullMint = function (safe, quantity, mintForContract = true) {
           beforeEach(async function () {
-            const [owner, addr1] = await ethers.getSigners();
-            this.owner = owner;
-
-            this.minter = mintForContract ? this.receiver.address : addr1.address;
+            this.minter = mintForContract ? this.receiver : this.addr1;
 
             const mintFn = safe ? 'safeMint(address,uint256)' : 'mint(address,uint256)';
 
-            this.balanceBefore = (await this.erc721a.balanceOf(this.minter)).toNumber();
+            this.balanceBefore = (await this.erc721a.balanceOf(this.minter.address)).toNumber();
 
             this.timestampToMine = (await getBlockTimestamp()) + 100;
             await mineBlockTimestamp(this.timestampToMine);
             this.timestampMined = await getBlockTimestamp();
 
-            this.mintTx = await this.erc721a[mintFn](this.minter, quantity);
+            this.mintTx = await this.erc721a[mintFn](this.minter.address, quantity);
           });
 
           it('changes ownership', async function () {
             for (let tokenId = this.startTokenId; tokenId < quantity + this.startTokenId; tokenId++) {
-              expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.minter);
+              expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.minter.address);
             }
           });
 
           it('emits a Transfer event', async function () {
             for (let tokenId = this.startTokenId; tokenId < quantity + this.startTokenId; tokenId++) {
-              await expect(this.mintTx).to.emit(this.erc721a, 'Transfer').withArgs(ZERO_ADDRESS, this.minter, tokenId);
+              await expect(this.mintTx)
+                .to.emit(this.erc721a, 'Transfer')
+                .withArgs(ZERO_ADDRESS, this.minter.address, tokenId);
             }
           });
 
           it('adjusts owners balances', async function () {
-            expect(await this.erc721a.balanceOf(this.minter)).to.be.equal(this.balanceBefore + quantity);
+            expect(await this.erc721a.balanceOf(this.minter.address)).to.be.equal(this.balanceBefore + quantity);
           });
 
           it('adjusts OwnershipAt and OwnershipOf', async function () {
@@ -406,7 +413,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             for (let tokenId = this.startTokenId; tokenId < quantity + this.startTokenId; tokenId++) {
               const ownership = await this.erc721a.getOwnershipOf(tokenId);
-              expect(ownership.addr).to.equal(this.minter);
+              expect(ownership.addr).to.equal(this.minter.address);
               expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
               expect(ownership.burned).to.be.false;
             }
@@ -418,7 +425,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             it('validates ERC721Received', async function () {
               for (let tokenId = this.startTokenId; tokenId < quantity + this.startTokenId; tokenId++) {
                 await expect(this.mintTx)
-                  .to.emit(this.receiver, 'Received')
+                  .to.emit(this.minter, 'Received')
                   .withArgs(this.owner.address, ZERO_ADDRESS, tokenId, '0x', GAS_MAGIC_VALUE);
               }
             });
@@ -427,9 +434,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         const testUnsuccessfulMint = function (safe) {
           beforeEach(async function () {
-            const [owner] = await ethers.getSigners();
-            this.owner = owner;
-
             this.mintFn = safe ? 'safeMint(address,uint256)' : 'mint(address,uint256)';
           });
 
@@ -479,6 +483,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
               describe('multiple tokens', function () {
                 testSuccessfullMint(true, 5);
+              });
+
+              it('validates ERC721Received with custom _data', async function () {
+                const customData = ethers.utils.formatBytes32String('custom data');
+                const tx = await this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, customData);
+                await expect(tx)
+                  .to.emit(this.receiver, 'Received')
+                  .withArgs(this.owner.address, ZERO_ADDRESS, this.startTokenId, customData, GAS_MAGIC_VALUE);
               });
             });
 
