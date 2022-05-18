@@ -53,11 +53,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
       context('with minted tokens', async function () {
         beforeEach(async function () {
-          const [owner, addr1, addr2, addr3] = await ethers.getSigners();
+          const [owner, addr1, addr2, addr3, addr4] = await ethers.getSigners();
           this.owner = owner;
           this.addr1 = addr1;
           this.addr2 = addr2;
           this.addr3 = addr3;
+          this.addr4 = addr4;
           await this.erc721a['safeMint(address,uint256)'](addr1.address, 1);
           await this.erc721a['safeMint(address,uint256)'](addr2.address, 2);
           await this.erc721a['safeMint(address,uint256)'](addr3.address, 3);
@@ -209,13 +210,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
 
         context('test transfer functionality', function () {
-          const testSuccessfulTransfer = function (transferFn) {
+          const testSuccessfulTransfer = function (transferFn, transferToContract = true) {
             beforeEach(async function () {
               this.tokenId = this.startTokenId + 1;
 
               const sender = this.addr2;
               this.from = sender.address;
-              this.to = this.receiver.address;
+              this.to = transferToContract ? this.receiver.address : this.addr4.address;
               await this.erc721a.connect(sender).setApprovalForAll(this.to, true);
 
               const ownershipBefore = await this.erc721a.getOwnershipAt(this.tokenId);
@@ -281,12 +282,16 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             });
           };
 
-          context('successful transfers', function () {
-            describe('transferFrom', function () {
+          context('successful transfers to contract', function () {
+            describe('transferFrom to contract', function () {
               testSuccessfulTransfer('transferFrom');
             });
 
-            describe('safeTransferFrom', function () {
+            describe('transferFrom to EOA', function () {
+              testSuccessfulTransfer('transferFrom', false);
+            });
+
+            describe('safeTransferFrom to contract', function () {
               testSuccessfulTransfer('safeTransferFrom(address,address,uint256)');
 
               it('validates ERC721Received', async function () {
@@ -294,6 +299,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                   .to.emit(this.receiver, 'Received')
                   .withArgs(this.addr2.address, this.addr2.address, 1 + this.startTokenId, '0x', GAS_MAGIC_VALUE);
               });
+            });
+
+            describe('safeTransferFrom to EOA', function () {
+              testSuccessfulTransfer('safeTransferFrom(address,address,uint256)', false);
             });
           });
 
@@ -304,6 +313,19 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             describe('safeTransferFrom', function () {
               testUnsuccessfulTransfer('safeTransferFrom(address,address,uint256)');
+
+              it('reverts for non-receivers', async function () {
+                const nonReceiver = this.erc721a;
+                await expect(
+                  this.erc721a
+                    .connect(this.addr1)
+                    ['safeTransferFrom(address,address,uint256)'](
+                      this.addr1.address,
+                      nonReceiver.address,
+                      this.startTokenId
+                    )
+                ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');
+              });
             });
           });
         });
