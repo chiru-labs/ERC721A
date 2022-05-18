@@ -168,6 +168,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(approval).to.equal(this.addr2.address);
           });
 
+          it('set approval for the target address on behalf of the owner', async function () {
+            await this.erc721a.connect(this.addr1).setApprovalForAll(this.addr2.address, true);
+            await this.erc721a.connect(this.addr2).approve(this.addr3.address, this.tokenId);
+            const approval = await this.erc721a.getApproved(this.tokenId);
+            expect(approval).to.equal(this.addr3.address);
+          });
+
           it('rejects an invalid token owner', async function () {
             await expect(
               this.erc721a.connect(this.addr1).approve(this.addr2.address, this.tokenId2)
