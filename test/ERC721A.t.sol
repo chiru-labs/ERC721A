@@ -431,5 +431,118 @@ contract ERC721ATest is Test {
         erc721a.ownerOf(1337);
     }
 
+    /*************************************************************/
+    /*                       Fuzz Testing                        */
+    /*************************************************************/
+
+    function testFuzzMetadata(string memory name, string memory symbol) public {
+       ERC721AMock mock = new ERC721AMock(name, symbol);
+       assertEq(mock.name(), name);
+       assertEq(mock.symbol(), symbol);
+    }
+    
+    // use uint8 instead of uint256 becuase uint256 too large input values so in tesing consume more time (You can change as per your Requirement)
+    function testFuzzMint(address _to, uint8 _amount) public {
+        if(_to == address(0)) {
+            _to = alice;
+        }
+        if(_amount == 0) {
+            _amount = 1;
+        }
+
+        erc721a.mint(_to, uint256(_amount));
+        assertEq(erc721a.balanceOf(_to), uint256(_amount));
+    }
+
+    // uint256 too time consuming so I use the uint8 (you can use as per your requirement)
+    function testFuzzBurn(address _to, uint8 id) public {
+        uint8 amount;
+        if(_to == address(0))
+            _to = alice;
+        if(id == 0)
+            amount = 1;
+        else
+            amount = id;
+        vm.startPrank(_to);
+        erc721a.mint(_to, uint256(amount));
+
+        for (uint i = 0; i < amount; ++i) {
+            erc721a.burn(uint256(i),false);
+            assertEq(erc721a.balanceOf(_to),erc721a.totalSupply());
+        }
+    }
+
+    function testFuzzApprove(address _to, uint8 id) public {
+        if(_to == address(0))
+            _to = minter;
+        if(id == 0)
+            id = 1;
+
+        vm.startPrank(_to);
+        erc721a.mint(_to,id);
+
+        erc721a.approve(alice, id-1);
+        assertEq(erc721a.getApproved(id-1),alice);
+    }
+    
+    function testFuzzApproveBurn(address _to, uint8 id) public {
+        if(_to == address(0))
+            _to = minter;
+        if(id == 0)
+            id = 1;
+
+        erc721a.mint(_to,uint256(id));
+        
+        for (uint i =0 ; i < id; ++i){
+            vm.prank(_to);
+            erc721a.approve(address(this), i);
+            erc721a.burn(i, true);
+            assertEq(erc721a.balanceOf(_to),erc721a.totalSupply());
+
+        }
+    }
+
+    function testFuzzApproveAll(address _to, bool approved) public {
+        erc721a.setApprovalForAll(_to, approved);
+        assertEq(erc721a.isApprovedForAll(address(this), _to),approved);
+    }
+
+    function testFuzzTransferFrom(address _from,address _to , uint8 id) public {
+        if(_to == address(0) || _to == _from)
+            _to = minter;
+        if(_from == address(0))
+            _from = alice;
+        if(id == 0)
+            id = 1;
+        erc721a.mint(_from,id);
+        vm.prank(_from);
+        erc721a.setApprovalForAll(address(this),true);
+
+        uint balance = erc721a.balanceOf(_from);
+        for (uint i = 0 ; i < id ; ++i) {
+            erc721a.transferFrom(_from, _to, i);
+            assertEq(erc721a.getApproved(i),adress(0));
+            assertEq(erc721a.balanceOf(_from),--balance);
+            assertEq(erc721a.balanceOf(_to),i+1);
+        }
+    }
+
+    function testFuzzTransferFromSelf(address _to, uint8 id) public {
+        if(_to == address(0) || _to == address(this))
+            _to = alice;
+        if (id == 0)
+            id = 1;
+        erc721a.mint(address(this),id);
+
+        uint balance = erc721a.balanceOf(address(this));
+
+        for (uint i = 0 ; i < id ; ++i) {
+            erc721a.transferFrom(address(this), _to, i);
+            ssertEq(erc721a.getApproved(i),address(0));
+            assertEq(erc721a.balanceOf(address(this)),--balance);
+            assertEq(erc721a.balanceOf(_to),i+1);
+        }
+    }
+    
 }
 
