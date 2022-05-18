@@ -502,7 +502,6 @@ contract ERC721A is IERC721A {
         uint256 startTokenId = _currentIndex;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
-
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.

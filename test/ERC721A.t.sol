@@ -181,8 +181,6 @@ contract ERC721ATest is Test {
         assertEq(recipient.data(), "Transfer 0 NFTs");
     }
 
-    
-
     function testSafeMintWithData() public {
         assertEq(erc721a.totalSupply(), 0);
         erc721a.safeMint(minter, 2, "Hello"); // mint 2 NFTs with data
@@ -242,11 +240,64 @@ contract ERC721ATest is Test {
         erc721a.burn(1, true);    // burn 1 NFT
     }
 
+    function testSetAux() public {
+        assertEq(erc721a.getAux(minter), 0);
+        erc721a.setAux(minter, 2);
+        erc721a.setAux(alice,type(uint64).max);
+        assertEq(erc721a.getAux(minter), 2);
+        assertEq(erc721a.getAux(alice), type(uint64).max);
+    }
+
+    function testToString() public {
+        assertEq(erc721a.toString(0), "0");
+        assertEq(erc721a.toString(15545456), "15545456");
+    }
+
+    function testGetOwnershipAt() public {
+        erc721a.mint(minter, 2);    // mint 2 NFTs
+        erc721a.mint(alice, 5) ;   // mint 5 NFTs
+        erc721a.mint(minter, 6) ;
+        assertEq(erc721a.getOwnershipAt(0).addr, minter);
+        assertEq(erc721a.getOwnershipAt(2).addr, alice);
+        assertEq(erc721a.getOwnershipAt(7).addr, minter);
+    }
+
+    function testOwnerOf() public {
+        erc721a.mint(minter, 2);    // mint 2 NFTs
+        erc721a.mint(alice, 5) ;   // mint 5 NFTs
+        erc721a.mint(minter, 6) ;
+        for (uint i =0 ; i < erc721a.totalSupply(); ++i ) {
+        if (i < 2)
+        assertEq(erc721a.getOwnershipAt(0).addr, minter);
+        else if (i < 7)
+        assertEq(erc721a.getOwnershipAt(2).addr, alice);
+        else
+        assertEq(erc721a.getOwnershipAt(7).addr, minter);
+        }
+    }
+
+    function testBalanceOf() public {
+        erc721a.mint(minter, 2);    // mint 2 NFTs
+        assertEq(erc721a.balanceOf(minter),2);
+        erc721a.mint(alice, 5) ;   // mint 5 NFTs
+        erc721a.mint(minter, 6) ;
+        assertEq(erc721a.balanceOf(alice),5);
+        assertEq(erc721a.balanceOf(minter),8);
+    }
+
     function testFailERC165Support() public {
         // does not support ERC721Enumerable
         assertEq(erc721a.supportsInterface(bytes4(0x780e9d63)), true);
         // does not support random bytes4 value
         assertEq(erc721a.supportsInterface(bytes4(0x00004548)), true);
+    }
+
+    function testFailMintToZero() public {
+        erc721a.mint(address(0), 1);
+    }
+
+    function testFailMintZeroQuantity() public {
+        erc721a.mint(minter, 0);
     }
 
     function testFailSafeMintToNonERC721Recipient() public {
@@ -302,6 +353,76 @@ contract ERC721ATest is Test {
         erc721a.burn(0 , true);    // burn 1 NFT
     }
 
+    function testFailApproveUnMinted() public {
+        erc721a.approve(minter,1);
+    }
+
+    function testFailApproveUnAuthorized() public {
+        erc721a.mint(alice,1);
+        erc721a.approve(address(this),1);
+    }
+
+    function testFailTransferFromUnOwned() public {
+        erc721a.transferFrom(address(this),minter,0);
+    }
+
+    function testFailTransferFromWrongFrom() public {
+        erc721a.mint(alice,1);
+        erc721a.transferFrom(minter,address(this),0);
+    }
+
+    function testFailTansferFromToZero() public {
+        erc721a.mint(alice,1);
+        erc721a.transferFrom(alice,address(0),0);
+    }
+
+    function testFailTransferFromNotOnwer() public {
+        erc721a.mint(alice,1);
+        erc721a.transferFrom(alice,minter,0);
+    }
+
+    function testFailSafeTransferFromToNonERC721Recipient() public {
+        erc721a.mint(alice,1);
+        vm.startPrank(alice);
+        NonERC721Recipient to = new NonERC721Recipient();
+        erc721a.safeTransferFrom(alice,address(to),0);
+    }
+
+    function testFailSafeTransferFromToNonERC721RecipientWithData() public {
+        erc721a.mint(alice,1);
+        vm.startPrank(alice);
+        NonERC721Recipient to = new NonERC721Recipient();
+        erc721a.safeTransferFrom(alice,address(to),0,"data");
+    }
+
+    function testFailSafeTransferFormToRevertingERC721Recipient() public {
+        erc721a.mint(alice,1);
+        vm.startPrank(alice);
+        RevertingERC721Recipient to = new RevertingERC721Recipient();
+        erc721a.safeTransferFrom(alice,address(to),0);
+    }
+
+    function testFailSafeTransferFormToRevertingERC721RecipientWithData() public {
+        erc721a.mint(alice,1);
+        vm.startPrank(alice);
+        RevertingERC721Recipient to = new RevertingERC721Recipient();
+        erc721a.safeTransferFrom(alice,address(to),0,"data");
+    }
+
+    function testFailSafeTransferFromToERC721RecipientWithWrongReturnData() public {
+        erc721a.mint(alice,1);
+        vm.startPrank(alice);
+        WrongReturnDataERC721Recipient to = new WrongReturnDataERC721Recipient();
+        erc721a.safeTransferFrom(alice,address(to),0);
+    }
+
+    function testFailSafeTransferFromToERC721RecipientWithWrongReturnDataWithData() public {
+        erc721a.mint(alice,1);
+        vm.startPrank(alice);
+        WrongReturnDataERC721Recipient to = new WrongReturnDataERC721Recipient();
+        erc721a.safeTransferFrom(alice,address(to),0,"data");
+    }
+    
     function testFailBalanceOfZeroAddress() public view {
         erc721a.balanceOf(address(0));
     }
