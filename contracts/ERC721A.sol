@@ -772,7 +772,7 @@ contract ERC721A is IERC721A {
             // We write the string from the rightmost digit to the leftmost digit.
             // The following is essentially a do-while loop that also handles the zero case.
             // Costs a bit more than early returning for the zero case,
-            // but cheaper in terms of deployment and runtime costs.
+            // but cheaper in terms of deployment and overall runtime costs.
             for { 
                 // Initialize and perform the first pass without check.
                 let temp := value
