@@ -12,7 +12,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
     context(`${contract}`, function () {
       beforeEach(async function () {
         this.erc721a = await deployContract(contract, constructorArgs);
-        this.receiver = await deployContract('ERC721ReceiverMock', [RECEIVER_MAGIC_VALUE]);
+        this.receiver = await deployContract('ERC721ReceiverMock', [RECEIVER_MAGIC_VALUE, this.erc721a.address]);
         this.startTokenId = this.erc721a.startTokenId ? (await this.erc721a.startTokenId()).toNumber() : 0;
       });
 
@@ -555,6 +555,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await expect(
                 this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, '0x02')
               ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');
+            });
+
+            it('reverts with reentrant call', async function () {
+              await expect(
+                this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, '0x03')
+              ).to.be.reverted;
             });
           });
         });
