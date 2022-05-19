@@ -32,14 +32,16 @@ abstract contract ERC721AQueryable is ERC721A {
      */
     function explicitOwnershipOf(uint256 tokenId) public view returns (TokenOwnership memory) {
         TokenOwnership memory ownership;
-        if (tokenId < _startTokenId() || tokenId >= _currentIndex) {
+        if (tokenId < _startMintTokenId() || tokenId >= _currentMintIndex) {
             return ownership;
         }
         ownership = _ownerships[tokenId];
         if (ownership.burned) {
             return ownership;
         }
-        return _ownershipOf(tokenId);
+        (TokenOwnership memory ownershipOfToken, ) = _ownershipOf(tokenId);
+        return ownershipOfToken;
+//        return _ownershipOf(tokenId);
     }
 
     /**
@@ -77,12 +79,12 @@ abstract contract ERC721AQueryable is ERC721A {
         unchecked {
             if (start >= stop) revert InvalidQueryRange();
             uint256 tokenIdsIdx;
-            uint256 stopLimit = _currentIndex;
-            // Set `start = max(start, _startTokenId())`.
-            if (start < _startTokenId()) {
-                start = _startTokenId();
+            uint256 stopLimit = _currentMintIndex;
+            // Set `start = max(start, _startMintTokenId())`.
+            if (start < _startMintTokenId()) {
+                start = _startMintTokenId();
             }
-            // Set `stop = min(stop, _currentIndex)`.
+            // Set `stop = min(stop, _currentMintIndex)`.
             if (stop > stopLimit) {
                 stop = stopLimit;
             }
@@ -147,7 +149,7 @@ abstract contract ERC721AQueryable is ERC721A {
             uint256 tokenIdsLength = balanceOf(owner);
             uint256[] memory tokenIds = new uint256[](tokenIdsLength);
             TokenOwnership memory ownership;
-            for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
+            for (uint256 i = _startMintTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
                 ownership = _ownerships[i];
                 if (ownership.burned) {
                     continue;

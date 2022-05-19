@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Creator: Chiru Labs
+// Creator: Chain Runners, based on ERC721A by Chiru Labs
 
 pragma solidity ^0.8.4;
 
@@ -47,6 +47,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         uint64 startTimestamp;
         // Whether the token has been burned.
         bool burned;
+        // Keeps track of how many tokens (above) this ownership record covers.  Only set/useful for claims
+        uint256 quantity;
     }
 
     // Compiler will pack this into a single 256bit word.
@@ -64,7 +66,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     // The tokenId of the next token to be minted.
-    uint256 internal _currentIndex;
+    uint256 internal _currentMintIndex;
+
+    // The number of claimed tokens.
+    uint256 internal _numClaimed;
+
+    // Max batch size per mint
+    uint256 internal _maxBatchSize;
 
     // The number of tokens burned.
     uint256 internal _burnCounter;
@@ -91,16 +99,29 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _currentIndex = _startTokenId();
+
+        _currentMintIndex = _startMintTokenId();
+
+        _maxBatchSize = 5;
     }
 
+    // CHANGED ERC721A Functionality HERE (new function)
     /**
-     * To change the starting tokenId, please override this function.
+     * To change the starting mintTokenId, please override this function.
      */
-    function _startTokenId() internal view virtual returns (uint256) {
-        return 0;
+    function _startMintTokenId() internal view virtual returns (uint256) {
+        return 10001;
     }
 
+    // CHANGED ERC721A Functionality HERE (new function)
+    /**
+     * To change the starting claimTokenId, please override this function.
+     */
+    function _startClaimTokenId() internal view virtual returns (uint256) {
+        return 1;
+    }
+
+    // CHANGED ERC721A Functionality HERE
     /**
      * @dev Burned tokens are calculated here, use _totalMinted() if you want to count just minted tokens.
      */
@@ -108,19 +129,28 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         // Counter underflow is impossible as _burnCounter cannot be incremented
         // more than _currentIndex - _startTokenId() times
         unchecked {
-            return _currentIndex - _burnCounter - _startTokenId();
+            return (_currentMintIndex - _startMintTokenId())
+            + _numClaimed
+            - _burnCounter;
         }
     }
 
+    // CHANGED ERC721A Functionality HERE
     /**
      * Returns the total amount of tokens minted in the contract.
      */
-    function _totalMinted() internal view returns (uint256) {
-        // Counter underflow is impossible as _currentIndex does not decrement,
-        // and it is initialized to _startTokenId()
+    function _totalMinted() public view returns (uint256) {
         unchecked {
-            return _currentIndex - _startTokenId();
+            return _currentMintIndex - _startMintTokenId();
         }
+    }
+
+    // CHANGED ERC721A Functionality HERE
+    /**
+     * Returns the total amount of tokens claimed in the contract.
+     */
+    function totalClaimed() public view returns (uint256) {
+        return _numClaimed;
     }
 
     /**
@@ -128,9 +158,9 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
-            super.supportsInterface(interfaceId);
+        interfaceId == type(IERC721).interfaceId ||
+        interfaceId == type(IERC721Metadata).interfaceId ||
+        super.supportsInterface(interfaceId);
     }
 
     /**
@@ -170,30 +200,46 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         _addressData[owner].aux = aux;
     }
 
+    // CHANGED ERC721A Functionality HERE
     /**
      * Gas spent here starts off proportional to the maximum mint batch size.
      * It gradually moves to O(1) as tokens get transferred around in the collection over time.
      */
-    function _ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
+    function _ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory, uint256 ownershipIndex) {
         uint256 curr = tokenId;
 
-        unchecked {
-            if (_startTokenId() <= curr && curr < _currentIndex) {
-                TokenOwnership memory ownership = _ownerships[curr];
-                if (!ownership.burned) {
-                    if (ownership.addr != address(0)) {
-                        return ownership;
-                    }
-                    // Invariant:
-                    // There will always be an ownership that has an address and is not burned
-                    // before an ownership that does not have an address and is not burned.
-                    // Hence, curr will not underflow.
+        TokenOwnership memory ownership = _ownerships[curr];
+        if (!ownership.burned) {
+            if (ownership.addr != address(0)) {
+                return (ownership, tokenId);
+            } else if (_startMintTokenId() <= curr && curr < _currentMintIndex) {
+                // Invariant:
+                // There will always be an ownership that has an address and is not burned
+                // before an ownership that does not have an address and is not burned.
+                // Hence, curr will not underflow.
+                unchecked {
                     while (true) {
                         curr--;
                         ownership = _ownerships[curr];
                         if (ownership.addr != address(0)) {
-                            return ownership;
+                            return (ownership, curr);
                         }
+                    }
+                }
+            } else if (_startClaimTokenId() <= curr && curr < _startMintTokenId()) {
+                // Invariant:
+                // These tokens are claimed in random order, but there will always be
+                // an ownership that has an address and is not
+                // burned within _maxBatchSize below tokenId.
+                // Could underflow, so don't wrap in unchecked.
+                uint256 lowestTokenToCheck = _startClaimTokenId();
+                if (tokenId >= _maxBatchSize) {
+                    lowestTokenToCheck = tokenId - _maxBatchSize + 1;
+                }
+                for (; curr >= lowestTokenToCheck && curr >= _startClaimTokenId(); curr--) {
+                    ownership = _ownerships[curr];
+                    if ((ownership.addr != address(0)) && ((curr + ownership.quantity - 1) >= tokenId)) {
+                        return (ownership, curr);
                     }
                 }
             }
@@ -205,7 +251,8 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
-        return _ownershipOf(tokenId).addr;
+        (TokenOwnership memory ownership, uint256 ownershipIndex) = _ownershipOf(tokenId);
+        return ownership.addr;
     }
 
     /**
@@ -318,15 +365,43 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         }
     }
 
+    // CHANGED ERC721A Functionality HERE
     /**
      * @dev Returns whether `tokenId` exists.
      *
      * Tokens can be managed by their owner or approved accounts via {approve} or {setApprovalForAll}.
      *
-     * Tokens start existing when they are minted (`_mint`),
+     * Tokens start existing when they are minted (`_mint`) or claimed (`_claim`).
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _startTokenId() <= tokenId && tokenId < _currentIndex && !_ownerships[tokenId].burned;
+        return ((_startMintTokenId() <= tokenId && tokenId < _currentMintIndex) ||
+        _isClaimed(tokenId)) &&
+        !_ownerships[tokenId].burned;
+    }
+
+    // CHANGED ERC721A Functionality HERE (new function)
+    /**
+    * @dev Returns whether `tokenId` has been claimed.
+    */
+    function _isClaimed(uint256 tokenId) internal view returns (bool) {
+        uint256 curr = tokenId;
+        if (_startClaimTokenId() <= curr && curr < _startMintTokenId()) {
+            // Invariant:
+            // These tokens are minted in random order, but there will always be
+            // an ownership that has an address and is not
+            // burned within _maxBatchSize below tokenId.
+            uint256 lowestTokenToCheck = _startClaimTokenId();
+            if (tokenId >= _maxBatchSize) {
+                lowestTokenToCheck = tokenId - _maxBatchSize + 1;
+            }
+            for (; curr >= lowestTokenToCheck && curr >= _startClaimTokenId(); curr--) {
+                TokenOwnership memory ownership = _ownerships[curr];
+                if (ownership.addr != address(0)) {
+                    return (curr + ownership.quantity - 1) >= tokenId;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -336,12 +411,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         _safeMint(to, quantity, '');
     }
 
+    // CHANGED ERC721A Functionality HERE
     /**
      * @dev Safely mints `quantity` tokens and transfers them to `to`.
      *
      * Requirements:
      *
-     * - If `to` refers to a smart contract, it must implement 
+     * - If `to` refers to a smart contract, it must implement
      *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
      * - `quantity` must be greater than 0.
      *
@@ -352,7 +428,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         uint256 quantity,
         bytes memory _data
     ) internal {
-        uint256 startTokenId = _currentIndex;
+        uint256 startTokenId = _currentMintIndex;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -360,7 +436,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
         // Overflows are incredibly unrealistic.
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
-        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        // updatedIndex overflows if _currentMintIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
@@ -379,17 +455,18 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                     }
                 } while (updatedIndex != end);
                 // Reentrancy protection
-                if (_currentIndex != startTokenId) revert();
+                if (_currentMintIndex != startTokenId) revert();
             } else {
                 do {
                     emit Transfer(address(0), to, updatedIndex++);
                 } while (updatedIndex != end);
             }
-            _currentIndex = updatedIndex;
+            _currentMintIndex = updatedIndex;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
+    // CHANGED ERC721A Functionality HERE
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
@@ -401,7 +478,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Emits a {Transfer} event.
      */
     function _mint(address to, uint256 quantity) internal {
-        uint256 startTokenId = _currentIndex;
+        uint256 startTokenId = _currentMintIndex;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -409,13 +486,55 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
 
         // Overflows are incredibly unrealistic.
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
-        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        // updatedIndex overflows if _currentMintIndex + quantity > 1.2e77 (2**256) - 1
+    unchecked {
+        _addressData[to].balance += uint64(quantity);
+        _addressData[to].numberMinted += uint64(quantity);
+
+        _ownerships[startTokenId].addr = to;
+        _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+
+        uint256 updatedIndex = startTokenId;
+        uint256 end = updatedIndex + quantity;
+
+        do {
+            emit Transfer(address(0), to, updatedIndex++);
+        } while (updatedIndex != end);
+
+        _currentMintIndex = updatedIndex;
+    }
+        _afterTokenTransfers(address(0), to, startTokenId, quantity);
+    }
+
+    // CHANGED ERC721A Functionality HERE (new function)
+    /**
+ * @dev Mints `quantity` tokens and transfers them to `to`.
+     *
+     * IMPORTANT NOTE: This operation is unsafe, since there is no check to ensure a taken has not been claimed.
+     * Callers should check that a token hasn't been claimed before calling.
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _claim(address to, uint256 startTokenId, uint256 quantity) internal {
+        if (to == address(0)) revert MintToZeroAddress();
+        if (quantity == 0) revert MintZeroQuantity();
+
+        _beforeTokenTransfers(address(0), to, startTokenId, quantity);
+
+        // Overflows are incredibly unrealistic.
+        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
+        // updatedIndex overflows if _currentAirdropIndex + quantity > 1.2e77 (2**256) - 1
         unchecked {
             _addressData[to].balance += uint64(quantity);
             _addressData[to].numberMinted += uint64(quantity);
 
             _ownerships[startTokenId].addr = to;
             _ownerships[startTokenId].startTimestamp = uint64(block.timestamp);
+            _ownerships[startTokenId].quantity = quantity;
 
             uint256 updatedIndex = startTokenId;
             uint256 end = updatedIndex + quantity;
@@ -424,11 +543,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
                 emit Transfer(address(0), to, updatedIndex++);
             } while (updatedIndex != end);
 
-            _currentIndex = updatedIndex;
+            _numClaimed += quantity;
+
+            _afterTokenTransfers(address(0), to, startTokenId, quantity);
         }
-        _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
+    // CHANGED ERC721A Functionality HERE
     /**
      * @dev Transfers `tokenId` from `from` to `to`.
      *
@@ -444,13 +565,13 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         address to,
         uint256 tokenId
     ) private {
-        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
+        (TokenOwnership memory prevOwnership, uint256 prevOwnershipIndex) = _ownershipOf(tokenId);
 
         if (prevOwnership.addr != from) revert TransferFromIncorrectOwner();
 
         bool isApprovedOrOwner = (_msgSender() == from ||
-            isApprovedForAll(from, _msgSender()) ||
-            getApproved(tokenId) == _msgSender());
+        isApprovedForAll(from, _msgSender()) ||
+        getApproved(tokenId) == _msgSender());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         if (to == address(0)) revert TransferToZeroAddress();
@@ -463,25 +584,37 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        TokenOwnership storage currSlot = _ownerships[tokenId];
         unchecked {
             _addressData[from].balance -= 1;
             _addressData[to].balance += 1;
 
-            TokenOwnership storage currSlot = _ownerships[tokenId];
             currSlot.addr = to;
             currSlot.startTimestamp = uint64(block.timestamp);
+        }
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-            uint256 nextTokenId = tokenId + 1;
-            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
-            if (nextSlot.addr == address(0)) {
-                // This will suffice for checking _exists(nextTokenId),
-                // as a burned slot cannot contain the zero address.
-                if (nextTokenId != _currentIndex) {
-                    nextSlot.addr = from;
-                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
-                }
+        // CHANGED ERC721A Functionality HERE
+        uint256 prevOwnershipQuantity = prevOwnership.quantity;
+        if (_startClaimTokenId() >= tokenId && tokenId < _startMintTokenId()) {
+            currSlot.quantity = 1;
+            prevOwnership.quantity = tokenId - prevOwnershipIndex;
+        }
+
+        // If the ownership slot of tokenId+1 is not explicitly set, that means the transfer initiator owns it.
+        // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+        uint256 nextTokenId = tokenId + 1;
+        TokenOwnership storage nextSlot = _ownerships[nextTokenId];
+        if (nextSlot.addr == address(0)) {
+            // This will suffice for checking _exists(nextTokenId) on minted tokens,
+            // as a burned slot cannot contain the zero address.
+            if ((_startMintTokenId() <= tokenId && tokenId < _currentMintIndex)) {
+                nextSlot.addr = from;
+                nextSlot.startTimestamp = prevOwnership.startTimestamp;
+                // CHANGED ERC721A Functionality HERE
+            } else if ((prevOwnershipIndex + prevOwnershipQuantity - 1) > tokenId) {
+                nextSlot.addr = from;
+                nextSlot.startTimestamp = prevOwnership.startTimestamp;
+                nextSlot.quantity = prevOwnershipIndex + prevOwnershipQuantity - 1 - tokenId;
             }
         }
 
@@ -496,6 +629,7 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         _burn(tokenId, false);
     }
 
+    // CHANGED ERC721A Functionality HERE
     /**
      * @dev Destroys `tokenId`.
      * The approval is cleared when the token is burned.
@@ -507,14 +641,14 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
      * Emits a {Transfer} event.
      */
     function _burn(uint256 tokenId, bool approvalCheck) internal virtual {
-        TokenOwnership memory prevOwnership = _ownershipOf(tokenId);
+        (TokenOwnership memory prevOwnership, uint256 prevOwnershipIndex) = _ownershipOf(tokenId);
 
         address from = prevOwnership.addr;
 
         if (approvalCheck) {
             bool isApprovedOrOwner = (_msgSender() == from ||
-                isApprovedForAll(from, _msgSender()) ||
-                getApproved(tokenId) == _msgSender());
+            isApprovedForAll(from, _msgSender()) ||
+            getApproved(tokenId) == _msgSender());
 
             if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         }
@@ -527,35 +661,47 @@ contract ERC721A is Context, ERC165, IERC721, IERC721Metadata {
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
         // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        TokenOwnership storage currSlot = _ownerships[tokenId];
         unchecked {
             AddressData storage addressData = _addressData[from];
             addressData.balance -= 1;
             addressData.numberBurned += 1;
 
             // Keep track of who burned the token, and the timestamp of burning.
-            TokenOwnership storage currSlot = _ownerships[tokenId];
             currSlot.addr = from;
             currSlot.startTimestamp = uint64(block.timestamp);
             currSlot.burned = true;
+        }
 
-            // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
-            // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
-            uint256 nextTokenId = tokenId + 1;
-            TokenOwnership storage nextSlot = _ownerships[nextTokenId];
-            if (nextSlot.addr == address(0)) {
-                // This will suffice for checking _exists(nextTokenId),
-                // as a burned slot cannot contain the zero address.
-                if (nextTokenId != _currentIndex) {
-                    nextSlot.addr = from;
-                    nextSlot.startTimestamp = prevOwnership.startTimestamp;
-                }
+        // CHANGED ERC721A Functionality HERE
+        uint256 prevOwnershipQuantity = prevOwnership.quantity;
+        if (_startClaimTokenId() >= tokenId && tokenId < _startMintTokenId()) {
+            currSlot.quantity = 1;
+            prevOwnership.quantity = tokenId - prevOwnershipIndex;
+        }
+
+        // If the ownership slot of tokenId+1 is not explicitly set, that means the burn initiator owns it.
+        // Set the slot of tokenId+1 explicitly in storage to maintain correctness for ownerOf(tokenId+1) calls.
+        uint256 nextTokenId = tokenId + 1;
+        TokenOwnership storage nextSlot = _ownerships[nextTokenId];
+        if (nextSlot.addr == address(0)) {
+            // This will suffice for checking _exists(nextTokenId),
+            // as a burned slot cannot contain the zero address.
+            if ((_startMintTokenId() <= tokenId && tokenId < _currentMintIndex)) {
+                nextSlot.addr = from;
+                nextSlot.startTimestamp = prevOwnership.startTimestamp;
+                // CHANGED ERC721A Functionality HERE
+            } else if ((prevOwnershipIndex + prevOwnershipQuantity - 1) > tokenId) {
+                nextSlot.addr = from;
+                nextSlot.startTimestamp = prevOwnership.startTimestamp;
+                nextSlot.quantity = prevOwnershipIndex + prevOwnershipQuantity - 1 - tokenId;
             }
         }
 
         emit Transfer(from, address(0), tokenId);
         _afterTokenTransfers(from, address(0), tokenId, 1);
 
-        // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
+        // Overflow not possible, as _burnCounter cannot exceed _currentMintIndex+_currentAirdropIndex times.
         unchecked {
             _burnCounter++;
         }
