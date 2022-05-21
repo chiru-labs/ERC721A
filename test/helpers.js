@@ -1,4 +1,5 @@
-const { ethers } = require("hardhat");
+const { ethers } = require('hardhat');
+const { BigNumber } = require('ethers');
 
 const deployContract = async function (contractName, constructorArgs) {
   let factory;
@@ -21,4 +22,12 @@ const mineBlockTimestamp = async function (timestamp) {
   await ethers.provider.send('evm_mine');
 };
 
-module.exports = { deployContract, getBlockTimestamp, mineBlockTimestamp };
+const offsettedIndex = function (startTokenId, arr) {
+  // return one item if arr length is 1
+  if (arr.length === 1) {
+    return BigNumber.from(startTokenId + arr[0]);
+  }
+  return arr.map((num) => BigNumber.from(startTokenId + num));
+};
+
+module.exports = { deployContract, getBlockTimestamp, mineBlockTimestamp, offsettedIndex };
