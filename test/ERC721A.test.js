@@ -1,4 +1,4 @@
-const { deployContract, getBlockTimestamp, mineBlockTimestamp, ofsettedIndex } = require('./helpers.js');
+const { deployContract, getBlockTimestamp, mineBlockTimestamp, offsettedIndex } = require('./helpers.js');
 const { expect } = require('chai');
 const { BigNumber } = require('ethers');
 const { constants } = require('@openzeppelin/test-helpers');
@@ -9,7 +9,7 @@ const GAS_MAGIC_VALUE = 20000;
 
 const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
-    let offseted;
+    let offsetted;
 
     context(`${contract}`, function () {
       beforeEach(async function () {
@@ -17,7 +17,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         this.receiver = await deployContract('ERC721ReceiverMock', [RECEIVER_MAGIC_VALUE, this.erc721a.address]);
         this.startTokenId = this.erc721a.startTokenId ? (await this.erc721a.startTokenId()).toNumber() : 0;
 
-        offseted = (...arr) => ofsettedIndex(this.startTokenId, arr);
+        offsetted = (...arr) => offsettedIndex(this.startTokenId, arr);
       });
 
       describe('EIP-165 support', async function () {
@@ -52,7 +52,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
 
         describe('baseURI', async function () {
-          it('sends an emtpy uri by default', async function () {
+          it('sends an empty URI by default', async function () {
             expect(await this.erc721a.baseURI()).to.eq('');
           });
         });
@@ -76,7 +76,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         it('_nextTokenId must be equal to _startTokenId', async function () {
           const nextTokenId = await this.erc721a.nextTokenId();
-          expect(nextTokenId).to.equal(offseted(0));
+          expect(nextTokenId).to.equal(offsetted(0));
         });
       });
 
@@ -92,17 +92,17 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           this.addr1.expected = {
             mintCount: 1,
-            tokens: [offseted(0)],
+            tokens: [offsetted(0)],
           };
 
           this.addr2.expected = {
             mintCount: 2,
-            tokens: offseted(1, 2),
+            tokens: offsetted(1, 2),
           };
 
           this.addr3.expected = {
             mintCount: 3,
-            tokens: offseted(3, 4, 5),
+            tokens: offsetted(3, 4, 5),
           };
 
           await this.erc721a['safeMint(address,uint256)'](addr1.address, this.addr1.expected.mintCount);
@@ -113,11 +113,11 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         describe('tokenURI (ERC721Metadata)', async function () {
           describe('tokenURI', async function () {
             it('sends an emtpy uri by default', async function () {
-              expect(await this.erc721a.tokenURI(offseted(0))).to.eq('');
+              expect(await this.erc721a.tokenURI(offsetted(0))).to.eq('');
             });
 
-            it('reverts when tokenid not existed', async function () {
-              await expect(this.erc721a.tokenURI(offseted(this.expectedMintCount))).to.be.revertedWith(
+            it('reverts when tokenId does not exist', async function () {
+              await expect(this.erc721a.tokenURI(offsetted(this.expectedMintCount))).to.be.revertedWith(
                 'URIQueryForNonexistentToken'
               );
             });
@@ -126,14 +126,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         describe('exists', async function () {
           it('verifies valid tokens', async function () {
-            for (let tokenId = offseted(0); tokenId < offseted(this.expectedMintCount); tokenId++) {
+            for (let tokenId = offsetted(0); tokenId < offsetted(this.expectedMintCount); tokenId++) {
               const exists = await this.erc721a.exists(tokenId);
               expect(exists).to.be.true;
             }
           });
 
           it('verifies invalid tokens', async function () {
-            expect(await this.erc721a.exists(offseted(this.expectedMintCount))).to.be.false;
+            expect(await this.erc721a.exists(offsetted(this.expectedMintCount))).to.be.false;
           });
         });
 
@@ -145,7 +145,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal(this.addr3.expected.mintCount);
           });
 
-          it('returns correct amount with transfered tokens', async function () {
+          it('returns correct amount with transferred tokens', async function () {
             const tokenIdToTransfer = this.addr2.expected.tokens[0];
             await this.erc721a
               .connect(this.addr2)
@@ -170,7 +170,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(await this.erc721a.numberMinted(this.addr3.address)).to.equal(this.addr3.expected.mintCount);
           });
 
-          it('returns the same amount with transfered token', async function () {
+          it('returns the same amount with transferred token', async function () {
             const tokenIdToTransfer = this.addr2.expected.tokens[0];
             await this.erc721a
               .connect(this.addr2)
@@ -191,9 +191,9 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
 
         context('_nextTokenId', async function () {
-          it('has correct value', async function () {
+          it('has correct nextTokenId', async function () {
             const nextTokenId = await this.erc721a.nextTokenId();
-            expect(nextTokenId).to.equal(offseted(this.expectedMintCount));
+            expect(nextTokenId).to.equal(offsetted(this.expectedMintCount));
           });
         });
 
@@ -399,30 +399,30 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                   this.erc721a.connect(this.addr1)['safeTransferFrom(address,address,uint256)'](
                       this.addr1.address,
                       nonReceiver.address,
-                      offseted(0)
+                      offsetted(0)
                     )
                 ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');
               });
 
-              it('reverts if receiver reverted', async function () {
+              it('reverts when the receiver reverted', async function () {
                 // prettier-ignore
                 await expect(
                   this.erc721a.connect(this.addr1)['safeTransferFrom(address,address,uint256,bytes)'](
                       this.addr1.address,
                       this.receiver.address,
-                      offseted(0),
+                      offsetted(0),
                       '0x01'
                     )
-                ).to.be.revertedWith('reverted in receiver contract!');
+                ).to.be.revertedWith('reverted in the receiver contract!');
               });
 
-              it('reverts if receiver returns wrong value', async function () {
+              it('reverts if the receiver returns the wrong value', async function () {
                 // prettier-ignore
                 await expect(
                   this.erc721a.connect(this.addr1)['safeTransferFrom(address,address,uint256,bytes)'](
                       this.addr1.address,
                       this.receiver.address,
-                      offseted(0),
+                      offsetted(0),
                       '0x02'
                     )
                 ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');
@@ -433,7 +433,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         describe('_burn', async function () {
           beforeEach(function () {
-            this.tokenIdToBurn = offseted(0);
+            this.tokenIdToBurn = offsetted(0);
           });
 
           it('can burn if approvalCheck is false', async function () {
@@ -463,7 +463,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           this.addr1 = addr1;
         });
 
-        const testSuccessfullMint = function (safe, quantity, mintForContract = true) {
+        const testSuccessfulMint = function (safe, quantity, mintForContract = true) {
           beforeEach(async function () {
             this.minter = mintForContract ? this.receiver : this.addr1;
 
@@ -479,13 +479,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('changes ownership', async function () {
-            for (let tokenId = offseted(0); tokenId < offseted(quantity); tokenId++) {
+            for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
               expect(await this.erc721a.ownerOf(tokenId)).to.equal(this.minter.address);
             }
           });
 
           it('emits a Transfer event', async function () {
-            for (let tokenId = offseted(0); tokenId < offseted(quantity); tokenId++) {
+            for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
               await expect(this.mintTx)
                 .to.emit(this.erc721a, 'Transfer')
                 .withArgs(ZERO_ADDRESS, this.minter.address, tokenId);
@@ -497,11 +497,11 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('adjusts OwnershipAt and OwnershipOf', async function () {
-            const ownership = await this.erc721a.getOwnershipAt(offseted(0));
+            const ownership = await this.erc721a.getOwnershipAt(offsetted(0));
             expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
             expect(ownership.burned).to.be.false;
 
-            for (let tokenId = offseted(0); tokenId < offseted(quantity); tokenId++) {
+            for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
               const ownership = await this.erc721a.getOwnershipOf(tokenId);
               expect(ownership.addr).to.equal(this.minter.address);
               expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
@@ -513,7 +513,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           if (safe && mintForContract) {
             it('validates ERC721Received', async function () {
-              for (let tokenId = offseted(0); tokenId < offseted(quantity); tokenId++) {
+              for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
                 await expect(this.mintTx)
                   .to.emit(this.minter, 'Received')
                   .withArgs(this.owner.address, ZERO_ADDRESS, tokenId, '0x', GAS_MAGIC_VALUE);
@@ -536,31 +536,31 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
         };
 
-        context('successfull mints', function () {
+        context('successful mints', function () {
           context('mint', function () {
             context('for contract', function () {
               describe('single token', function () {
-                testSuccessfullMint(false, 1);
+                testSuccessfulMint(false, 1);
               });
 
               describe('multiple tokens', function () {
-                testSuccessfullMint(false, 5);
+                testSuccessfulMint(false, 5);
               });
 
               it('does not revert for non-receivers', async function () {
                 const nonReceiver = this.erc721a;
                 await this.erc721a.mint(nonReceiver.address, 1);
-                expect(await this.erc721a.ownerOf(offseted(0))).to.equal(nonReceiver.address);
+                expect(await this.erc721a.ownerOf(offsetted(0))).to.equal(nonReceiver.address);
               });
             });
 
             context('for EOA', function () {
               describe('single token', function () {
-                testSuccessfullMint(false, 1, false);
+                testSuccessfulMint(false, 1, false);
               });
 
               describe('multiple tokens', function () {
-                testSuccessfullMint(false, 5, false);
+                testSuccessfulMint(false, 5, false);
               });
             });
           });
@@ -568,11 +568,11 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           context('safeMint', function () {
             context('for contract', function () {
               describe('single token', function () {
-                testSuccessfullMint(true, 1);
+                testSuccessfulMint(true, 1);
               });
 
               describe('multiple tokens', function () {
-                testSuccessfullMint(true, 5);
+                testSuccessfulMint(true, 5);
               });
 
               it('validates ERC721Received with custom _data', async function () {
@@ -580,23 +580,23 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 const tx = await this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, customData);
                 await expect(tx)
                   .to.emit(this.receiver, 'Received')
-                  .withArgs(this.owner.address, ZERO_ADDRESS, offseted(0), customData, GAS_MAGIC_VALUE);
+                  .withArgs(this.owner.address, ZERO_ADDRESS, offsetted(0), customData, GAS_MAGIC_VALUE);
               });
             });
 
             context('for EOA', function () {
               describe('single token', function () {
-                testSuccessfullMint(true, 1, false);
+                testSuccessfulMint(true, 1, false);
               });
 
               describe('multiple tokens', function () {
-                testSuccessfullMint(true, 5, false);
+                testSuccessfulMint(true, 5, false);
               });
             });
           });
         });
 
-        context('unsuccessfull mints', function () {
+        context('unsuccessful mints', function () {
           context('mint', function () {
             testUnsuccessfulMint(false);
           });
@@ -611,13 +611,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               );
             });
 
-            it('reverts if receiver reverted', async function () {
+            it('reverts when the receiver reverted', async function () {
               await expect(
                 this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, '0x01')
-              ).to.be.revertedWith('reverted in receiver contract!');
+              ).to.be.revertedWith('reverted in the receiver contract!');
             });
 
-            it('reverts if receiver returns wrong value', async function () {
+            it('reverts if the receiver returns the wrong value', async function () {
               await expect(
                 this.erc721a['safeMint(address,uint256,bytes)'](this.receiver.address, 1, '0x02')
               ).to.be.revertedWith('TransferToNonERC721ReceiverImplementer');

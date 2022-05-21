@@ -1,4 +1,4 @@
-const { deployContract, ofsettedIndex } = require('../helpers.js');
+const { deployContract, offsettedIndex } = require('../helpers.js');
 const { expect } = require('chai');
 const { BigNumber } = require('ethers');
 const { constants } = require('@openzeppelin/test-helpers');
@@ -6,7 +6,7 @@ const { ZERO_ADDRESS } = constants;
 
 const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit = false }) =>
   function () {
-    let offseted;
+    let offsetted;
 
     context(`${contract}`, function () {
       beforeEach(async function () {
@@ -16,7 +16,7 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
           ? (await this.erc721aQueryable.startTokenId()).toNumber()
           : 0;
 
-        offseted = (...arr) => ofsettedIndex(this.startTokenId, arr);
+        offsetted = (...arr) => offsettedIndex(this.startTokenId, arr);
       });
 
       const expectExplicitOwnershipBurned = function (explicitOwnership, address) {
@@ -87,17 +87,17 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
 
           this.addr1.expected = {
             balance: 1,
-            tokens: [offseted(0)],
+            tokens: [offsetted(0)],
           };
 
           this.addr2.expected = {
             balance: 2,
-            tokens: offseted(1, 2),
+            tokens: offsetted(1, 2),
           };
 
           this.addr3.expected = {
             balance: 3,
-            tokens: offseted(3, 4, 5),
+            tokens: offsetted(3, 4, 5),
           };
 
           this.addr4.expected = {
@@ -107,10 +107,10 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
 
           this.owner.expected = {
             balance: 3,
-            tokens: offseted(6, 7, 8),
+            tokens: offsetted(6, 7, 8),
           };
 
-          this.lastTokenId = offseted(8);
+          this.lastTokenId = offsetted(8);
           this.currentIndex = this.lastTokenId.add(1);
 
           this.mintOrder = [this.addr1, this.addr2, this.addr3, this.addr4, owner];
@@ -126,10 +126,10 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
 
           if (initializeOwnersExplicit) {
             // sanity check
-            expect((await this.erc721aQueryable.getOwnershipAt(offseted(4)))[0]).to.equal(ZERO_ADDRESS);
+            expect((await this.erc721aQueryable.getOwnershipAt(offsetted(4)))[0]).to.equal(ZERO_ADDRESS);
             await this.erc721aQueryable.initializeOwnersExplicit(10);
             // again, sanity check
-            expect((await this.erc721aQueryable.getOwnershipAt(offseted(4)))[0]).to.equal(this.addr3.address);
+            expect((await this.erc721aQueryable.getOwnershipAt(offsetted(4)))[0]).to.equal(this.addr3.address);
           }
         });
 
@@ -143,7 +143,7 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
 
           it('after a transfer', async function () {
             // Break sequential order by transfering 7th token from owner to addr4
-            const tokenIdToTransfer = [offseted(7)];
+            const tokenIdToTransfer = [offsetted(7)];
             await this.erc721aQueryable.transferFrom(this.owner.address, this.addr4.address, tokenIdToTransfer[0]);
 
             // Load balances
@@ -151,20 +151,20 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
             const addr4Tokens = await this.erc721aQueryable.tokensOfOwner(this.addr4.address);
 
             // Verify the function can still read the correct token ids
-            expect(ownerTokens).to.eql(offseted(6, 8));
+            expect(ownerTokens).to.eql(offsetted(6, 8));
             expect(addr4Tokens).to.eql(tokenIdToTransfer);
           });
 
           it('after a burn', async function () {
             // Burn tokens
-            const tokenIdToBurn = [offseted(7)];
+            const tokenIdToBurn = [offsetted(7)];
             await this.erc721aQueryable.burn(tokenIdToBurn[0]);
 
             // Load balances
             const ownerTokens = await this.erc721aQueryable.tokensOfOwner(this.owner.address);
 
             // Verify the function can still read the correct token ids
-            expect(ownerTokens).to.eql(offseted(6, 8));
+            expect(ownerTokens).to.eql(offsetted(6, 8));
           });
         });
 
@@ -187,8 +187,8 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
             describe(description, async function () {
               it('all token ids', async function () {
                 await beforeEachFunction.call(this);
-                await expectCorrect.call(this, this.owner.address, offseted(0), this.currentIndex);
-                await expectCorrect.call(this, this.owner.address, offseted(0), this.currentIndex.add(1));
+                await expectCorrect.call(this, this.owner.address, offsetted(0), this.currentIndex);
+                await expectCorrect.call(this, this.owner.address, offsetted(0), this.currentIndex.add(1));
               });
 
               it('partial token ids', async function () {
@@ -215,11 +215,11 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
           subTests('initial', async function () {});
 
           subTests('after a token tranfer', async function () {
-            await this.erc721aQueryable.transferFrom(this.owner.address, this.addr4.address, offseted(7));
+            await this.erc721aQueryable.transferFrom(this.owner.address, this.addr4.address, offsetted(7));
           });
 
           subTests('after a token burn', async function () {
-            await this.erc721aQueryable.burn(offseted(7));
+            await this.erc721aQueryable.burn(offsetted(7));
           });
         });
 

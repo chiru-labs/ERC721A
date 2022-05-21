@@ -22,7 +22,7 @@ const mineBlockTimestamp = async function (timestamp) {
   await ethers.provider.send('evm_mine');
 };
 
-const ofsettedIndex = function (startTokenId, arr) {
+const offsettedIndex = function (startTokenId, arr) {
   // return one item if arr length is 1
   if (arr.length === 1) {
     return BigNumber.from(startTokenId + arr[0]);
@@ -30,4 +30,4 @@ const ofsettedIndex = function (startTokenId, arr) {
   return arr.map((num) => BigNumber.from(startTokenId + num));
 };
 
-module.exports = { deployContract, getBlockTimestamp, mineBlockTimestamp, ofsettedIndex };
+module.exports = { deployContract, getBlockTimestamp, mineBlockTimestamp, offsettedIndex };
