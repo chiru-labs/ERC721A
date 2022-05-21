@@ -21,6 +21,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       });
 
       describe('EIP-165 support', async function () {
+        it('supports ERC165', async function () {
+          expect(await this.erc721a.supportsInterface('0x01ffc9a7')).to.eq(true);
+        });
+
         it('supports IERC721', async function () {
           expect(await this.erc721a.supportsInterface('0x80ac58cd')).to.eq(true);
         });
@@ -35,6 +39,22 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         it('does not support random interface', async function () {
           expect(await this.erc721a.supportsInterface('0x00000042')).to.eq(false);
+        });
+      });
+
+      describe('ERC721Metadata support', async function () {
+        it('name', async function () {
+          expect(await this.erc721a.name()).to.eq(constructorArgs[0]);
+        });
+
+        it('symbol', async function () {
+          expect(await this.erc721a.symbol()).to.eq(constructorArgs[1]);
+        });
+
+        describe('baseURI', async function () {
+          it('sends an emtpy uri by default', async function () {
+            expect(await this.erc721a.baseURI()).to.eq('');
+          });
         });
       });
 
@@ -69,34 +89,37 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           this.addr3 = addr3;
           this.addr4 = addr4;
           this.expectedMintCount = 6;
-          await this.erc721a['safeMint(address,uint256)'](addr1.address, 1);
-          await this.erc721a['safeMint(address,uint256)'](addr2.address, 2);
-          await this.erc721a['safeMint(address,uint256)'](addr3.address, 3);
+
+          this.addr1.expected = {
+            mintCount: 1,
+            tokens: [offseted(0)],
+          };
+
+          this.addr2.expected = {
+            mintCount: 2,
+            tokens: offseted(1, 2),
+          };
+
+          this.addr3.expected = {
+            mintCount: 3,
+            tokens: offseted(3, 4, 5),
+          };
+
+          await this.erc721a['safeMint(address,uint256)'](addr1.address, this.addr1.expected.mintCount);
+          await this.erc721a['safeMint(address,uint256)'](addr2.address, this.addr2.expected.mintCount);
+          await this.erc721a['safeMint(address,uint256)'](addr3.address, this.addr3.expected.mintCount);
         });
 
-        describe('ERC721Metadata support', async function () {
-          it('responds with the right name', async function () {
-            expect(await this.erc721a.name()).to.eq('Azuki');
-          });
-
-          it('responds with the right symbol', async function () {
-            expect(await this.erc721a.symbol()).to.eq('AZUKI');
-          });
-
+        describe('tokenURI (ERC721Metadata)', async function () {
           describe('tokenURI', async function () {
             it('sends an emtpy uri by default', async function () {
-              const uri = await this.erc721a['tokenURI(uint256)'](1);
-              expect(uri).to.eq('');
+              expect(await this.erc721a.tokenURI(offseted(0))).to.eq('');
             });
 
-            it('reverts when tokenid is invalid', async function () {
-              await expect(this.erc721a['tokenURI(uint256)'](42)).to.be.reverted;
-            });
-          });
-
-          describe('baseURI', async function () {
-            it('sends an emtpy uri by default', async function () {
-              expect(await this.erc721a.baseURI()).to.eq('');
+            it('reverts when tokenid not existed', async function () {
+              await expect(this.erc721a.tokenURI(offseted(this.expectedMintCount))).to.be.revertedWith(
+                'URIQueryForNonexistentToken'
+              );
             });
           });
         });
@@ -117,9 +140,21 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         describe('balanceOf', async function () {
           it('returns the amount for a given address', async function () {
             expect(await this.erc721a.balanceOf(this.owner.address)).to.equal('0');
-            expect(await this.erc721a.balanceOf(this.addr1.address)).to.equal('1');
-            expect(await this.erc721a.balanceOf(this.addr2.address)).to.equal('2');
-            expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal('3');
+            expect(await this.erc721a.balanceOf(this.addr1.address)).to.equal(this.addr1.expected.mintCount);
+            expect(await this.erc721a.balanceOf(this.addr2.address)).to.equal(this.addr2.expected.mintCount);
+            expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal(this.addr3.expected.mintCount);
+          });
+
+          it('returns correct amount with transfered tokens', async function () {
+            const tokenIdToTransfer = this.addr2.expected.tokens[0];
+            await this.erc721a
+              .connect(this.addr2)
+              .transferFrom(this.addr2.address, this.addr3.address, tokenIdToTransfer);
+            // sanity check
+            expect(await this.erc721a.ownerOf(tokenIdToTransfer)).to.equal(this.addr3.address);
+
+            expect(await this.erc721a.balanceOf(this.addr2.address)).to.equal(this.addr2.expected.mintCount - 1);
+            expect(await this.erc721a.balanceOf(this.addr3.address)).to.equal(this.addr3.expected.mintCount + 1);
           });
 
           it('throws an exception for the 0 address', async function () {
@@ -130,9 +165,21 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         describe('_numberMinted', async function () {
           it('returns the amount for a given address', async function () {
             expect(await this.erc721a.numberMinted(this.owner.address)).to.equal('0');
-            expect(await this.erc721a.numberMinted(this.addr1.address)).to.equal('1');
-            expect(await this.erc721a.numberMinted(this.addr2.address)).to.equal('2');
-            expect(await this.erc721a.numberMinted(this.addr3.address)).to.equal('3');
+            expect(await this.erc721a.numberMinted(this.addr1.address)).to.equal(this.addr1.expected.mintCount);
+            expect(await this.erc721a.numberMinted(this.addr2.address)).to.equal(this.addr2.expected.mintCount);
+            expect(await this.erc721a.numberMinted(this.addr3.address)).to.equal(this.addr3.expected.mintCount);
+          });
+
+          it('returns the same amount with transfered token', async function () {
+            const tokenIdToTransfer = this.addr2.expected.tokens[0];
+            await this.erc721a
+              .connect(this.addr2)
+              .transferFrom(this.addr2.address, this.addr3.address, tokenIdToTransfer);
+            // sanity check
+            expect(await this.erc721a.ownerOf(tokenIdToTransfer)).to.equal(this.addr3.address);
+
+            expect(await this.erc721a.numberMinted(this.addr2.address)).to.equal(this.addr2.expected.mintCount);
+            expect(await this.erc721a.numberMinted(this.addr3.address)).to.equal(this.addr3.expected.mintCount);
           });
         });
 
@@ -152,7 +199,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         describe('aux', async function () {
           it('get and set works correctly', async function () {
-            const uint64Max = '18446744073709551615';
+            const uint64Max = BigNumber.from(2).pow(64).sub(1).toString();
             expect(await this.erc721a.getAux(this.owner.address)).to.equal('0');
             await this.erc721a.setAux(this.owner.address, uint64Max);
             expect(await this.erc721a.getAux(this.owner.address)).to.equal(uint64Max);
@@ -170,9 +217,11 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         describe('ownerOf', async function () {
           it('returns the right owner', async function () {
-            expect(await this.erc721a.ownerOf(offseted(0))).to.equal(this.addr1.address);
-            expect(await this.erc721a.ownerOf(offseted(1))).to.equal(this.addr2.address);
-            expect(await this.erc721a.ownerOf(offseted(5))).to.equal(this.addr3.address);
+            for (const minter of [this.addr1, this.addr2, this.addr3]) {
+              for (const tokenId of minter.expected.tokens) {
+                expect(await this.erc721a.ownerOf(tokenId)).to.equal(minter.address);
+              }
+            }
           });
 
           it('reverts for an invalid token', async function () {
@@ -182,8 +231,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         describe('approve', async function () {
           beforeEach(function () {
-            this.tokenId = offseted(0);
-            this.tokenId2 = offseted(1);
+            this.tokenId = this.addr1.expected.tokens[0];
+            this.tokenId2 = this.addr2.expected.tokens[0];
           });
 
           it('sets approval for the target address', async function () {
@@ -235,9 +284,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         context('test transfer functionality', function () {
           const testSuccessfulTransfer = function (transferFn, transferToContract = true) {
             beforeEach(async function () {
-              this.tokenId = offseted(1);
-
               const sender = this.addr2;
+              this.tokenId = this.addr2.expected.tokens[0];
               this.from = sender.address;
               this.to = transferToContract ? this.receiver : this.addr4;
               await this.erc721a.connect(sender).setApprovalForAll(this.to.address, true);
@@ -283,26 +331,27 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           const testUnsuccessfulTransfer = function (transferFn) {
             beforeEach(function () {
-              this.tokenId = offseted(1);
+              this.tokenId = this.addr2.expected.tokens[0];
+              this.sender = this.addr1;
             });
 
             it('rejects unapproved transfer', async function () {
               await expect(
-                this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, this.addr1.address, this.tokenId)
+                this.erc721a.connect(this.sender)[transferFn](this.addr2.address, this.sender.address, this.tokenId)
               ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
             });
 
             it('rejects transfer from incorrect owner', async function () {
-              await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
+              await this.erc721a.connect(this.addr2).setApprovalForAll(this.sender.address, true);
               await expect(
-                this.erc721a.connect(this.addr1)[transferFn](this.addr3.address, this.addr1.address, this.tokenId)
+                this.erc721a.connect(this.sender)[transferFn](this.addr3.address, this.sender.address, this.tokenId)
               ).to.be.revertedWith('TransferFromIncorrectOwner');
             });
 
             it('rejects transfer to zero address', async function () {
-              await this.erc721a.connect(this.addr2).setApprovalForAll(this.addr1.address, true);
+              await this.erc721a.connect(this.addr2).setApprovalForAll(this.sender.address, true);
               await expect(
-                this.erc721a.connect(this.addr1)[transferFn](this.addr2.address, ZERO_ADDRESS, this.tokenId)
+                this.erc721a.connect(this.sender)[transferFn](this.addr2.address, ZERO_ADDRESS, this.tokenId)
               ).to.be.revertedWith('TransferToZeroAddress');
             });
           };
