@@ -53,6 +53,11 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           const totalBurned = await this.erc721a.totalBurned();
           expect(totalBurned).to.equal(0);
         });
+
+        it('_nextTokenId must be equal to _startTokenId', async function () {
+          const nextTokenId = await this.erc721a.nextTokenId();
+          expect(nextTokenId).to.equal(offseted(0));
+        });
       });
 
       context('with minted tokens', async function () {
@@ -63,6 +68,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           this.addr2 = addr2;
           this.addr3 = addr3;
           this.addr4 = addr4;
+          this.expectedMintCount = 6;
           await this.erc721a['safeMint(address,uint256)'](addr1.address, 1);
           await this.erc721a['safeMint(address,uint256)'](addr2.address, 2);
           await this.erc721a['safeMint(address,uint256)'](addr3.address, 3);
@@ -97,14 +103,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         describe('exists', async function () {
           it('verifies valid tokens', async function () {
-            for (let tokenId = offseted(0); tokenId < offseted(6); tokenId++) {
+            for (let tokenId = offseted(0); tokenId < offseted(this.expectedMintCount); tokenId++) {
               const exists = await this.erc721a.exists(tokenId);
               expect(exists).to.be.true;
             }
           });
 
           it('verifies invalid tokens', async function () {
-            expect(await this.erc721a.exists(offseted(6))).to.be.false;
+            expect(await this.erc721a.exists(offseted(this.expectedMintCount))).to.be.false;
           });
         });
 
@@ -131,9 +137,16 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
 
         context('_totalMinted', async function () {
-          it('has 6 totalMinted', async function () {
+          it('has correct totalMinted', async function () {
             const totalMinted = await this.erc721a.totalMinted();
-            expect(totalMinted).to.equal('6');
+            expect(totalMinted).to.equal(this.expectedMintCount);
+          });
+        });
+
+        context('_nextTokenId', async function () {
+          it('has correct value', async function () {
+            const nextTokenId = await this.erc721a.nextTokenId();
+            expect(nextTokenId).to.equal(offseted(this.expectedMintCount));
           });
         });
 
