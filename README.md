@@ -70,9 +70,9 @@ contract Azuki is ERC721A {
 
 ## Roadmap
 
-- [] Improve general repo and code quality (workflows, comments, etc.)
-- [] Add more documentation on benefits of using ERC721A
-- [] Increase test coverage
+- [ ] Improve general repo and code quality (workflows, comments, etc.)
+- [ ] Add more documentation on benefits of using ERC721A
+- [ ] Maintain full test coverage
 
 See the [open issues](https://github.com/chiru-labs/ERC721A/issues) for a full list of proposed features (and known issues).
 
