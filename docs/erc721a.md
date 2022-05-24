@@ -34,64 +34,6 @@ Holds ownership data for each token.
 
 `startTimestamp` is the timestamp when the token is minted to, transferred to, or burned by `addr`.
 
-The compiler will pack this into a single 256 bit word in storage.
-
-### AddressData 
-
-```solidity
- struct AddressData {
-    // The token balance of the address. 2**64 - 1 is more than enough.
-    uint64 balance;
-    // Keeps track of mint count with minimal overhead for tokenomics.
-    uint64 numberMinted;
-    // Keeps track of burn count with minimal overhead for tokenomics.
-    uint64 numberBurned;
-    // For miscellaneous variable(s) pertaining to the address
-    // (e.g. number of whitelist mint slots used).
-    // If there are multiple variables, please pack them into a uint64.
-    uint64 aux;
-}
-```
-
-Holds balance and other data for each address.
-
-The compiler will pack this into a single 256 bit word in storage.
-
-## Variables
-
-### \_currentIndex
-
-```solidity
-uint256 internal _currentIndex
-```
-
-The next token ID to be minted.
-
-To get the total number of tokens in existence, please see [`totalSupply`](#totalSupply).
-
-To get the total number of tokens minted, please see [`_totalMinted`](#_totalMinted).
-
-### \_burnCounter
-
-```solidity
-uint256 internal _burnCounter
-```
-
-The number of tokens burned.
-
-### \_ownerships
-
-```solidity
-mapping(uint256 => TokenOwnership) internal _ownerships
-```
-
-Mapping from token ID to ownership details.
-
-An empty struct value does not necessarily mean the token is unowned. 
-
-See [`_ownershipOf`](#_ownershipOf).
-
-
 
 ## Functions
 
@@ -326,6 +268,15 @@ Returns the starting token ID (default: `0`).
 To change the starting token ID, override this function to return a different constant. 
 
 
+### \_nextTokenId
+
+```solidity
+function _nextTokenId() internal view virtual returns (uint256)
+```
+
+Returns the next token ID to be minted.
+
+
 ### \_totalMinted
 
 ```solidity
@@ -341,6 +292,15 @@ function _numberMinted(address owner) internal view returns (uint256)
 ```
 
 Returns the number of tokens minted by or on behalf of `owner`.
+
+### \_totalBurned
+
+```solidity
+function _totalBurned() internal view returns (uint256)
+```
+
+Returns the total amount of tokens burned.
+
 
 ### \_numberBurned
 
@@ -380,6 +340,30 @@ Returns the token ownership data for `tokenId`. See [`TokenOwnership`](#TokenOwn
 The gas spent here starts off proportional to the maximum mint batch size.
 
 It gradually moves to O(1) as tokens get transferred around in the collection over time. 
+
+
+### \_ownershipAt
+
+```solidity
+function _ownershipAt(uint256 index) internal view returns (TokenOwnership memory)
+```
+
+Returns the token ownership data at the `index` slot. See [`TokenOwnership`](#TokenOwnership).
+
+The token ownership data may or may not be initialized. 
+
+
+### \_initalizeOwnershipAt
+
+```solidity
+function _initalizeOwnershipAt(uint256 index) internal
+```
+
+Initializes the token ownership data at the `index` slot, if it has not been initialized.
+
+If the batch minted is very large, this function can be used to initialize some tokens to 
+reduce the first-time transfer costs.
+
 
 ### \_exists
 

@@ -36,7 +36,7 @@ To prevent overly expensive transfer fees for tokens that are minted in large ba
 
 - Break up excessively large batches into mini batches internally when minting.
 
-- Use \_initializeOwnershipAt every couple tokens to reduce number of reads during a transfer.
+- Use [`_initializeOwnershipAt`](erc721a.md#_initializeOwnershipAt) every couple tokens to reduce number of reads during a transfer.
 
 ## Efficient Tokenomics
 

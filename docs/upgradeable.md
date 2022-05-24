@@ -7,6 +7,8 @@ you will need to use the upgradeable variant of ERC721A.
 For more information, please refer to 
 [OpenZeppelin's documentation](https://docs.openzeppelin.com/contracts/4.x/upgradeable).
 
+Since v4, the upgradeable variant uses the Diamond storage pattern as defined in [EIP-2535](https://eips.ethereum.org/EIPS/eip-2535).
+
 ## Installation
 
 ```
@@ -17,24 +19,30 @@ npm install --save-dev erc721a-upgradeable
 
 The package shares the same directory layout as the main ERC721A package, but every file and contract has the suffix `Upgradeable`.
 
-```solidity
-// import "erc721a/ERC721A.sol";
-import "erc721a-upgradeable/ERC721Upgradeable.sol";
-
-// contract Something is ERC721A {
-contract Something is ERC721AUpgradeable {
-```
-
 Constructors are replaced by internal initializer functions following the naming convention `__{ContractName}__init`. 
 
 These functions are internal, and you must define your own public initializer function that calls the parent class' initializer.
 
 ```solidity
-// constructor() ERC721("Something", "SMTH") public {
-function initialize() initializer public {
-    __ERC721A_init("Something", "SMTH");
+pragma solidity ^0.8.4;
+
+import 'erc721a-upgradeable/contracts/ERC721AUpgradeable.sol';
+
+contract Something is ERC721AUpgradeable {
+    function initialize() initializerERC721A public {
+        __ERC721A_init('Something', 'SMTH');
+    }
+
+    function mint(uint256 quantity) external payable {
+        // _safeMint's second argument now takes in a quantity, not a tokenId.
+        _safeMint(msg.sender, quantity);
+    }
 }
 ```
+
+Note the modifier `initializerERC721A` on the `initialize()` function.
+
+If using with another upgradeable library, please do use their respective initializer modifier on the `initialize()` function, in addition to the `initializerERC721A` modifier.
 
 ## Deployment
 
@@ -112,6 +120,18 @@ main();
 ```
 
 ### Local
+
+Add the following to your `hardhat.config.js`:
+
+```javascript
+// hardhat.config.js
+require("@nomiclabs/hardhat-waffle");
+require('@openzeppelin/hardhat-upgrades');
+
+module.exports = {
+    solidity: "0.8.11"
+};
+```
 
 **Deploy**
 
