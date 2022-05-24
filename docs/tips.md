@@ -18,7 +18,7 @@ See [Design: Lower Fees](design.md#lower-fees).
 
 ## Aux
 
-Consider using [`ERC721A._getAux`](erc721a.md#_getAux) and 
+Consider using [`ERC721A._getAux`](erc721a.md#_getAux) and
 [`ERC721A._setAux`](erc721a.md#_setAux) to get / set per-address variables  
 (e.g. number of whitelist mints per address).
 
@@ -34,21 +34,21 @@ To prevent overly expensive transfer fees for tokens that are minted in large ba
 
 - Restrict the max batch size for public mints to a reasonable number.
 
-- Break up excessively large batches into mini batches internally when minting. 
+- Break up excessively large batches into mini batches internally when minting.
 
-- Look into [`ERC721AOwnersExplicit`](erc721a-owners-explicit.md). 
+- Use \_initializeOwnershipAt every couple tokens to reduce number of reads during a transfer.
 
 ## Efficient Tokenomics
 
 ERC721A keeps track of additional variables in the internal mappings.
 
 - [`startTimestamp`](erc721a.md#_ownershipOf) (starting time of holding) per token.
-- [`numberMinted`](erc721a.md#_numberMinted) per address. 
+- [`numberMinted`](erc721a.md#_numberMinted) per address.
 - [`numberBurned`](erc721a.md#_numberBurned) per address.
 
 These variables hitchike on the `SLOAD`s and `SSTORE`s at near zero additional gas cost (< 1%).
 
-You can use them to design tokenomics with very minimal gas overhead. 
+You can use them to design tokenomics with very minimal gas overhead.
 
 ## ERC721A vs ERC1155
 
@@ -67,15 +67,15 @@ ERC1155 requires centralized indexing services to emulate ERC721-like functional
 
 ## Other Implementations
 
-ERC721A is not a one-size-fits-all solution. 
+ERC721A is not a one-size-fits-all solution.
 
 It is heavily optimized for generative artwork NFT collections.
 
 If your collection does not expect a busy mint phase (e.g. a pure utility NFT),  
 or does not require bulk minting,  
-these excellent implementations can be better for lowering overall transaction fees: 
+these excellent implementations can be better for lowering overall transaction fees:
 
-- [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts) 
+- [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts)
 - [Solmate](https://github.com/Rari-Capital/solmate)
 
 Use the right tool for the job.
