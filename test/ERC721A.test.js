@@ -455,7 +455,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
         });
 
-        describe.only('_initializeOwnershipAt', async function () {
+        describe('_initializeOwnershipAt', async function () {
           it('successfuly sets ownership of empty slot', async function () {
             const lastTokenId = this.addr3.expected.tokens[2];
             const ownership1 = await this.erc721a.getOwnershipAt(lastTokenId);
