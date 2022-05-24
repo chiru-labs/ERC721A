@@ -454,6 +454,21 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.false;
           });
         });
+
+        describe('_initializeOwnershipAt', async function () {
+          it('successfuly sets ownership of empty slot', async function () {
+            const lastTokenId = this.addr3.expected.tokens[2];
+            expect(await this.erc721a.ownerOf(lastTokenId)).to.be.equal(this.addr3.address);
+            const tx1 = await this.erc721a.initializeOwnershipAt(lastTokenId);
+            expect(await this.erc721a.ownerOf(lastTokenId)).to.be.equal(this.addr3.address);
+            const tx2 = await this.erc721a.initializeOwnershipAt(lastTokenId);
+
+            // We assume the initialization worked due to less gas used by the 2nd txn
+            const receipt1 = await tx1.wait();
+            const receipt2 = await tx2.wait();
+            expect(receipt1.gasUsed.toNumber()).to.be.greaterThan(receipt2.gasUsed.toNumber());
+          });
+        });
       });
 
       context('test mint functionality', function () {

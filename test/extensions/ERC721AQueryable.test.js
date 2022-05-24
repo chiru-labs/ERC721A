@@ -311,12 +311,3 @@ describe(
     constructorArgs: ['Azuki', 'AZUKI', 1],
   })
 );
-
-describe(
-  'ERC721AQueryableOwnersExplicit',
-  createTestSuite({
-    contract: 'ERC721AQueryableOwnersExplicitMock',
-    constructorArgs: ['Azuki', 'AZUKI'],
-    initializeOwnersExplicit: true,
-  })
-);
