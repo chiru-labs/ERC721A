@@ -4,7 +4,7 @@ const { BigNumber } = require('ethers');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
-const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit = false }) =>
+const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
     let offsetted;
 
@@ -122,14 +122,6 @@ const createTestSuite = ({ contract, constructorArgs, initializeOwnersExplicit =
             }
             // sanity check
             expect(await this.erc721aQueryable.balanceOf(minter.address)).to.equal(minter.expected.balance);
-          }
-
-          if (initializeOwnersExplicit) {
-            // sanity check
-            expect((await this.erc721aQueryable.getOwnershipAt(offsetted(4)))[0]).to.equal(ZERO_ADDRESS);
-            await this.erc721aQueryable.initializeOwnersExplicit(10);
-            // again, sanity check
-            expect((await this.erc721aQueryable.getOwnershipAt(offsetted(4)))[0]).to.equal(this.addr3.address);
           }
         });
 
