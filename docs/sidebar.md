@@ -5,7 +5,6 @@
 - API
   - [ERC721A](erc721a.md)
   - [ERC721ABurnable](erc721a-burnable.md)
-  - [ERC721AOwnersExplicit](erc721a-owners-explicit.md)
   - [ERC721AQueryable](erc721a-queryable.md)
   - [Interfaces](interfaces.md)
 - **Theme**
@@ -23,4 +22,4 @@
 - **Links**
   - [<div class="s0cial"><i class="icon-github-circled"></i>Github</div>](https://github.com/chiru-labs/ERC721A)
   - [<div class="s0cial"><i class="icon-twitter"></i>Twitter</div>](https://twitter.com/AzukiOfficial)
-<div class="copyright"><a href="https://www.chirulabs.com/" target="_blank" title="Chiru Labs">© Chiru Labs 2022</a></div>
+  <div class="copyright"><a href="https://www.chirulabs.com/" target="_blank" title="Chiru Labs">© Chiru Labs 2022</a></div>
