@@ -454,6 +454,17 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.false;
           });
         });
+
+        describe.only('_initializeOwnershipAt', async function () {
+          it('successfuly sets ownership of empty slot', async function () {
+            const lastTokenId = this.addr3.expected.tokens[2];
+            const ownership1 = await this.erc721a.getOwnershipAt(lastTokenId);
+            expect(ownership1[0]).to.equal(ZERO_ADDRESS);
+            await this.erc721a.initializeOwnershipAt(lastTokenId);
+            const ownership2 = await this.erc721a.getOwnershipAt(lastTokenId);
+            expect(ownership2[0]).to.equal(this.addr3.address);
+          });
+        });
       });
 
       context('test mint functionality', function () {
