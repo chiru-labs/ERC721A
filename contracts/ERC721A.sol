@@ -163,7 +163,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        if (owner == address(0)) revert BalanceQueryForZeroAddress();
+        if (_addressToUint256(owner) == 0) revert BalanceQueryForZeroAddress();
         return _packedAddressData[owner] & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
@@ -557,11 +557,11 @@ contract ERC721A is IERC721A {
 
         if (address(uint160(prevOwnershipPacked)) != from) revert TransferFromIncorrectOwner();
 
-        address approvedAccount = _tokenApprovals[tokenId];
+        address approvedAddress = _tokenApprovals[tokenId];
 
         bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
             isApprovedForAll(from, _msgSenderERC721A()) ||
-            approvedAccount == _msgSenderERC721A());
+            approvedAddress == _msgSenderERC721A());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         if (_addressToUint256(to) == 0) revert TransferToZeroAddress();
@@ -569,7 +569,7 @@ contract ERC721A is IERC721A {
         _beforeTokenTransfers(from, to, tokenId, 1);
 
         // Clear approvals from the previous owner.
-        if (_addressToUint256(approvedAccount) != 0) {
+        if (_addressToUint256(approvedAddress) != 0) {
             delete _tokenApprovals[tokenId];
         }
 
@@ -631,12 +631,12 @@ contract ERC721A is IERC721A {
 
         address from = address(uint160(prevOwnershipPacked));
 
-        address approvedAccount = _tokenApprovals[tokenId];
+        address approvedAddress = _tokenApprovals[tokenId];
 
         if (approvalCheck) {
             bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
                 isApprovedForAll(from, _msgSenderERC721A()) ||
-                approvedAccount == _msgSenderERC721A());
+                approvedAddress == _msgSenderERC721A());
 
             if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         }
@@ -644,7 +644,7 @@ contract ERC721A is IERC721A {
         _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner.
-        if (_addressToUint256(approvedAccount) != 0) {
+        if (_addressToUint256(approvedAddress) != 0) {
             delete _tokenApprovals[tokenId];
         }
 
