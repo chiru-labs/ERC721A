@@ -163,7 +163,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        if (owner == address(0)) revert BalanceQueryForZeroAddress();
+        if (_addressToUint256(owner) == 0) revert BalanceQueryForZeroAddress();
         return _packedAddressData[owner] & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
@@ -440,7 +440,7 @@ contract ERC721A is IERC721A {
         bytes memory _data
     ) internal {
         uint256 startTokenId = _currentIndex;
-        if (to == address(0)) revert MintToZeroAddress();
+        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
@@ -500,7 +500,7 @@ contract ERC721A is IERC721A {
      */
     function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
-        if (to == address(0)) revert MintToZeroAddress();
+        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
@@ -557,17 +557,21 @@ contract ERC721A is IERC721A {
 
         if (address(uint160(prevOwnershipPacked)) != from) revert TransferFromIncorrectOwner();
 
+        address approvedAddress = _tokenApprovals[tokenId];
+
         bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
             isApprovedForAll(from, _msgSenderERC721A()) ||
-            getApproved(tokenId) == _msgSenderERC721A());
+            approvedAddress == _msgSenderERC721A());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-        if (to == address(0)) revert TransferToZeroAddress();
+        if (_addressToUint256(to) == 0) revert TransferToZeroAddress();
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
         // Clear approvals from the previous owner.
-        delete _tokenApprovals[tokenId];
+        if (_addressToUint256(approvedAddress) != 0) {
+            delete _tokenApprovals[tokenId];
+        }
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
@@ -626,11 +630,12 @@ contract ERC721A is IERC721A {
         uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
 
         address from = address(uint160(prevOwnershipPacked));
+        address approvedAddress = _tokenApprovals[tokenId];
 
         if (approvalCheck) {
             bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
                 isApprovedForAll(from, _msgSenderERC721A()) ||
-                getApproved(tokenId) == _msgSenderERC721A());
+                approvedAddress == _msgSenderERC721A());
 
             if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         }
@@ -638,7 +643,9 @@ contract ERC721A is IERC721A {
         _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner.
-        delete _tokenApprovals[tokenId];
+        if (_addressToUint256(approvedAddress) != 0) {
+            delete _tokenApprovals[tokenId];
+        }
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
