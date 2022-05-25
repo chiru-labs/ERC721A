@@ -630,7 +630,6 @@ contract ERC721A is IERC721A {
         uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
 
         address from = address(uint160(prevOwnershipPacked));
-
         address approvedAddress = _tokenApprovals[tokenId];
 
         if (approvalCheck) {
