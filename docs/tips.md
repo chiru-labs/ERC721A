@@ -50,6 +50,13 @@ These variables hitchike on the `SLOAD`s and `SSTORE`s at near zero additional g
 
 You can use them to design tokenomics with very minimal gas overhead.
 
+> The [`startTimestamp`](erc721a.md#_ownershipOf), is available via the 
+> [`TokenOwnership`](erc721a.md#TokenOwnership) struct.
+>
+> You can get it from the 
+> [`_ownershipOf`](erc721a.md#_ownershipOf) function or the non-reverting 
+> [`ERC721AQueryable.explicitOwnershipOf`](erc721a-queryable.md#explicitOwnershipOf) function.
+
 ## ERC721A vs ERC1155
 
 |                  | ERC721A        | ERC1155                |

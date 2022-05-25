@@ -10,10 +10,7 @@ An owner cannot have more than `2**64 - 1` (max value of `uint64`) tokens.
 
 Inherits:
 
-- [Context](https://docs.openzeppelin.com/contracts/2.x/api/gsn)
-- [IERC721](https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#IERC721) 
-- [IERC721Metadata](https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#IERC721Metadata) 
-- [IERC165](https://docs.openzeppelin.com/contracts/4.x/api/utils#IERC165)
+- [IERC721A](interfaces.md#ierc721a) 
 
 ## Structs
 
@@ -430,6 +427,20 @@ Requirements:
 - If `approvalCheck` is `true`, the caller must own `tokenId` or be an approved operator.
 
 Emits a `Transfer` event.
+
+
+### \_msgSenderERC721A
+
+```solidity
+function _msgSenderERC721A() internal view virtual returns (address) 
+```
+
+Returns the message sender (defaults to `msg.sender`). 
+
+If you are writing [GSN compatible contracts](https://docs.openzeppelin.com/contracts/2.x/gsn), 
+you need to override this function   
+(to return `_msgSender()` if using with OpenZeppelin).
+
 
 ## Events
 
