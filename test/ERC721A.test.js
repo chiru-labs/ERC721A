@@ -464,6 +464,19 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             const ownership2 = await this.erc721a.getOwnershipAt(lastTokenId);
             expect(ownership2[0]).to.equal(this.addr3.address);
           });
+
+          it("doesn't set ownership if it's already setted", async function () {
+            const lastTokenId = this.addr3.expected.tokens[2];
+            expect(await this.erc721a.ownerOf(lastTokenId)).to.be.equal(this.addr3.address);
+            const tx1 = await this.erc721a.initializeOwnershipAt(lastTokenId);
+            expect(await this.erc721a.ownerOf(lastTokenId)).to.be.equal(this.addr3.address);
+            const tx2 = await this.erc721a.initializeOwnershipAt(lastTokenId);
+
+            // We assume the 2nd initialization doesn't set again due to less gas used.
+            const receipt1 = await tx1.wait();
+            const receipt2 = await tx2.wait();
+            expect(receipt2.gasUsed.toNumber()).to.be.lessThan(receipt1.gasUsed.toNumber());
+          });
         });
       });
 
