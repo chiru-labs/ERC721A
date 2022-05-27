@@ -15,6 +15,12 @@ const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 packageJson.version = version;
 fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
 
+// update package-lock.json version
+const packageLockJson = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+packageLockJson.version = version;
+packageLockJson.packages[""].version = version;
+fs.writeFileSync('package-lock.json', JSON.stringify(packageLockJson, null, 2));
+
 const spdxString = '// SPDX-License-Identifier: MIT';
 const versionPrefix = '// ERC721A Contracts v';
 
