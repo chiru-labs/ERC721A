@@ -5,6 +5,7 @@
 pragma solidity ^0.8.4;
 
 import './IERC721A.sol';
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @dev ERC721 token receiver interface.
@@ -28,7 +29,7 @@ interface ERC721A__IERC721Receiver {
  *
  * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
-contract ERC721A is IERC721A {
+contract ERC721A is IERC721A, ReentrancyGuard {
     // Mask of an entry in packed address data.
     uint256 private constant BITMASK_ADDRESS_DATA_ENTRY = (1 << 64) - 1;
 
@@ -455,15 +456,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
- * @dev Safely mints `quantity` tokens and transfers them to `to`.
-     *
-     * Requirements:
-     *
-     * - If `to` refers to a smart contract, it must implement
-     *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
-     * - `quantity` must be greater than 0.
-     *
-     * Emits a {Transfer} event.
+     * @dev Equivalent to `_safeMint(to, _currentIndex, quantity, data)`.
      */
     function _safeMint(
         address to,
@@ -471,10 +464,14 @@ contract ERC721A is IERC721A {
         bytes memory _data
     ) internal {
         _safeMint(to, _currentIndex, quantity, _data);
+        // TODO is it problematic to have this after _afterTokenTransfers?
+        unchecked {
+            _currentIndex += quantity;
+        }
     }
 
     /**
-     * @dev Equivalent to `_safeMint(to, quantity, '')`.
+     * @dev Equivalent to `_safeMint(to, _currentIndex, quantity, '')`.
      */
     function _safeMint(address to, uint256 quantity) internal {
         _safeMint(to, quantity, '');
@@ -496,7 +493,7 @@ contract ERC721A is IERC721A {
         uint256 startTokenId,
         uint256 quantity,
         bytes memory _data
-    ) internal {
+    ) internal nonReentrant {
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -535,17 +532,14 @@ contract ERC721A is IERC721A {
                         revert TransferToNonERC721ReceiverImplementer();
                     }
                 } while (updatedIndex < end);
-                // Reentrancy protection
-                // TODO where/how should we maintain reentrancy protection?  push to caller?
-                if (_currentIndex != startTokenId) revert();
             } else {
                 do {
                     emit Transfer(address(0), to, updatedIndex++);
                 } while (updatedIndex < end);
             }
-            _currentIndex = updatedIndex;
             _numMinted += quantity;
         }
+        // TODO figure out another way to add reentrancy protection.
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
@@ -561,6 +555,10 @@ contract ERC721A is IERC721A {
      */
     function _mint(address to, uint256 quantity) internal {
         _mint(to, _currentIndex, quantity);
+        // TODO is it problematic to have this after _afterTokenTransfers?
+        unchecked {
+            _currentIndex += quantity;
+        }
     }
 
     /**
@@ -573,7 +571,7 @@ contract ERC721A is IERC721A {
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 startTokenId, uint256 quantity) internal {
+    function _mint(address to, uint256 startTokenId, uint256 quantity) internal nonReentrant {
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -609,7 +607,6 @@ contract ERC721A is IERC721A {
                 emit Transfer(address(0), to, updatedIndex++);
             } while (updatedIndex < end);
 
-            _currentIndex = updatedIndex;
             _numMinted += quantity;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
