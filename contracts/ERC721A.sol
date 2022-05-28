@@ -5,7 +5,6 @@
 pragma solidity ^0.8.4;
 
 import './IERC721A.sol';
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @dev ERC721 token receiver interface.
@@ -29,7 +28,7 @@ interface ERC721A__IERC721Receiver {
  *
  * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
-contract ERC721A is IERC721A, ReentrancyGuard {
+contract ERC721A is IERC721A {
     // Mask of an entry in packed address data.
     uint256 private constant BITMASK_ADDRESS_DATA_ENTRY = (1 << 64) - 1;
 
@@ -66,8 +65,8 @@ contract ERC721A is IERC721A, ReentrancyGuard {
     // The tokenId of the next token to be minted.
     uint256 private _currentIndex;
 
-    // Number minted
-    uint256 internal _numMinted;
+    // The number of tokens minted.
+    uint256 internal _mintCounter;
 
     // The number of tokens burned.
     uint256 private _burnCounter;
@@ -143,7 +142,7 @@ contract ERC721A is IERC721A, ReentrancyGuard {
         // Counter underflow is impossible as _burnCounter cannot be incremented
         // more than `_numMinted - _startTokenId()` times.
         unchecked {
-            return _numMinted - _burnCounter;
+            return _mintCounter - _burnCounter;
         }
     }
 
@@ -151,7 +150,7 @@ contract ERC721A is IERC721A, ReentrancyGuard {
      * @dev Returns the total amount of tokens minted in the contract.
      */
     function _totalMinted() internal view returns (uint256) {
-        return _numMinted;
+        return _mintCounter;
     }
 
     /**
@@ -493,7 +492,8 @@ contract ERC721A is IERC721A, ReentrancyGuard {
         uint256 startTokenId,
         uint256 quantity,
         bytes memory _data
-    ) internal nonReentrant {
+    ) internal {
+        uint256 totalMinted = _mintCounter;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -532,14 +532,15 @@ contract ERC721A is IERC721A, ReentrancyGuard {
                         revert TransferToNonERC721ReceiverImplementer();
                     }
                 } while (updatedIndex < end);
+                // Reentrancy protection
+                if (totalMinted != _mintCounter) revert();
             } else {
                 do {
                     emit Transfer(address(0), to, updatedIndex++);
                 } while (updatedIndex < end);
             }
-            _numMinted += quantity;
+            _mintCounter += quantity;
         }
-        // TODO figure out another way to add reentrancy protection.
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
@@ -571,7 +572,7 @@ contract ERC721A is IERC721A, ReentrancyGuard {
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 startTokenId, uint256 quantity) internal nonReentrant {
+    function _mint(address to, uint256 startTokenId, uint256 quantity) internal {
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -607,7 +608,7 @@ contract ERC721A is IERC721A, ReentrancyGuard {
                 emit Transfer(address(0), to, updatedIndex++);
             } while (updatedIndex < end);
 
-            _numMinted += quantity;
+            _mintCounter += quantity;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
