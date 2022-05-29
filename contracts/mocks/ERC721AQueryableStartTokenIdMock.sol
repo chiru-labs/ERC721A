@@ -11,10 +11,10 @@ contract ERC721AQueryableStartTokenIdMock is StartTokenIdHelper, ERC721AQueryabl
     constructor(
         string memory name_,
         string memory symbol_,
-        uint256 startTokenId_
+        uint128 startTokenId_
     ) StartTokenIdHelper(startTokenId_) ERC721AQueryableMock(name_, symbol_) {}
 
-    function _startTokenId() internal view override returns (uint256) {
+    function _startTokenId() internal view override returns (uint128) {
         return startTokenId;
     }
 }

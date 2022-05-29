@@ -59,14 +59,19 @@ contract ERC721A is IERC721A {
     // The bit position of the `quantity` bit in packed ownership.
     uint256 private constant BITPOS_QUANTITY = 226;
 
-    // The bit mask of the `quantity` bit in packed ownership
+    // Mask of all 256 bits in packed ownership except the 8 bits for `quantity`.
     uint256 private constant BITMASK_QUANTITY_COMPLEMENT = ~uint256(255 << 225);
 
-    // The tokenId of the next token to be minted.
-    uint256 private _currentIndex;
+    // The bit position of `currentIndex` in packed mint counters.
+    uint256 private constant BITPOS_CURRENT_INDEX = 128;
 
-    // The number of tokens minted.
-    uint256 internal _mintCounter;
+    // For storage efficiency, pack mintCounter and currentIndex into the same uint256
+    // This limits the total supply to 2^128-1, which should be more than enough for most use-cases.
+    //
+    // Bits Layout:
+    // - [0..127]   `mintCounter`
+    // - [128..255] `currentIndex`
+    uint256 private _packedMintCounters;
 
     // The number of tokens burned.
     uint256 private _burnCounter;
@@ -107,14 +112,14 @@ contract ERC721A is IERC721A {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _currentIndex = _startTokenId();
+        _packedMintCounters = (uint256(_startTokenId()) << BITPOS_CURRENT_INDEX);
     }
 
     /**
      * @dev Returns the starting token ID. 
      * To change the starting token ID, please override this function.
      */
-    function _startTokenId() internal view virtual returns (uint256) {
+    function _startTokenId() internal view virtual returns (uint128) {
         return 0;
     }
 
@@ -122,7 +127,7 @@ contract ERC721A is IERC721A {
      * @dev Returns the next token ID to be minted.
      */
     function _nextTokenId() internal view returns (uint256) {
-        return _currentIndex;
+        return (_packedMintCounters >> BITPOS_CURRENT_INDEX);
     }
 
     /**
@@ -140,9 +145,9 @@ contract ERC721A is IERC721A {
      */
     function totalSupply() public view override returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than `_numMinted - _startTokenId()` times.
+        // more than `_totalMinted() - _startTokenId()` times.
         unchecked {
-            return _mintCounter - _burnCounter;
+            return uint128(_packedMintCounters) - _burnCounter;
         }
     }
 
@@ -150,7 +155,7 @@ contract ERC721A is IERC721A {
      * @dev Returns the total amount of tokens minted in the contract.
      */
     function _totalMinted() internal view returns (uint256) {
-        return _mintCounter;
+        return uint128(_packedMintCounters);
     }
 
     /**
@@ -455,25 +460,43 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_safeMint(to, _currentIndex, quantity, data)`.
+     * @dev Equivalent to `_safeMint(to, _nextTokenId(), quantity, data, true)`.
      */
     function _safeMint(
         address to,
         uint256 quantity,
         bytes memory _data
     ) internal {
-        _safeMint(to, _currentIndex, quantity, _data);
-        // TODO is it problematic to have this after _afterTokenTransfers?
-        unchecked {
-            _currentIndex += quantity;
-        }
+        _safeMint(to, (_packedMintCounters >> BITPOS_CURRENT_INDEX), quantity, _data, true);
     }
 
     /**
-     * @dev Equivalent to `_safeMint(to, _currentIndex, quantity, '')`.
+     * @dev Equivalent to `_safeMint(to, _nextTokenId(), quantity, '')`.
      */
     function _safeMint(address to, uint256 quantity) internal {
         _safeMint(to, quantity, '');
+    }
+
+    /**
+     * @dev Safely mints `quantity` tokens starting at `startTokenId` and transfers them to `to`.
+     * WARNING: callers are responsible for ensuring the minted tokens do not already exist!
+     *
+     * Requirements:
+     *
+     * - If `to` refers to a smart contract, it must implement
+     *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
+     * - `quantity` must be greater than 0.
+     * - `quantity` must be less than or equal to `_maxBatchSize()`.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _safeMint(
+        address to,
+        uint256 startTokenId,
+        uint256 quantity,
+        bytes memory _data
+    ) internal {
+        _safeMint(to, startTokenId, quantity, _data, false);
     }
 
     /**
@@ -484,6 +507,7 @@ contract ERC721A is IERC721A {
      * - If `to` refers to a smart contract, it must implement
      *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
      * - `quantity` must be greater than 0.
+     * - `quantity` must be less than or equal to `_maxBatchSize()`.
      *
      * Emits a {Transfer} event.
      */
@@ -491,17 +515,19 @@ contract ERC721A is IERC721A {
         address to,
         uint256 startTokenId,
         uint256 quantity,
-        bytes memory _data
-    ) internal {
-        uint256 totalMinted = _mintCounter;
+        bytes memory _data,
+        bool sequential
+    ) private {
+        uint256 totalMinted = uint128(_packedMintCounters);
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
+        if (quantity > _maxBatchSize()) revert MintLargeQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
-        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        // updatedIndex overflows if _nextTokenId() + quantity > 3.4e38 (2**128) - 1
         unchecked {
             // Updates:
             // - `balance += quantity`.
@@ -533,33 +559,36 @@ contract ERC721A is IERC721A {
                     }
                 } while (updatedIndex < end);
                 // Reentrancy protection
-                if (totalMinted != _mintCounter) revert();
+                if (totalMinted != uint128(_packedMintCounters)) revert();
             } else {
                 do {
                     emit Transfer(address(0), to, updatedIndex++);
                 } while (updatedIndex < end);
             }
-            _mintCounter += quantity;
+            uint256 newPackedMintCounters = uint128(_packedMintCounters) + quantity;
+            // If this is a sequential mint, increment _nextTokenId() by quantity.
+            if (sequential) {
+                newPackedMintCounters = newPackedMintCounters |
+                    (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + quantity) << BITPOS_CURRENT_INDEX);
+            }
+            _packedMintCounters = newPackedMintCounters;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
     /**
-     * @dev Mints `quantity` tokens starting at _currentIndex and transfers them to `to`.
+     * @dev Mints `quantity` tokens starting at _nextTokenId() and transfers them to `to`.
      *
      * Requirements:
      *
      * - `to` cannot be the zero address.
      * - `quantity` must be greater than 0.
+     * - `quantity` must be less than or equal to `_maxBatchSize()`.
      *
      * Emits a {Transfer} event.
      */
     function _mint(address to, uint256 quantity) internal {
-        _mint(to, _currentIndex, quantity);
-        // TODO is it problematic to have this after _afterTokenTransfers?
-        unchecked {
-            _currentIndex += quantity;
-        }
+        _mint(to, (_packedMintCounters >> BITPOS_CURRENT_INDEX), quantity, true);
     }
 
     /**
@@ -569,18 +598,35 @@ contract ERC721A is IERC721A {
      *
      * - `to` cannot be the zero address.
      * - `quantity` must be greater than 0.
+     * - `quantity` must be less than or equal to `_maxBatchSize()`.
      *
      * Emits a {Transfer} event.
      */
     function _mint(address to, uint256 startTokenId, uint256 quantity) internal {
+        _mint(to, startTokenId, quantity, false);
+    }
+
+    /**
+     * @dev Mints `quantity` tokens starting at `startTokenId` and transfers them to `to`.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
+     * - `quantity` must be less than or equal to `maxBatchSize()`.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _mint(address to, uint256 startTokenId, uint256 quantity, bool sequential) private {
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
+        if (quantity > _maxBatchSize()) revert MintLargeQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
         // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
-        // updatedIndex overflows if _numMinted + quantity > 1.2e77 (2**256) - 1
+        // updatedIndex overflows if _numMinted + quantity > 3.4e38 (2**128) - 1
         unchecked {
             // Updates:
             // - `balance += quantity`.
@@ -608,7 +654,13 @@ contract ERC721A is IERC721A {
                 emit Transfer(address(0), to, updatedIndex++);
             } while (updatedIndex < end);
 
-            _mintCounter += quantity;
+            uint256 newPackedMintCounters = uint128(_packedMintCounters) + quantity;
+            // If this is a sequential mint, increment _nextTokenId() by quantity.
+            if (sequential) {
+                newPackedMintCounters = newPackedMintCounters |
+                    (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + quantity) << BITPOS_CURRENT_INDEX);
+            }
+            _packedMintCounters = newPackedMintCounters;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
