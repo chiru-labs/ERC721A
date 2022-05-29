@@ -12,7 +12,7 @@ In version 4.x, we have made the following breaking changes:
 
 The `_currentIndex` variable has been made private.
 
-Please use [_nextTokenId](erc721a.md#_nextTokenId) instead.
+Please use [`_nextTokenId`](erc721a.md#_nextTokenId) instead.
 
 If you need a `tokensOfOwner` function, please use [`ERC721AQueryable.tokensOfOwner`](erc721a-queryable.md#tokensOfOwner).
 
@@ -20,29 +20,29 @@ If you need a `tokensOfOwner` function, please use [`ERC721AQueryable.tokensOfOw
 
 The `_burnCounter` variable has been made private.
 
-Please use [_totalBurned](erc721a.md#_totalBurned) instead.
+Please use [`_totalBurned`](erc721a.md#_totalBurned) instead.
 
 ### \_ownerships
 
 The `_ownerships` mapping has been made private.
 
 Please use the following instead:
-- [_ownershipOf](erc721a.md#_ownershipOf)
+- [`_ownershipOf`](erc721a.md#_ownershipOf)
 - [`ERC721AQueryable.explicitOwnershipOf`](erc721a-queryable.md#explicitOwnershipOf) (non-reverting)
 - [`ERC721AQueryable.tokensOfOwner`](erc721a-queryable.md#tokensOfOwner)
-- [_ownershipAt](erc721a.md#_ownershipAt)
+- [`_ownershipAt`](erc721a.md#_ownershipAt)
 
 ### \_msgSender
 
 The dependency on OpenZeppelin `_msgSender` has been removed.
 
-Please use [_msgSenderERC721A](erc721a.md#_msgSenderERC721A) instead.
+Please use [`_msgSenderERC721A`](erc721a.md#_msgSenderERC721A) instead.
 
 ### Strings.toString
 
 The dependency on OpenZeppelin `Strings.toString` has been removed.
 
-Please use [_toString](erc721a.md#_toString) instead.
+Please use [`_toString`](erc721a.md#_toString) instead.
 
 ### supportsInterface
 
@@ -54,11 +54,11 @@ When using with OpenZeppelin's libraries (e.g. ERC2981), you will have to do the
 function supportsInterface(
     bytes4 interfaceId
 ) public view virtual override(ERC721A, ERC2981) returns (bool) {
-    // Supported `interfaceId`s.
-    // IERC165: 0x01ffc9a7
-    // IERC721: 0x80ac58cd
-    // IERC721Metadata: 0x5b5e139f
-    // IERC29081: 0x2a55205a
+    // Supports the following `interfaceId`s:
+    // - IERC165: 0x01ffc9a7
+    // - IERC721: 0x80ac58cd
+    // - IERC721Metadata: 0x5b5e139f
+    // - IERC29081: 0x2a55205a
     return 
         ERC721A.supportsInterface(interfaceId) || 
         ERC2981.supportsInterface(interfaceId);
@@ -69,12 +69,17 @@ function supportsInterface(
 
 The `ERC721AOwnersExplicit` extension has been removed. 
 
-Please use [_initalizeOwnershipAt](erc721a.md#_initalizeOwnershipAt) instead.
+Please use [`_initalizeOwnershipAt`](erc721a.md#_initalizeOwnershipAt) instead.
 
 ## Diamond Storage
 
 If your upgradeable contracts are deployed using version 3.x,  
-they are not compatible with version 4.x.
+they will not compatible with version 4.x.
 
-Verison 4.x of ERC721A Upgradeable will be compatible with OpenZeppelin Upgradeable libraries.
+Using version 4.x to upgrade upgradeable contracts deployed with 3.x will lead to unintended consequences.
+
+You will need to either continue using 3.3.0 (the last compatible version),  
+or redeploy from scratch with 4.x (the redeployed contracts will not have the previous data).
+
+Verison 4.x of ERC721A Upgradeable will be compatible with the non-diamond OpenZeppelin Upgradeable libraries.
 

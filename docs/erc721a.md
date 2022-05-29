@@ -54,7 +54,7 @@ Returns `true` if this contract implements the interface defined by `interfaceId
 
 See the corresponding [EIP section](https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified) to learn more about how these ids are created.
 
-See [migration for supportsInterface](migration.md#supportsInterface)
+See [migration](migration.md#supportsInterface) for `supportsInterface`.
 
 ### totalSupply
 
