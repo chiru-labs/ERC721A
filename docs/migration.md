@@ -1,0 +1,77 @@
+# Migration to 4.x
+
+In version 4.x, we have done the following breaking changes:
+
+- Removed OpenZeppelin
+- Made some variables private
+- Updated Upgradeable to use Diamond storage
+
+## API Changes
+
+### \_currentIndex
+
+The `_currentIndex` variable has been made private.
+
+Please use [_nextTokenId](erc721a.md#_nextTokenId) instead.
+
+### \_burnCounter
+
+The `_burnCounter` variable has been made private.
+
+Please use [_totalBurned](erc721a.md#_totalBurned) instead.
+
+### \_ownerships
+
+The `_ownerships` mapping has been made private.
+
+Please use the following instead:
+- [_ownershipOf](erc721a.md#_ownershipOf)
+- [`ERC721AQueryable.explicitOwnershipOf`](erc721a-queryable.md#explicitOwnershipOf) (non-reverting)
+- [_ownershipAt](erc721a.md#_ownershipAt)
+
+### \_msgSender
+
+The dependency on OpenZeppelin `_msgSender` has been removed.
+
+Please use [_msgSenderERC721A](erc721a.md#_msgSenderERC721A) instead.
+
+### Strings.toString
+
+The dependency on OpenZeppelin `Strings.toString` has been removed.
+
+Please use [_toString](erc721a.md#_toString) instead.
+
+### supportsInterface
+
+Due to removal of OpenZeppelin, using `super.supportsInterface` in the function override will not work.
+
+When using with OpenZeppelin's libraries (e.g. ERC2981), you will have to do the following:
+
+```solidity
+function supportsInterface(
+    bytes4 interfaceId
+) public view virtual override(ERC721A, ERC2981) returns (bool) {
+    // Supported `interfaceId`s.
+    // IERC165: 0x01ffc9a7
+    // IERC721: 0x80ac58cd
+    // IERC721Metadata: 0x5b5e139f
+    // IERC29081: 0x2a55205a
+    return 
+        ERC721A.supportsInterface(interfaceId) || 
+        ERC2981.supportsInterface(interfaceId);
+}
+```
+
+### ERC721AOwnersExplicit
+
+The `ERC721AOwnersExplicit` extension has been removed. 
+
+Please use [_initalizeOwnershipAt](erc721a.md#_initalizeOwnershipAt) instead.
+
+## Diamond Storage
+
+If your upgradeable contracts are deployed using version 3.x,  
+they are not compatible with version 4.x.
+
+Verison 4.x of ERC721A Upgradeable will be compatible with OpenZeppelin Upgradeable libraries.
+
