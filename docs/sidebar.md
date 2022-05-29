@@ -2,6 +2,7 @@
 - [Design](design.md)
 - [Tips](tips.md)
 - [Upgradeable](upgradeable.md)
+- [Migration to 4.x](migration.md)
 - API
   - [ERC721A](erc721a.md)
   - [ERC721ABurnable](erc721a-burnable.md)

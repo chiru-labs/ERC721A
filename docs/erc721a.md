@@ -47,14 +47,14 @@ Initializes the contract by setting a `name` and a `symbol` to the token collect
 `IERC165-supportsInterface`
 
 ```solidity
-function supportsInterface(
-    bytes4 interfaceId
-) public view virtual override(ERC165, IERC165) returns (bool)
+function supportsInterface(bytes4 interfaceId) public view virtual returns (bool)
 ```
 
 Returns `true` if this contract implements the interface defined by `interfaceId`. 
 
 See the corresponding [EIP section](https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified) to learn more about how these ids are created.
+
+See [migration for supportsInterface](migration.md#supportsInterface)
 
 ### totalSupply
 
@@ -124,17 +124,8 @@ function tokenURI(uint256 tokenId) public view virtual override returns (string 
 
 Returns the Uniform Resource Identifier (URI) for `tokenId` token.
 
-### \_baseURI
+See [`_baseURI`](#_baseURI) and [`_toString`](#_toString).
 
-```solidity
-function _baseURI() internal view virtual returns (string memory)
-```
-
-Base URI for computing `tokenURI`.
-
-If set, the resulting URI for each token will be the concatenation of the `baseURI` and the `tokenId`.
-
-Empty by default, can be overriden in child contracts.
 
 ### approve
 
@@ -429,6 +420,30 @@ Requirements:
 Emits a `Transfer` event.
 
 
+### \_baseURI
+
+```solidity
+function _baseURI() internal view virtual returns (string memory)
+```
+
+Base URI for computing `tokenURI`.
+
+If set, the resulting URI for each token will be the concatenation of the `baseURI` and the `tokenId`.
+
+Empty by default, can be overriden in child contracts.
+
+
+### \_toString
+
+```solidity
+function _toString(uint256 value) internal pure returns (string memory)
+```
+
+Converts a `uint256` to its ASCII `string` decimal representation.
+
+This function is provided as a drop-in replacement for OpenZeppelin's `Strings.toString(uint256 value)`.
+
+
 ### \_msgSenderERC721A
 
 ```solidity
@@ -440,7 +455,6 @@ Returns the message sender (defaults to `msg.sender`).
 If you are writing [GSN compatible contracts](https://docs.openzeppelin.com/contracts/2.x/gsn), 
 you need to override this function   
 (to return `_msgSender()` if using with OpenZeppelin).
-
 
 ## Events
 
