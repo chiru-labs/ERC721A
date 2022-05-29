@@ -74,7 +74,12 @@ Please use [`_initalizeOwnershipAt`](erc721a.md#_initalizeOwnershipAt) instead.
 ## Diamond Storage
 
 If your upgradeable contracts are deployed using version 3.x,  
-they are not compatible with version 4.x.
+they will not compatible with version 4.x.
 
-Verison 4.x of ERC721A Upgradeable will be compatible with OpenZeppelin Upgradeable libraries.
+Using version 4.x to upgrade upgradeable contracts deployed with 3.x will lead to unintended consequences.
+
+You will need to either continue using 3.3.0 (the last compatible version),  
+or redeploy from scratch with 4.x (the redeployed contracts will not have the previous data).
+
+Verison 4.x of ERC721A Upgradeable will be compatible with the non-diamond OpenZeppelin Upgradeable libraries.
 
