@@ -1,6 +1,6 @@
 # Migration to 4.x
 
-In version 4.x, we have done the following breaking changes:
+In version 4.x, we have made the following breaking changes:
 
 - Removed OpenZeppelin
 - Made some variables private
@@ -13,6 +13,8 @@ In version 4.x, we have done the following breaking changes:
 The `_currentIndex` variable has been made private.
 
 Please use [_nextTokenId](erc721a.md#_nextTokenId) instead.
+
+If you need a `tokensOfOwner` function, please use [`ERC721AQueryable.tokensOfOwner`](erc721a-queryable.md#tokensOfOwner).
 
 ### \_burnCounter
 
@@ -27,6 +29,7 @@ The `_ownerships` mapping has been made private.
 Please use the following instead:
 - [_ownershipOf](erc721a.md#_ownershipOf)
 - [`ERC721AQueryable.explicitOwnershipOf`](erc721a-queryable.md#explicitOwnershipOf) (non-reverting)
+- [`ERC721AQueryable.tokensOfOwner`](erc721a-queryable.md#tokensOfOwner)
 - [_ownershipAt](erc721a.md#_ownershipAt)
 
 ### \_msgSender
