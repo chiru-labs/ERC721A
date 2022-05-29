@@ -1,4 +1,4 @@
-# Migrating to 4.x
+# Migration to 4.x
 
 In version 4.x, we have made the following breaking changes:
 
