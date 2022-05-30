@@ -40,13 +40,13 @@ Please use [`_msgSenderERC721A`](erc721a.md#_msgSenderERC721A) instead.
 
 ### Strings.toString
 
-The dependency on OpenZeppelin `Strings.toString` has been removed.
+Due to removal of OpenZeppelin, `Strings.toString` has been removed.
 
 Please use [`_toString`](erc721a.md#_toString) instead.
 
 ### supportsInterface
 
-Due to removal of OpenZeppelin, using `super.supportsInterface` in the function override will not work.
+Due to removal of OpenZeppelin, using `super.supportsInterface` in the function override may not work.
 
 When using with OpenZeppelin's libraries (e.g. ERC2981), you will have to do the following:
 
