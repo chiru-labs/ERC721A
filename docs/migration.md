@@ -48,7 +48,7 @@ Please use [`_toString`](erc721a.md#_toString) instead.
 
 Due to removal of OpenZeppelin, using `super.supportsInterface` in the function override may not work.
 
-When using with OpenZeppelin's libraries (e.g. ERC2981), you will have to do the following:
+When using with OpenZeppelin's libraries (e.g. [ERC2981](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/common/ERC2981.sol)), you will have to do the following:
 
 ```solidity
 function supportsInterface(
@@ -58,7 +58,7 @@ function supportsInterface(
     // - IERC165: 0x01ffc9a7
     // - IERC721: 0x80ac58cd
     // - IERC721Metadata: 0x5b5e139f
-    // - IERC29081: 0x2a55205a
+    // - IERC2981: 0x2a55205a
     return 
         ERC721A.supportsInterface(interfaceId) || 
         ERC2981.supportsInterface(interfaceId);
@@ -71,10 +71,12 @@ The `ERC721AOwnersExplicit` extension has been removed.
 
 Please use [`_initalizeOwnershipAt`](erc721a.md#_initalizeOwnershipAt) instead.
 
+You can make your own public wrapper function to initialize the slots for any desired range in a loop.
+
 ## Diamond Storage
 
 If your upgradeable contracts are deployed using version 3.x,  
-they will not compatible with version 4.x.
+they will **NOT** be compatible with version 4.x.
 
 Using version 4.x to upgrade upgradeable contracts deployed with 3.x will lead to unintended consequences.
 
