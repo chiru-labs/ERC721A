@@ -35,6 +35,7 @@ contract Something is ERC721AUpgradeable, OwnableUpgradeable {
     // - `initializer` for OpenZeppelin's `OwnableUpgradeable`.
     function initialize() initializerERC721A initializer public {
         __ERC721A_init('Something', 'SMTH');
+        __Ownable_init();
     }
 
     function mint(uint256 quantity) external payable {
