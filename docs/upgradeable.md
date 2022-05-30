@@ -27,20 +27,26 @@ These functions are internal, and you must define your own public initializer fu
 pragma solidity ^0.8.4;
 
 import 'erc721a-upgradeable/contracts/ERC721AUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 
-contract Something is ERC721AUpgradeable {
-    function initialize() initializerERC721A public {
+contract Something is ERC721AUpgradeable, OwnableUpgradeable {
+    // Take note of the initializer modifiers.
+    // - `initializerERC721A` for `ERC721AUpgradeable`.
+    // - `initializer` for OpenZeppelin's `OwnableUpgradeable`.
+    function initialize() initializerERC721A initializer public {
         __ERC721A_init('Something', 'SMTH');
     }
 
     function mint(uint256 quantity) external payable {
-        // _safeMint's second argument now takes in a quantity, not a tokenId.
-        _safeMint(msg.sender, quantity);
+        // `_mint`'s second argument now takes in a `quantity`, not a `tokenId`.
+        _mint(msg.sender, quantity);
+    }
+
+    function adminMint(uint256 quantity) external payable onlyOwner {
+        _mint(msg.sender, quantity);
     }
 }
 ```
-
-Note the modifier `initializerERC721A` on the `initialize()` function.
 
 If using with another upgradeable library, please do use their respective initializer modifier on the `initialize()` function, in addition to the `initializerERC721A` modifier.
 
