@@ -21,8 +21,8 @@ contract Azuki is ERC721A {
     constructor() ERC721A("Azuki", "AZUKI") {}
 
     function mint(uint256 quantity) external payable {
-        // _safeMint's second argument now takes in a quantity, not a tokenId.
-        _safeMint(msg.sender, quantity);
+        // `_mint`'s second argument now takes in a `quantity`, not a `tokenId`.
+        _mint(msg.sender, quantity);
     }
 }
 ```
