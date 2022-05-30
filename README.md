@@ -8,9 +8,9 @@
 <!-- [![Forks][forks-shield]][forks-url] -->
 <!-- [![Stargazers][stars-shield]][stars-url] -->
 
-<!-- Announcement -->
+<!-- ANNOUNCEMENT -->
 
-> **Version 4.x introduces several breaking changes. [Please refer to the documentation for more details.](https://chiru-labs.github.io/ERC721A/#/migration)**
+> **📢 Version 4.x introduces several breaking changes. [Please refer to the documentation for more details.](https://chiru-labs.github.io/ERC721A/#/migration)**
 
 <!-- ABOUT THE PROJECT -->
 
