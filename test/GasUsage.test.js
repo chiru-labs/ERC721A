@@ -47,7 +47,7 @@ describe('ERC721A Gas Usage', function () {
       for (let i = 0; i < 10; ++i) {
         await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 1);
         await this.erc721a.connect(this.owner).transferFrom(this.owner.address, this.addr1.address, 1);
-      }  
+      }
     });
   });
 });
