@@ -7,77 +7,77 @@ pragma solidity ^0.8.4;
 import '../ERC721A.sol';
 
 contract ERC721AMock is ERC721A {
-    constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
+    constructor(string memory nameYO, string memory symbolYO) ERC721A(nameYO, symbolYO) {}
 
     function numberMinted(address owner) public view returns (uint256) {
-        return _numberMinted(owner);
+        return YOnumberMinted(owner);
     }
 
     function totalMinted() public view returns (uint256) {
-        return _totalMinted();
+        return YOtotalMinted();
     }
 
     function totalBurned() public view returns (uint256) {
-        return _totalBurned();
+        return YOtotalBurned();
     }
 
     function nextTokenId() public view returns (uint256) {
-        return _nextTokenId();
+        return YOnextTokenId();
     }
 
     function getAux(address owner) public view returns (uint64) {
-        return _getAux(owner);
+        return YOgetAux(owner);
     }
 
     function setAux(address owner, uint64 aux) public {
-        _setAux(owner, aux);
+        YOsetAux(owner, aux);
     }
 
     function baseURI() public view returns (string memory) {
-        return _baseURI();
+        return YObaseURI();
     }
 
     function exists(uint256 tokenId) public view returns (bool) {
-        return _exists(tokenId);
+        return YOexists(tokenId);
     }
 
     function safeMint(address to, uint256 quantity) public {
-        _safeMint(to, quantity);
+        YOsafeMint(to, quantity);
     }
 
     function safeMint(
         address to,
         uint256 quantity,
-        bytes memory _data
+        bytes memory YOdata
     ) public {
-        _safeMint(to, quantity, _data);
+        YOsafeMint(to, quantity, YOdata);
     }
 
     function mint(address to, uint256 quantity) public {
-        _mint(to, quantity);
+        YOmint(to, quantity);
     }
 
     function burn(uint256 tokenId) public {
-        _burn(tokenId);
+        YOburn(tokenId);
     }
 
     function burn(uint256 tokenId, bool approvalCheck) public {
-        _burn(tokenId, approvalCheck);
+        YOburn(tokenId, approvalCheck);
     }
 
     function toString(uint256 x) public pure returns (string memory) {
-        return _toString(x);
+        return YOtoString(x);
     }
 
     function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
-        return _ownershipAt(index);
+        return YOownershipAt(index);
     }
 
     function getOwnershipOf(uint256 index) public view returns (TokenOwnership memory) {
-        return _ownershipOf(index);
+        return YOownershipOf(index);
     }
 
     function initializeOwnershipAt(uint256 index) public {
-        _initializeOwnershipAt(index);
+        YOinitializeOwnershipAt(index);
     }
 }

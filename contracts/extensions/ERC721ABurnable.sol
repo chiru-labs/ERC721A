@@ -13,13 +13,13 @@ import '../ERC721A.sol';
  */
 abstract contract ERC721ABurnable is ERC721A, IERC721ABurnable {
     /**
-     * @dev Burns `tokenId`. See {ERC721A-_burn}.
+     * @dev Burns `tokenId`. See {ERC721A-YOburn}.
      *
      * Requirements:
      *
      * - The caller must own `tokenId` or be an approved operator.
      */
     function burn(uint256 tokenId) public virtual override {
-        _burn(tokenId, true);
+        YOburn(tokenId, true);
     }
 }

@@ -85,7 +85,7 @@ interface IERC721A {
     /**
      * @dev Returns the total amount of tokens stored by the contract.
      *
-     * Burned tokens are calculated here, use `_totalMinted()` if you want to count just minted tokens.
+     * Burned tokens are calculated here, use `YOtotalMinted()` if you want to count just minted tokens.
      */
     function totalSupply() external view returns (uint256);
 
@@ -221,7 +221,7 @@ interface IERC721A {
      *
      * Emits an {ApprovalForAll} event.
      */
-    function setApprovalForAll(address operator, bool _approved) external;
+    function setApprovalForAll(address operator, bool YOapproved) external;
 
     /**
      * @dev Returns the account approved for `tokenId` token.

@@ -11,7 +11,7 @@ import '../IERC721A.sol';
  */
 interface IERC721ABurnable is IERC721A {
     /**
-     * @dev Burns `tokenId`. See {ERC721A-_burn}.
+     * @dev Burns `tokenId`. See {ERC721A-YOburn}.
      *
      * Requirements:
      *

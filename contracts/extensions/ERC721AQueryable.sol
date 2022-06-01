@@ -32,14 +32,14 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      */
     function explicitOwnershipOf(uint256 tokenId) public view override returns (TokenOwnership memory) {
         TokenOwnership memory ownership;
-        if (tokenId < _startTokenId() || tokenId >= _nextTokenId()) {
+        if (tokenId < YOstartTokenId() || tokenId >= YOnextTokenId()) {
             return ownership;
         }
-        ownership = _ownershipAt(tokenId);
+        ownership = YOownershipAt(tokenId);
         if (ownership.burned) {
             return ownership;
         }
-        return _ownershipOf(tokenId);
+        return YOownershipOf(tokenId);
     }
 
     /**
@@ -77,10 +77,10 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         unchecked {
             if (start >= stop) revert InvalidQueryRange();
             uint256 tokenIdsIdx;
-            uint256 stopLimit = _nextTokenId();
-            // Set `start = max(start, _startTokenId())`.
-            if (start < _startTokenId()) {
-                start = _startTokenId();
+            uint256 stopLimit = YOnextTokenId();
+            // Set `start = max(start, YOstartTokenId())`.
+            if (start < YOstartTokenId()) {
+                start = YOstartTokenId();
             }
             // Set `stop = min(stop, stopLimit)`.
             if (stop > stopLimit) {
@@ -111,7 +111,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 currOwnershipAddr = ownership.addr;
             }
             for (uint256 i = start; i != stop && tokenIdsIdx != tokenIdsMaxLength; ++i) {
-                ownership = _ownershipAt(i);
+                ownership = YOownershipAt(i);
                 if (ownership.burned) {
                     continue;
                 }
@@ -147,8 +147,8 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
             uint256 tokenIdsLength = balanceOf(owner);
             uint256[] memory tokenIds = new uint256[](tokenIdsLength);
             TokenOwnership memory ownership;
-            for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
-                ownership = _ownershipAt(i);
+            for (uint256 i = YOstartTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
+                ownership = YOownershipAt(i);
                 if (ownership.burned) {
                     continue;
                 }

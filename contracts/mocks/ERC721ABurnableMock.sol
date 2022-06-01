@@ -7,29 +7,29 @@ pragma solidity ^0.8.4;
 import '../extensions/ERC721ABurnable.sol';
 
 contract ERC721ABurnableMock is ERC721A, ERC721ABurnable {
-    constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
+    constructor(string memory nameYO, string memory symbolYO) ERC721A(nameYO, symbolYO) {}
 
     function exists(uint256 tokenId) public view returns (bool) {
-        return _exists(tokenId);
+        return YOexists(tokenId);
     }
 
     function safeMint(address to, uint256 quantity) public {
-        _safeMint(to, quantity);
+        YOsafeMint(to, quantity);
     }
 
     function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
-        return _ownershipAt(index);
+        return YOownershipAt(index);
     }
 
     function totalMinted() public view returns (uint256) {
-        return _totalMinted();
+        return YOtotalMinted();
     }
 
     function totalBurned() public view returns (uint256) {
-        return _totalBurned();
+        return YOtotalBurned();
     }
 
     function numberBurned(address owner) public view returns (uint256) {
-        return _numberBurned(owner);
+        return YOnumberBurned(owner);
     }
 }
