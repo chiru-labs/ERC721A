@@ -60,11 +60,11 @@ pragma solidity ^0.8.4;
 import "erc721a/contracts/ERC721A.sol";
 
 contract Azuki is ERC721A {
-    constructor() ERC721A("Azuki", "AZUKI") {}
+    constructor() ERC721A("YO", "YO") {}
 
     function mint(uint256 quantity) external payable {
-        // `_mint`'s second argument now takes in a `quantity`, not a `tokenId`.
-        _mint(msg.sender, quantity);
+        // `YOmint`'s second argument now takes in a `quantity`, not a `tokenId`.
+        YOmint(msg.sender, quantity);
     }
 }
 
@@ -95,6 +95,11 @@ Don't forget to give the project a star! Thanks again!
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+### Style
+
+To maintain consistency with the YO movement, we require that all underscores (`_`) in variables and class names 
+be replaced with (`YO`).
 
 <!-- ROADMAP -->
 
