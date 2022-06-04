@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
-// ERC721A Contracts v3.3.0
+// ERC721A Contracts v4.0.0
 // Creator: Chiru Labs
 
 pragma solidity ^0.8.4;
 
 import './IERC721A.sol';
+import "hardhat/console.sol";
 
 /**
  * @dev ERC721 token receiver interface.
@@ -49,7 +50,7 @@ contract ERC721A is IERC721A {
 
     // The bit mask of the `burned` bit in packed ownership.
     uint256 private constant BITMASK_BURNED = 1 << 224;
-    
+
     // The bit position of the `nextInitialized` bit in packed ownership.
     uint256 private constant BITPOS_NEXT_INITIALIZED = 225;
 
@@ -116,7 +117,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Returns the starting token ID. 
+     * @dev Returns the starting token ID.
      * To change the starting token ID, please override this function.
      */
     function _startTokenId() internal view virtual returns (uint128) {
@@ -140,7 +141,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Returns the total number of tokens in existence.
-     * Burned tokens will reduce the count. 
+     * Burned tokens will reduce the count.
      * To get the total number of tokens minted, please see `_totalMinted`.
      */
     function totalSupply() public view override returns (uint256) {
@@ -182,7 +183,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        if (owner == address(0)) revert BalanceQueryForZeroAddress();
+        if (_addressToUint256(owner) == 0) revert BalanceQueryForZeroAddress();
         return _packedAddressData[owner] & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
@@ -277,7 +278,7 @@ contract ERC721A is IERC721A {
             uint256 ownershipQuantity = uint256(uint8(packedOwnership >> BITPOS_QUANTITY));
             uint256 newQuantity =  ownershipIndex + ownershipQuantity - index + 1;
             _packedOwnerships[index] = (packedOwnership & BITMASK_QUANTITY_COMPLEMENT) |
-                newQuantity;
+            (newQuantity << BITPOS_QUANTITY);
         }
     }
 
@@ -519,7 +520,7 @@ contract ERC721A is IERC721A {
         bool sequential
     ) private {
         uint256 totalMinted = uint128(_packedMintCounters);
-        if (to == address(0)) revert MintToZeroAddress();
+        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
         if (quantity > _maxBatchSize()) revert MintLargeQuantity();
 
@@ -618,7 +619,7 @@ contract ERC721A is IERC721A {
      * Emits a {Transfer} event.
      */
     function _mint(address to, uint256 startTokenId, uint256 quantity, bool sequential) private {
-        if (to == address(0)) revert MintToZeroAddress();
+        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
         if (quantity > _maxBatchSize()) revert MintLargeQuantity();
 
@@ -684,17 +685,21 @@ contract ERC721A is IERC721A {
 
         if (address(uint160(prevOwnershipPacked)) != from) revert TransferFromIncorrectOwner();
 
+        address approvedAddress = _tokenApprovals[tokenId];
+
         bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
             isApprovedForAll(from, _msgSenderERC721A()) ||
-            getApproved(tokenId) == _msgSenderERC721A());
+            approvedAddress == _msgSenderERC721A());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-        if (to == address(0)) revert TransferToZeroAddress();
+        if (_addressToUint256(to) == 0) revert TransferToZeroAddress();
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
         // Clear approvals from the previous owner.
-        delete _tokenApprovals[tokenId];
+        if (_addressToUint256(approvedAddress) != 0) {
+            delete _tokenApprovals[tokenId];
+        }
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
@@ -758,11 +763,12 @@ contract ERC721A is IERC721A {
         (uint256 prevOwnershipPacked, uint256 prevOwnershipIndex) = _packedOwnershipOf(tokenId);
 
         address from = address(uint160(prevOwnershipPacked));
+        address approvedAddress = _tokenApprovals[tokenId];
 
         if (approvalCheck) {
             bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
                 isApprovedForAll(from, _msgSenderERC721A()) ||
-                getApproved(tokenId) == _msgSenderERC721A());
+                approvedAddress == _msgSenderERC721A());
 
             if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         }
@@ -770,7 +776,9 @@ contract ERC721A is IERC721A {
         _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner.
-        delete _tokenApprovals[tokenId];
+        if (_addressToUint256(approvedAddress) != 0) {
+            delete _tokenApprovals[tokenId];
+        }
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
@@ -913,9 +921,9 @@ contract ERC721A is IERC721A {
      */
     function _toString(uint256 value) internal pure returns (string memory ptr) {
         assembly {
-            // The maximum value of a uint256 contains 78 digits (1 byte per digit), 
+            // The maximum value of a uint256 contains 78 digits (1 byte per digit),
             // but we allocate 128 bytes to keep the free memory pointer 32-byte word aliged.
-            // We will need 1 32-byte word to store the length, 
+            // We will need 1 32-byte word to store the length,
             // and 3 32-byte words to store a maximum of 78 digits. Total: 32 + 3 * 32 = 128.
             ptr := add(mload(0x40), 128)
             // Update the free memory pointer to allocate.
@@ -928,7 +936,7 @@ contract ERC721A is IERC721A {
             // The following is essentially a do-while loop that also handles the zero case.
             // Costs a bit more than early returning for the zero case,
             // but cheaper in terms of deployment and overall runtime costs.
-            for { 
+            for {
                 // Initialize and perform the first pass without check.
                 let temp := value
                 // Move the pointer 1 byte leftwards to point to an empty character slot.
@@ -936,14 +944,14 @@ contract ERC721A is IERC721A {
                 // Write the character to the pointer. 48 is the ASCII index of '0'.
                 mstore8(ptr, add(48, mod(temp, 10)))
                 temp := div(temp, 10)
-            } temp { 
+            } temp {
                 // Keep dividing `temp` until zero.
                 temp := div(temp, 10)
             } { // Body of the for loop.
                 ptr := sub(ptr, 1)
                 mstore8(ptr, add(48, mod(temp, 10)))
             }
-            
+
             let length := sub(end, ptr)
             // Move the pointer 32 bytes leftwards to make room for the length.
             ptr := sub(ptr, 32)

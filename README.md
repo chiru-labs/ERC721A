@@ -8,6 +8,10 @@
 <!-- [![Forks][forks-shield]][forks-url] -->
 <!-- [![Stargazers][stars-shield]][stars-url] -->
 
+<!-- ANNOUNCEMENT -->
+
+> **📢 Version 4.x introduces several breaking changes. [Please refer to the documentation for more details.](https://chiru-labs.github.io/ERC721A/#/migration)**
+
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
@@ -56,12 +60,12 @@ pragma solidity ^0.8.4;
 import "erc721a/contracts/ERC721A.sol";
 
 contract Azuki is ERC721A {
-  constructor() ERC721A("Azuki", "AZUKI") {}
+    constructor() ERC721A("Azuki", "AZUKI") {}
 
-  function mint(uint256 quantity) external payable {
-    // _safeMint's second argument now takes in a quantity, not a tokenId.
-    _safeMint(msg.sender, quantity);
-  }
+    function mint(uint256 quantity) external payable {
+        // `_mint`'s second argument now takes in a `quantity`, not a `tokenId`.
+        _mint(msg.sender, quantity);
+    }
 }
 
 ```
