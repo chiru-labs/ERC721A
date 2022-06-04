@@ -566,13 +566,11 @@ contract ERC721A is IERC721A {
                     emit Transfer(address(0), to, updatedIndex++);
                 } while (updatedIndex < end);
             }
-            uint256 newPackedMintCounters = uint128(_packedMintCounters) + quantity;
-            // If this is a sequential mint, increment _nextTokenId() by quantity.
-            if (sequential) {
-                newPackedMintCounters = newPackedMintCounters |
-                    (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + quantity) << BITPOS_CURRENT_INDEX);
-            }
-            _packedMintCounters = newPackedMintCounters;
+            // Updates:
+            // - `mintCounter` to `mintCounter` + `quantity`
+            // - `currentIndex` to `currentIndex` + `quantity` if this is a sequential mint, otherwise `currentIndex`
+            _packedMintCounters = uint128((_packedMintCounters) + quantity) |
+            (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) << BITPOS_CURRENT_INDEX);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -655,13 +653,11 @@ contract ERC721A is IERC721A {
                 emit Transfer(address(0), to, updatedIndex++);
             } while (updatedIndex < end);
 
-            uint256 newPackedMintCounters = uint128(_packedMintCounters) + quantity;
-            // If this is a sequential mint, increment _nextTokenId() by quantity.
-            if (sequential) {
-                newPackedMintCounters = newPackedMintCounters |
-                    (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + quantity) << BITPOS_CURRENT_INDEX);
-            }
-            _packedMintCounters = newPackedMintCounters;
+        // Updates:
+        // - `mintCounter` to `mintCounter` + `quantity`
+        // - `currentIndex` to `currentIndex` + `quantity` if this is a sequential mint, otherwise `currentIndex`
+        _packedMintCounters = uint128((_packedMintCounters) + quantity) |
+            (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) << BITPOS_CURRENT_INDEX);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
