@@ -275,10 +275,9 @@ contract ERC721A is IERC721A {
     function _initializeOwnershipAt(uint256 index) internal {
         if (_packedOwnerships[index] == 0) {
             (uint256 packedOwnership, uint256 ownershipIndex) = _packedOwnershipOf(index);
-            uint256 ownershipQuantity = uint256(uint8(packedOwnership >> BITPOS_QUANTITY));
-            uint256 newQuantity =  ownershipIndex + ownershipQuantity - index + 1;
+            uint256 newQuantity = uint256(uint8(packedOwnership >> BITPOS_QUANTITY)) + ownershipIndex - index + 1;
             _packedOwnerships[index] = (packedOwnership & BITMASK_QUANTITY_COMPLEMENT) |
-            (newQuantity << BITPOS_QUANTITY);
+                (newQuantity << BITPOS_QUANTITY);
         }
     }
 
@@ -569,8 +568,8 @@ contract ERC721A is IERC721A {
             // Updates:
             // - `mintCounter` to `mintCounter` + `quantity`
             // - `currentIndex` to `currentIndex` + `quantity` if this is a sequential mint, otherwise `currentIndex`
-            _packedMintCounters = uint128((_packedMintCounters) + quantity) |
-            (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) << BITPOS_CURRENT_INDEX);
+            _packedMintCounters = uint128((_packedMintCounters) + quantity) | // Update mintCounter
+                (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) << BITPOS_CURRENT_INDEX); // Conditionally update currentIndex
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -656,8 +655,8 @@ contract ERC721A is IERC721A {
         // Updates:
         // - `mintCounter` to `mintCounter` + `quantity`
         // - `currentIndex` to `currentIndex` + `quantity` if this is a sequential mint, otherwise `currentIndex`
-        _packedMintCounters = uint128((_packedMintCounters) + quantity) |
-            (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) << BITPOS_CURRENT_INDEX);
+        _packedMintCounters = uint128((_packedMintCounters) + quantity) | // Update mintCounter
+            (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) << BITPOS_CURRENT_INDEX); // Conditionally update currentIndex
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
