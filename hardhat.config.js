@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require('@nomiclabs/hardhat-ethers');
+require('solidity-coverage');
 
 if (process.env.REPORT_GAS) {
   require("hardhat-gas-reporter");
