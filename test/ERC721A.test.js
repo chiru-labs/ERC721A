@@ -248,12 +248,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(approval).to.equal(this.addr3.address);
           });
 
-          it('rejects an invalid token owner', async function () {
-            await expect(
-              this.erc721a.connect(this.addr1).approve(this.addr2.address, this.tokenId2)
-            ).to.be.revertedWith('ApprovalToCurrentOwner');
-          });
-
           it('rejects an unapproved caller', async function () {
             await expect(this.erc721a.approve(this.addr2.address, this.tokenId)).to.be.revertedWith(
               'ApprovalCallerNotOwnerNorApproved'
