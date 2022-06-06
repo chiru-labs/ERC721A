@@ -195,7 +195,8 @@ contract ERC721A is IERC721A {
     function _setAux(address owner, uint64 aux) internal {
         uint256 packed = _packedAddressData[owner];
         uint256 auxCasted;
-        assembly { // Cast aux without masking.
+        assembly {
+            // Cast aux without masking.
             auxCasted := aux
         }
         packed = (packed & BITMASK_AUX_COMPLEMENT) | (auxCasted << BITPOS_AUX);
@@ -494,14 +495,12 @@ contract ERC721A is IERC721A {
                 (block.timestamp << BITPOS_START_TIMESTAMP) |
                 (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
 
-            uint256 updatedIndex = startTokenId;
-            uint256 end = updatedIndex + quantity;
-
+            uint256 offset;
             do {
-                emit Transfer(address(0), to, updatedIndex++);
-            } while (updatedIndex < end);
+                emit Transfer(address(0), to, startTokenId + offset++);
+            } while (offset < quantity);
 
-            _currentIndex = updatedIndex;
+            _currentIndex = startTokenId + quantity;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -776,7 +775,8 @@ contract ERC721A is IERC721A {
             } temp {
                 // Keep dividing `temp` until zero.
                 temp := div(temp, 10)
-            } { // Body of the for loop.
+            } {
+                // Body of the for loop.
                 ptr := sub(ptr, 1)
                 mstore8(ptr, add(48, mod(temp, 10)))
             }
