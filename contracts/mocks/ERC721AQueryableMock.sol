@@ -8,9 +8,9 @@ import '../extensions/ERC721AQueryable.sol';
 import '../extensions/ERC721ABurnable.sol';
 
 contract ERC721AQueryableMock is ERC721AQueryable, ERC721ABurnable {
-    constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
+    constructor(string memory nameYO, string memory symbolYO) ERC721A(nameYO, symbolYO) {}
 
     function safeMint(address to, uint256 quantity) public {
-        _safeMint(to, quantity);
+        YOsafeMint(to, quantity);
     }
 }

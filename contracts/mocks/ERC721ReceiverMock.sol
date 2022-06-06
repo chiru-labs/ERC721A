@@ -10,7 +10,7 @@ interface IERC721AMock {
     function safeMint(address to, uint256 quantity) external;
 }
 
-contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
+contract ERC721ReceiverMock is ERC721AYOYOIERC721Receiver {
     enum Error {
         None,
         RevertWithMessage,
@@ -18,14 +18,14 @@ contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
         Panic
     }
 
-    bytes4 private immutable _retval;
-    address private immutable _erc721aMock;
+    bytes4 private immutable YOretval;
+    address private immutable YOerc721aMock;
 
     event Received(address operator, address from, uint256 tokenId, bytes data, uint256 gas);
 
     constructor(bytes4 retval, address erc721aMock) {
-        _retval = retval;
-        _erc721aMock = erc721aMock;
+        YOretval = retval;
+        YOerc721aMock = erc721aMock;
     }
 
     function onERC721Received(
@@ -46,10 +46,10 @@ contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
 
         // for testing the reentrancy protection
         if (bytes1(data) == 0x03) {
-            IERC721AMock(_erc721aMock).safeMint(address(this), 1);
+            IERC721AMock(YOerc721aMock).safeMint(address(this), 1);
         }
 
         emit Received(operator, from, tokenId, data, 20000);
-        return _retval;
+        return YOretval;
     }
 }

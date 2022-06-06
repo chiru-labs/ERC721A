@@ -9,12 +9,12 @@ import './StartTokenIdHelper.sol';
 
 contract ERC721ABurnableStartTokenIdMock is StartTokenIdHelper, ERC721ABurnableMock {
     constructor(
-        string memory name_,
-        string memory symbol_,
-        uint256 startTokenId_
-    ) StartTokenIdHelper(startTokenId_) ERC721ABurnableMock(name_, symbol_) {}
+        string memory nameYO,
+        string memory symbolYO,
+        uint256 startTokenIdYO
+    ) StartTokenIdHelper(startTokenIdYO) ERC721ABurnableMock(nameYO, symbolYO) {}
 
-    function _startTokenId() internal view override returns (uint256) {
+    function YOstartTokenId() internal view override returns (uint256) {
         return startTokenId;
     }
 }
