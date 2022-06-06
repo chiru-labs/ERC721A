@@ -440,17 +440,19 @@ contract ERC721A is IERC721A {
         bytes memory _data
     ) internal {
         _mint(to, quantity);
-
-        if (to.code.length != 0) {
-            uint256 end = _currentIndex;
-            uint256 index = end - quantity;
-            do {
-                if (!_checkContractOnERC721Received(address(0), to, index++, _data)) {
-                    revert TransferToNonERC721ReceiverImplementer();
-                }
-            } while (index < end);
-            // Reentrancy protection.
-            if (_currentIndex != end) revert();
+        
+        unchecked {
+            if (to.code.length != 0) {
+                uint256 end = _currentIndex;
+                uint256 index = end - quantity;
+                do {
+                    if (!_checkContractOnERC721Received(address(0), to, index++, _data)) {
+                        revert TransferToNonERC721ReceiverImplementer();
+                    }
+                } while (index < end);
+                // Reentrancy protection.
+                if (_currentIndex != end) revert();
+            }
         }
     }
 
