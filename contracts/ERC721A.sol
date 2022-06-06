@@ -432,7 +432,7 @@ contract ERC721A is IERC721A {
      *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
      * - `quantity` must be greater than 0.
      *
-     * Emits a {Transfer} event.
+     * Emits a {Transfer} event for each mint.
      */
     function _safeMint(
         address to,
@@ -440,7 +440,7 @@ contract ERC721A is IERC721A {
         bytes memory _data
     ) internal {
         _mint(to, quantity);
-        
+
         unchecked {
             if (to.code.length != 0) {
                 uint256 end = _currentIndex;
@@ -464,7 +464,7 @@ contract ERC721A is IERC721A {
      * - `to` cannot be the zero address.
      * - `quantity` must be greater than 0.
      *
-     * Emits a {Transfer} event.
+     * Emits a {Transfer} event for each mint.
      */
     function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
