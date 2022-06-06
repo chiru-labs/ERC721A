@@ -148,6 +148,36 @@ window.$docsify = {
 <script src="//unpkg.com/docsify@4.12.2/lib/plugins/search.js"></script>
 <script src="//unpkg.com/darkreader@4.9.34"></script>
 <script type="text/javascript">
+(function () {
+	var smoothScroll = function (scrollFrom, scrollTo, duration) {
+		var timePassed = 0, step = 15, interval, tick = function () {
+			if (timePassed >= duration) {
+				window.scrollTo(0, scrollTo);
+				clearInterval(interval);
+			} else {
+				window.scrollTo(0, scrollFrom + ~~((scrollTo - scrollFrom) * (timePassed / duration)));
+			}
+			timePassed += step;
+		};
+		tick();
+		interval = setInterval(tick, step);
+	}, t, r, y, clickCallback = function (e) {
+		for (t = e.target; t; t = t.parentElement) {
+			if ((t.tagName.toUpperCase() == 'A') && 
+				(r = t.getAttribute('href')) && 
+				(r = (''+r).match('#(.*)')) &&
+				(window.location.hash == r[0]) &&
+				(r = r[0].match(/\?id=(.+?)$/)) &&
+				(t = document.querySelector('#'+r[1].toLowerCase()))
+			) {
+				y = t.getBoundingClientRect().top, yo = window.pageYOffset;
+				smoothScroll(yo, y + yo, 300);
+				return;	
+			}
+		}
+	};
+	document.addEventListener('click', clickCallback);
+})();
 // Solidity syntax highlighting via Prism. 
 Prism.languages.solidity=Prism.languages.extend("clike",{"class-name":{pattern:/(\b(?:contract|enum|interface|library|new|struct|using)\s+)(?!\d)[\w$]+/,lookbehind:!0},keyword:/\b(?:_|anonymous|as|assembly|assert|break|calldata|case|constant|constructor|continue|contract|default|delete|do|else|emit|enum|event|external|for|function|if|import|indexed|inherited|interface|internal|is|let|library|mapping|memory|modifier|new|payable|pragma|private|public|pure|require|returns?|revert|selfdestruct|solidity|storage|struct|suicide|switch|this|throw|using|var|view|while)\b/,operator:/=>|->|:=|=:|\*\*|\+\+|--|\|\||&&|<<=?|>>=?|[-+*/%^&|<>!=]=?|[~?]/}),Prism.languages.insertBefore("solidity","keyword",{builtin:/\b(?:address|bool|byte|u?int(?:8|16|24|32|40|48|56|64|72|80|88|96|104|112|120|128|136|144|152|160|168|176|184|192|200|208|216|224|232|240|248|256)?|string|bytes(?:[1-9]|[12]\d|3[0-2])?)\b/}),Prism.languages.insertBefore("solidity","number",{version:{pattern:/([<>]=?|\^)\d+\.\d+\.\d+\b/,lookbehind:!0,alias:"number"}}),Prism.languages.sol=Prism.languages.solidity;
 // Dark mode via darkreader.

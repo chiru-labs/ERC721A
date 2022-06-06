@@ -392,7 +392,10 @@ function _mint(
 
 Mints `quantity` tokens and transfers them to `to`.
 
-> To prevent excessive first-time token transfer costs, please limit the `quantity` to a reasonable number (e.g. `30`). 
+> To prevent excessive first-time token transfer costs, please limit the `quantity` to a reasonable number (e.g. 30).   
+> 
+> Extremely large `quantity` amounts (e.g. > 5000) may result in some marketplaces and indexers to drop some `Transfer` events, 
+> and cause some mints to not appear.
 
 Requirements:
 
