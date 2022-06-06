@@ -439,53 +439,19 @@ contract ERC721A is IERC721A {
         uint256 quantity,
         bytes memory _data
     ) internal {
-        uint256 startTokenId = _currentIndex;
-        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
-        if (quantity == 0) revert MintZeroQuantity();
+        _mint(to, quantity);
 
-        _beforeTokenTransfers(address(0), to, startTokenId, quantity);
-
-        // Overflows are incredibly unrealistic.
-        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
-        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
-        unchecked {
-            // Updates:
-            // - `balance += quantity`.
-            // - `numberMinted += quantity`.
-            //
-            // We can directly add to the balance and number minted.
-            _packedAddressData[to] += quantity * ((1 << BITPOS_NUMBER_MINTED) | 1);
-
-            // Updates:
-            // - `address` to the owner.
-            // - `startTimestamp` to the timestamp of minting.
-            // - `burned` to `false`.
-            // - `nextInitialized` to `quantity == 1`.
-            _packedOwnerships[startTokenId] =
-                _addressToUint256(to) |
-                (block.timestamp << BITPOS_START_TIMESTAMP) |
-                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
-
-            uint256 updatedIndex = startTokenId;
-            uint256 end = updatedIndex + quantity;
-
-            if (to.code.length != 0) {
-                do {
-                    emit Transfer(address(0), to, updatedIndex);
-                    if (!_checkContractOnERC721Received(address(0), to, updatedIndex++, _data)) {
-                        revert TransferToNonERC721ReceiverImplementer();
-                    }
-                } while (updatedIndex < end);
-                // Reentrancy protection
-                if (_currentIndex != startTokenId) revert();
-            } else {
-                do {
-                    emit Transfer(address(0), to, updatedIndex++);
-                } while (updatedIndex < end);
-            }
-            _currentIndex = updatedIndex;
+        if (to.code.length != 0) {
+            uint256 end = _currentIndex;
+            uint256 index = end - quantity;
+            do {
+                if (!_checkContractOnERC721Received(address(0), to, index++, _data)) {
+                    revert TransferToNonERC721ReceiverImplementer();
+                }
+            } while (index < end);
+            // Reentrancy protection.
+            if (_currentIndex != end) revert();
         }
-        _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
     /**
