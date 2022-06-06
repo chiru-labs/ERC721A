@@ -9,45 +9,63 @@ describe('ERC721A Gas Usage', function () {
   });
 
   context('mintOne', function () {
-    it('runs mintOne 50 times', async function () {
-      for (let i = 0; i < 50; i++) {
+    it('runs mintOne 2 times', async function () {
+      for (let i = 0; i < 2; i++) {
         await this.erc721a.mintOne(this.addr1.address);
       }
     });
   });
 
   context('safeMintOne', function () {
-    it('runs safeMintOne 50 times', async function () {
-      for (let i = 0; i < 50; i++) {
+    it('runs safeMintOne 2 times', async function () {
+      for (let i = 0; i < 2; i++) {
         await this.erc721a.safeMintOne(this.addr1.address);
       }
     });
   });
 
   context('mintTen', function () {
-    it('runs mintTen 50 times', async function () {
-      for (let i = 0; i < 50; i++) {
+    it('runs mintTen 2 times', async function () {
+      for (let i = 0; i < 2; i++) {
         await this.erc721a.mintTen(this.addr1.address);
       }
     });
   });
 
   context('safeMintTen', function () {
-    it('runs safeMintTen 50 times', async function () {
-      for (let i = 0; i < 50; i++) {
+    it('runs safeMintTen 2 times', async function () {
+      for (let i = 0; i < 2; i++) {
         await this.erc721a.safeMintTen(this.addr1.address);
       }
     });
   });
 
   context('transferFrom', function () {
-    it('transfer to and from two addresses', async function () {
-      await this.erc721a.mintTen(this.addr1.address);
+    beforeEach(async function () {
       await this.erc721a.mintTen(this.owner.address);
-      for (let i = 0; i < 10; ++i) {
-        await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 1);
+      await this.erc721a.mintOne(this.owner.address);
+
+      await this.erc721a.mintTen(this.addr1.address);
+      await this.erc721a.mintOne(this.addr1.address);
+    });
+
+    it('transfer to and from two addresses', async function () {
+      for (let i = 0; i < 2; ++i) {
         await this.erc721a.connect(this.owner).transferFrom(this.owner.address, this.addr1.address, 1);
+        await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 1);
       }
+    });
+
+    it('transferTen ascending order', async function () {
+      await this.erc721a.connect(this.owner).transferTenAsc(this.addr1.address);
+    });
+
+    it('transferTen descending order', async function () {
+      await this.erc721a.connect(this.owner).transferTenDesc(this.addr1.address);
+    });
+
+    it('transferTen average order', async function () {
+      await this.erc721a.connect(this.owner).transferTenAvg(this.addr1.address);
     });
   });
 });
