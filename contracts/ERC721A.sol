@@ -505,6 +505,59 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Mints `quantity` tokens and transfers them to `to`.
+     *
+     * This function is intended for efficient minting during contract creation.
+     *
+     * It emits only one {ConsecutiveTransfer} as defined in 
+     * [ERC2309](https://eips.ethereum.org/EIPS/eip-2309),
+     * instead of one or more {Transfer} events.
+     *
+     * Calling this function outside of contract creation WILL break the ERC721 standard.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `quantity` must be greater than 0.
+     *
+     * Emits a {ConsecutiveTransfer} event.
+     */
+    function _mintERC2309(address to, uint256 quantity) internal {
+        uint256 startTokenId = _currentIndex;
+        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
+        if (quantity == 0) revert MintZeroQuantity();
+
+        _beforeTokenTransfers(address(0), to, startTokenId, quantity);
+
+        // Overflows are incredibly unrealistic.
+        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
+        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        unchecked {
+            // Updates:
+            // - `balance += quantity`.
+            // - `numberMinted += quantity`.
+            //
+            // We can directly add to the balance and number minted.
+            _packedAddressData[to] += quantity * ((1 << BITPOS_NUMBER_MINTED) | 1);
+
+            // Updates:
+            // - `address` to the owner.
+            // - `startTimestamp` to the timestamp of minting.
+            // - `burned` to `false`.
+            // - `nextInitialized` to `quantity == 1`.
+            _packedOwnerships[startTokenId] =
+                _addressToUint256(to) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
+                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
+
+            emit ConsecutiveTransfer(startTokenId, startTokenId + quantity - 1, address(0), to);
+
+            _currentIndex = startTokenId + quantity;
+        }
+        _afterTokenTransfers(address(0), to, startTokenId, quantity);
+    }
+
+    /**
      * @dev Transfers `tokenId` from `from` to `to`.
      *
      * Requirements:

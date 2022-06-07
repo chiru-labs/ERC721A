@@ -40,6 +40,20 @@ describe('ERC721A Gas Usage', function () {
     });
   });
 
+  it('mintOneERC2309', async function () {
+    let contract = await deployContract('ERC721AWithERC2309Mock', ['Azuki', 'AZUKI']);
+    await contract.mintOneERC2309(this.owner.address);
+    await contract.mintOneERC2309(this.owner.address);
+    await contract.mintOneERC2309(this.addr1.address); 
+  });
+
+  it('mintTenERC2309', async function () {
+    let contract = await deployContract('ERC721AWithERC2309Mock', ['Azuki', 'AZUKI']);
+    await contract.mintTenERC2309(this.owner.address);
+    await contract.mintTenERC2309(this.owner.address);
+    await contract.mintTenERC2309(this.addr1.address);  
+  });
+
   context('transferFrom', function () {
     beforeEach(async function () {
       await this.erc721a.mintTen(this.owner.address);

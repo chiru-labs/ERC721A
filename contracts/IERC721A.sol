@@ -252,4 +252,13 @@ interface IERC721A {
      * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
      */
     function tokenURI(uint256 tokenId) external view returns (string memory);
+
+    // ==============================
+    //            IERC2309
+    // ==============================
+
+    /**
+     * @dev Emitted when tokens in `fromTokenId` to `toTokenId` (inclusive) is transferred from `from` to `to.
+     */
+    event ConsecutiveTransfer(uint256 indexed fromTokenId, uint256 toTokenId, address indexed from, address indexed to);
 }

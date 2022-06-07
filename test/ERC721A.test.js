@@ -680,3 +680,27 @@ describe(
   'ERC721A override _startTokenId()',
   createTestSuite({ contract: 'ERC721AStartTokenIdMock', constructorArgs: ['Azuki', 'AZUKI', 1] })
 );
+
+describe('ERC721A with ERC2309', async function () {
+  beforeEach(async function () {
+    this.erc721a = await deployContract('ERC721AWithERC2309Mock', ['Azuki', 'AZUKI']);
+    const [owner, addr1] = await ethers.getSigners();
+    this.owner = owner;
+    this.addr1 = addr1;
+    this.testEmit = async (methodName, fromTokenId, toTokenId) => {
+      await expect(await this.erc721a[methodName](this.addr1.address))
+        .to.emit(this.erc721a, 'ConsecutiveTransfer')
+        .withArgs(fromTokenId, toTokenId, ZERO_ADDRESS, this.addr1.address);
+    };
+  });
+
+  it('emits a ConsecutiveTransfer event for single mint', async function () {
+    await this.testEmit('mintOneERC2309', 0, 0);
+    await this.testEmit('mintOneERC2309', 1, 1);
+  });
+
+  it('emits a ConsecutiveTransfer event for batch mint', async function () {
+    await this.testEmit('mintTenERC2309', 0, 9);
+    await this.testEmit('mintTenERC2309', 10, 19);
+  });
+});
