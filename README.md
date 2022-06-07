@@ -3,6 +3,7 @@
 [![CI][ci-shield]][ci-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+[![Coverage][coverage-shield]][coverage-url]
 <!-- OTHER BADGES -->
 <!-- [![Contributors][contributors-shield]][contributors-url] -->
 <!-- [![Forks][forks-shield]][forks-url] -->
@@ -140,4 +141,6 @@ Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-l
 [issues-url]: https://github.com/chiru-labs/ERC721A/issues
 [license-shield]: https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge
 [license-url]: https://github.com/chiru-labs/ERC721A/blob/main/LICENSE.txt
+[coverage-shield]: https://img.shields.io/codecov/c/gh/chiru-labs/ERC721A?style=for-the-badge
+[coverage-url]: https://codecov.io/gh/chiru-labs/ERC721A
 [product-screenshot]: images/screenshot.png

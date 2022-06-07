@@ -248,12 +248,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(approval).to.equal(this.addr3.address);
           });
 
-          it('rejects an invalid token owner', async function () {
-            await expect(
-              this.erc721a.connect(this.addr1).approve(this.addr2.address, this.tokenId2)
-            ).to.be.revertedWith('ApprovalToCurrentOwner');
-          });
-
           it('rejects an unapproved caller', async function () {
             await expect(this.erc721a.approve(this.addr2.address, this.tokenId)).to.be.revertedWith(
               'ApprovalCallerNotOwnerNorApproved'
@@ -262,6 +256,18 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           it('does not get approved for invalid tokens', async function () {
             await expect(this.erc721a.getApproved(10)).to.be.revertedWith('ApprovalQueryForNonexistentToken');
+          });
+
+          it('approval allows token transfer', async function () {
+            await expect(this.erc721a.connect(this.addr3)
+              .transferFrom(this.addr1.address, this.addr3.address, this.tokenId))
+            .to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+            await this.erc721a.connect(this.addr1).approve(this.addr3.address, this.tokenId);
+            await this.erc721a.connect(this.addr3)
+              .transferFrom(this.addr1.address, this.addr3.address, this.tokenId);
+            await expect(this.erc721a.connect(this.addr1)
+              .transferFrom(this.addr3.address, this.addr1.address, this.tokenId))
+            .to.be.revertedWith('TransferCallerNotOwnerNorApproved');
           });
         });
 

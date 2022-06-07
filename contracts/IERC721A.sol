@@ -24,11 +24,6 @@ interface IERC721A {
     error ApproveToCaller();
 
     /**
-     * The caller cannot approve to the current owner.
-     */
-    error ApprovalToCurrentOwner();
-
-    /**
      * Cannot query the balance for the zero address.
      */
     error BalanceQueryForZeroAddress();
