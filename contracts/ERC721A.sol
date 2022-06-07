@@ -27,7 +27,7 @@ interface ERC721A__IERC721Receiver {
  *
  * Assumes that an owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
  *
- * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
+ * Assumes that the maximum token id cannot exceed 2**128 - 1 (max value of uint128).
  */
 contract ERC721A is IERC721A {
     // Mask of an entry in packed address data.
@@ -117,10 +117,18 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Returns the starting token ID.
+     * @dev Returns the starting token ID for sequential minting.
      * To change the starting token ID, please override this function.
      */
     function _startTokenId() internal view virtual returns (uint128) {
+        return 0;
+    }
+
+    /**
+ * @dev Returns the lowest possible token ID for non-sequential minting.
+     * To change the lowest possible token ID, please override this function.
+     */
+    function _minimumTokenId() internal view virtual returns (uint128) {
         return 0;
     }
 
@@ -227,15 +235,15 @@ contract ERC721A is IERC721A {
      */
     function _packedOwnershipOf(uint256 tokenId) private view returns (uint256 packedOwnership, uint256 ownershipIndex) {
         uint256 curr = tokenId;
-        if (_startTokenId() <= curr) {
+        if (_minimumTokenId() <= curr) {
             uint256 packed = _packedOwnerships[curr];
             // If not burned.
             if (packed & BITMASK_BURNED == 0) {
-                uint256 lowestTokenToCheck = _startTokenId();
+                uint256 lowestTokenToCheck = _minimumTokenId();
                 if (tokenId >= _maxBatchSize()) {
                     lowestTokenToCheck = tokenId - _maxBatchSize() + 1;
                 }
-                for (; curr >= lowestTokenToCheck && curr >= _startTokenId();) {
+                for (; curr >= lowestTokenToCheck && curr >= _minimumTokenId();) {
                     // If there exists an ownership record with a quantity that "covers" this token's id,
                     // return that ownership record.  Otherwise, the token doesn't exist so revert.
                     if (packed != 0) {
@@ -444,11 +452,11 @@ contract ERC721A is IERC721A {
 
     function _isMinted(uint256 tokenId) internal view returns (bool) {
         uint256 curr = tokenId;
-        uint256 lowestTokenToCheck = _startTokenId();
+        uint256 lowestTokenToCheck = _minimumTokenId();
         if (tokenId >= _maxBatchSize()) {
             lowestTokenToCheck = tokenId - _maxBatchSize() + 1;
         }
-        for (; curr >= lowestTokenToCheck && curr >= _startTokenId(); curr--) {
+        for (; curr >= lowestTokenToCheck && curr >= _minimumTokenId(); curr--) {
             uint256 packedOwnership = _packedOwnerships[curr];
             // If an ownership exists (can be burned)
             if (packedOwnership != 0) {
@@ -704,13 +712,15 @@ contract ERC721A is IERC721A {
             --_packedAddressData[from]; // Updates: `balance -= 1`.
             ++_packedAddressData[to]; // Updates: `balance += 1`.
 
+            // Store previous quantity in memory in case the next line updates it.
+            uint256 prevOwnershipQuantity = uint256(uint8(prevOwnershipPacked >> BITPOS_QUANTITY));
+
             // Updates:
             // - `address` to the next owner.
             // - `startTimestamp` to the timestamp of transfering.
             // - `burned` to `false`.
             // - `nextInitialized` to `true`.
             // - `quantity` to 1
-            uint256 prevOwnershipQuantity = uint256(uint8(prevOwnershipPacked >> BITPOS_QUANTITY));
             _packedOwnerships[tokenId] =
                 _addressToUint256(to) |
                 (block.timestamp << BITPOS_START_TIMESTAMP) |
@@ -787,13 +797,15 @@ contract ERC721A is IERC721A {
             // This is equivalent to `packed -= 1; packed += 1 << BITPOS_NUMBER_BURNED;`.
             _packedAddressData[from] += (1 << BITPOS_NUMBER_BURNED) - 1;
 
+            // Store previous quantity in memory in case the next line updates it.
+            uint256 prevOwnershipQuantity = uint256(uint8(prevOwnershipPacked >> BITPOS_QUANTITY));
+
             // Updates:
             // - `address` to the last owner.
             // - `startTimestamp` to the timestamp of burning.
             // - `burned` to `true`.
             // - `nextInitialized` to `true`.
             // - `quantity` to 1
-            uint256 prevOwnershipQuantity = uint256(uint8(prevOwnershipPacked >> BITPOS_QUANTITY));
             _packedOwnerships[tokenId] =
                 _addressToUint256(from) |
                 (block.timestamp << BITPOS_START_TIMESTAMP) |
@@ -812,7 +824,6 @@ contract ERC721A is IERC721A {
                         // The next slot's quantity should now be `prevOwnershipIndex` + `prevOwnershipQuantity` - 1 - `tokenId`
                         _packedOwnerships[nextTokenId] = (prevOwnershipPacked & BITMASK_QUANTITY_COMPLEMENT) |
                             (uint256(uint8(prevOwnershipIndex + prevOwnershipQuantity - 1 - tokenId)) << BITPOS_QUANTITY);
-
                     }
                 }
             }
