@@ -703,4 +703,12 @@ describe('ERC721A with ERC2309', async function () {
     await this.testEmit('mintTenERC2309', 0, 9);
     await this.testEmit('mintTenERC2309', 10, 19);
   });
+
+  it('rejects mints to the zero address', async function () {
+    await expect(this.erc721a.mintERC2309(ZERO_ADDRESS, 1)).to.be.revertedWith('MintToZeroAddress');
+  });
+
+  it('requires quantity to be greater than 0', async function () {
+    await expect(this.erc721a.mintERC2309(this.owner.address, 0)).to.be.revertedWith('MintZeroQuantity');
+  });
 });

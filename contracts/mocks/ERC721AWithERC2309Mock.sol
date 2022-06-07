@@ -20,4 +20,8 @@ contract ERC721AWithERC2309Mock is ERC721A {
     function mintTenERC2309(address to) public {
         _mintERC2309(to, 10);
     }
+
+    function mintERC2309(address to, uint256 quantity) public {
+        _mintERC2309(to, quantity);
+    }
 }
