@@ -22,19 +22,19 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       const expectExplicitOwnershipBurned = function (explicitOwnership, address) {
         expect(explicitOwnership.burned).to.eql(true);
         expect(explicitOwnership.addr).to.eql(address);
-        expect(explicitOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
+        expect(explicitOwnership.extraData).to.not.eql(BigNumber.from(0));
       };
 
       const expectExplicitOwnershipNotExists = function (explicitOwnership) {
         expect(explicitOwnership.burned).to.eql(false);
         expect(explicitOwnership.addr).to.eql(ZERO_ADDRESS);
-        expect(explicitOwnership.startTimestamp).to.eql(BigNumber.from(0));
+        expect(explicitOwnership.extraData).to.eql(BigNumber.from(0));
       };
 
       const expectExplicitOwnershipExists = function (explicitOwnership, address) {
         expect(explicitOwnership.burned).to.eql(false);
         expect(explicitOwnership.addr).to.eql(address);
-        expect(explicitOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
+        expect(explicitOwnership.extraData).to.not.eql(BigNumber.from(0));
       };
 
       context('with no minted tokens', async function () {

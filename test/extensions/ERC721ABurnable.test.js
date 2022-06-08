@@ -128,16 +128,16 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         expect(await this.erc721aBurnable.balanceOf(this.addr1.address)).to.be.equal(this.numTestTokens - 1);
       });
 
-      it('startTimestamp updated correctly', async function () {
+      it('extraData updated correctly', async function () {
         const tokenIdToBurn = this.burnedTokenId + 1;
         const ownershipBefore = await this.erc721aBurnable.getOwnershipAt(tokenIdToBurn);
-        const timestampBefore = parseInt(ownershipBefore.startTimestamp);
+        const timestampBefore = parseInt(ownershipBefore.extraData);
         const timestampToMine = (await getBlockTimestamp()) + 100;
         await mineBlockTimestamp(timestampToMine);
         const timestampMined = await getBlockTimestamp();
         await this.erc721aBurnable.connect(this.addr1).burn(tokenIdToBurn);
         const ownershipAfter = await this.erc721aBurnable.getOwnershipAt(tokenIdToBurn);
-        const timestampAfter = parseInt(ownershipAfter.startTimestamp);
+        const timestampAfter = parseInt(ownershipAfter.extraData);
         expect(timestampBefore).to.be.lt(timestampToMine);
         expect(timestampAfter).to.be.gte(timestampToMine);
         expect(timestampToMine).to.be.eq(timestampMined);

@@ -259,15 +259,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('approval allows token transfer', async function () {
-            await expect(this.erc721a.connect(this.addr3)
-              .transferFrom(this.addr1.address, this.addr3.address, this.tokenId))
-            .to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+            await expect(
+              this.erc721a.connect(this.addr3).transferFrom(this.addr1.address, this.addr3.address, this.tokenId)
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
             await this.erc721a.connect(this.addr1).approve(this.addr3.address, this.tokenId);
-            await this.erc721a.connect(this.addr3)
-              .transferFrom(this.addr1.address, this.addr3.address, this.tokenId);
-            await expect(this.erc721a.connect(this.addr1)
-              .transferFrom(this.addr3.address, this.addr1.address, this.tokenId))
-            .to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+            await this.erc721a.connect(this.addr3).transferFrom(this.addr1.address, this.addr3.address, this.tokenId);
+            await expect(
+              this.erc721a.connect(this.addr1).transferFrom(this.addr3.address, this.addr1.address, this.tokenId)
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
           });
         });
 
@@ -297,7 +296,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await this.erc721a.connect(sender).setApprovalForAll(this.to.address, true);
 
               const ownershipBefore = await this.erc721a.getOwnershipAt(this.tokenId);
-              this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
+              this.timestampBefore = parseInt(ownershipBefore.extraData);
               this.timestampToMine = (await getBlockTimestamp()) + 100;
               await mineBlockTimestamp(this.timestampToMine);
               this.timestampMined = await getBlockTimestamp();
@@ -307,7 +306,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 .connect(sender)[transferFn](this.from, this.to.address, this.tokenId);
 
               const ownershipAfter = await this.erc721a.getOwnershipAt(this.tokenId);
-              this.timestampAfter = parseInt(ownershipAfter.startTimestamp);
+              this.timestampAfter = parseInt(ownershipAfter.extraData);
             });
 
             it('transfers the ownership of the given token ID to the given address', async function () {
@@ -328,7 +327,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               expect(await this.erc721a.balanceOf(this.from)).to.be.equal(1);
             });
 
-            it('startTimestamp updated correctly', async function () {
+            it('extraData updated correctly', async function () {
               expect(this.timestampBefore).to.be.lt(this.timestampToMine);
               expect(this.timestampAfter).to.be.gte(this.timestampToMine);
               expect(this.timestampToMine).to.be.eq(this.timestampMined);
@@ -528,13 +527,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           it('adjusts OwnershipAt and OwnershipOf', async function () {
             const ownership = await this.erc721a.getOwnershipAt(offsetted(0));
-            expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
+            expect(ownership.extraData).to.be.gte(this.timestampToMine);
             expect(ownership.burned).to.be.false;
 
             for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
               const ownership = await this.erc721a.getOwnershipOf(tokenId);
               expect(ownership.addr).to.equal(this.minter.address);
-              expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
+              expect(ownership.extraData).to.be.gte(this.timestampToMine);
               expect(ownership.burned).to.be.false;
             }
 

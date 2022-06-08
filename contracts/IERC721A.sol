@@ -72,7 +72,7 @@ interface IERC721A {
         // The address of the owner.
         address addr;
         // Keeps track of the start time of ownership with minimal overhead for tokenomics.
-        uint64 startTimestamp;
+        uint64 extraData;
         // Whether the token has been burned.
         bool burned;
     }
