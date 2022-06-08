@@ -182,14 +182,14 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * Returns the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     * Returns the auxiliary data for `owner`. (e.g. number of whitelist mint slots used).
      */
     function _getAux(address owner) internal view returns (uint64) {
         return uint64(_packedAddressData[owner] >> BITPOS_AUX);
     }
 
     /**
-     * Sets the auxillary data for `owner`. (e.g. number of whitelist mint slots used).
+     * Sets the auxiliary data for `owner`. (e.g. number of whitelist mint slots used).
      * If there are multiple variables, please pack them into a uint64.
      */
     function _setAux(address owner, uint64 aux) internal {

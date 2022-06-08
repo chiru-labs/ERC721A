@@ -304,7 +304,7 @@ Returns the number of tokens burned by or on behalf of `owner`.
 function _getAux(address owner) internal view returns (uint64)
 ```
 
-Returns the auxillary data for `owner` (e.g. number of whitelist mint slots used).
+Returns the auxiliary data for `owner` (e.g. number of whitelist mint slots used).
 
 ### \_setAux
 
@@ -312,7 +312,7 @@ Returns the auxillary data for `owner` (e.g. number of whitelist mint slots used
 function _setAux(address owner, uint64 aux) internal
 ```
 
-Sets the auxillary data for `owner` (e.g. number of whitelist mint slots used).
+Sets the auxiliary data for `owner` (e.g. number of whitelist mint slots used).
 
 If there are multiple variables, please pack them into a `uint64`.
 
