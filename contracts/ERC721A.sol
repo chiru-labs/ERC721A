@@ -511,9 +511,11 @@ contract ERC721A is IERC721A {
      *
      * It emits only one {ConsecutiveTransfer} as defined in
      * [ERC2309](https://eips.ethereum.org/EIPS/eip-2309),
-     * instead of one or more {Transfer} events.
+     * instead of a sequence of {Transfer} events.
      *
      * Calling this function outside of contract creation WILL break the ERC721 standard.
+     * For full ERC721 compliance, substituting ERC721 {Transfer} event(s) with the ERC2309
+     * {ConsecutiveTransfer} event is only permissible during contract creation.
      *
      * Requirements:
      *
