@@ -7,7 +7,7 @@ pragma solidity ^0.8.4;
 import '../ERC721A.sol';
 
 /**
- * @dev Mock for testing and benchmarking purposes. 
+ * @dev Mock for testing and benchmarking purposes.
  * Calling `_mintERC2309` outside of contract creation breaks the ERC721 standard.
  */
 contract ERC721AWithERC2309Mock is ERC721A {

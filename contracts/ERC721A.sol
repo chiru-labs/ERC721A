@@ -509,7 +509,7 @@ contract ERC721A is IERC721A {
      *
      * This function is intended for efficient minting during contract creation.
      *
-     * It emits only one {ConsecutiveTransfer} as defined in 
+     * It emits only one {ConsecutiveTransfer} as defined in
      * [ERC2309](https://eips.ethereum.org/EIPS/eip-2309),
      * instead of one or more {Transfer} events.
      *
