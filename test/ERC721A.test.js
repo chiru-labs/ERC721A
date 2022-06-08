@@ -469,6 +469,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             await this.erc721a.initializeOwnershipAt(lastTokenId);
             const ownership2 = await this.erc721a.getOwnershipAt(lastTokenId);
             expect(ownership2[0]).to.equal(this.addr3.address);
+            // Check quantity
+            expect(ownership2[3]).to.equal(1)
           });
 
           it("doesn't set ownership if it's already setted", async function () {
@@ -530,12 +532,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             const ownership = await this.erc721a.getOwnershipAt(offsetted(0));
             expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
             expect(ownership.burned).to.be.false;
+            expect(ownership.quantity).to.equal(quantity)
 
             for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
               const ownership = await this.erc721a.getOwnershipOf(tokenId);
               expect(ownership.addr).to.equal(this.minter.address);
               expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
               expect(ownership.burned).to.be.false;
+              expect(ownership.quantity).to.equal(quantity)
             }
 
             expect(this.timestampToMine).to.be.eq(this.timestampMined);

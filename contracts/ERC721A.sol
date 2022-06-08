@@ -284,7 +284,7 @@ contract ERC721A is IERC721A {
     function _initializeOwnershipAt(uint256 index) internal {
         if (_packedOwnerships[index] == 0) {
             (uint256 packedOwnership, uint256 ownershipIndex) = _packedOwnershipOf(index);
-            uint256 newQuantity = uint256(uint8(packedOwnership >> BITPOS_QUANTITY)) + ownershipIndex - index + 1;
+            uint256 newQuantity = uint256(uint8(packedOwnership >> BITPOS_QUANTITY)) + ownershipIndex - index;
             _packedOwnerships[index] = (packedOwnership & BITMASK_QUANTITY_COMPLEMENT) |
                 (newQuantity << BITPOS_QUANTITY);
         }
