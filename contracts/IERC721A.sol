@@ -258,7 +258,8 @@ interface IERC721A {
     // ==============================
 
     /**
-     * @dev Emitted when tokens in `fromTokenId` to `toTokenId` (inclusive) is transferred from `from` to `to.
+     * @dev Emitted when tokens in `fromTokenId` to `toTokenId` (inclusive) is transferred from `from` to `to`,
+     * as defined in the ERC2309 standard. See `_mintERC2309` for more details.
      */
     event ConsecutiveTransfer(uint256 indexed fromTokenId, uint256 toTokenId, address indexed from, address indexed to);
 }
