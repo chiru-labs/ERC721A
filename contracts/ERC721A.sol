@@ -468,7 +468,7 @@ contract ERC721A is IERC721A {
      *
      * Note: some marketplaces may have difficulties fully registering a very large `quantity`.
      * We have verified full support on OpenSea's and LooksRare's Rinkeby testnet marketplaces
-     * for `quantity = 5000` on 5th May 2022. Support may vary, and may change over time.
+     * for `quantity = 5000` on 5th June 2022. Support may vary, and may change over time.
      *
      * Emits a {Transfer} event for each mint.
      */
@@ -525,7 +525,7 @@ contract ERC721A is IERC721A {
      *
      * Note: some marketplaces may have difficulties fully registering a very large `quantity`.
      * We have verified full support on OpenSea's and LooksRare's Rinkeby testnet marketplaces
-     * for `quantity = 5000` on 5th May 2022. Support may vary, and may change over time.
+     * for `quantity = 5000` on 5th June 2022. Support may vary, and may change over time.
      *
      * Requirements:
      *
