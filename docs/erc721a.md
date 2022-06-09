@@ -433,7 +433,7 @@ Base URI for computing `tokenURI`.
 
 If set, the resulting URI for each token will be the concatenation of the `baseURI` and the `tokenId`.
 
-Empty by default, can be overriden in child contracts.
+Empty by default, it can be overridden in child contracts.
 
 
 ### \_toString
