@@ -432,6 +432,8 @@ contract ERC721A is IERC721A {
      *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
      * - `quantity` must be greater than 0.
      *
+     * See {_mint}.
+     *
      * Emits a {Transfer} event for each mint.
      */
     function _safeMint(
@@ -463,6 +465,10 @@ contract ERC721A is IERC721A {
      *
      * - `to` cannot be the zero address.
      * - `quantity` must be greater than 0.
+     *
+     * Note: some marketplaces may have difficulties fully registering a very large `quantity`.
+     * We have verified full support on OpenSea's and LooksRare's Rinkeby testnet marketplaces
+     * for `quantity = 5000` on 5th May 2022. Support may vary, and may change over time.
      *
      * Emits a {Transfer} event for each mint.
      */
@@ -516,6 +522,10 @@ contract ERC721A is IERC721A {
      * Calling this function outside of contract creation WILL break the ERC721 standard.
      * For full ERC721 compliance, substituting ERC721 {Transfer} event(s) with the ERC2309
      * {ConsecutiveTransfer} event is only permissible during contract creation.
+     *
+     * Note: some marketplaces may have difficulties fully registering a very large `quantity`.
+     * We have verified full support on OpenSea's and LooksRare's Rinkeby testnet marketplaces
+     * for `quantity = 5000` on 5th May 2022. Support may vary, and may change over time.
      *
      * Requirements:
      *
