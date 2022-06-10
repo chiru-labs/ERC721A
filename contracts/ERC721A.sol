@@ -468,7 +468,24 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_safeMint(to, _nextTokenId(), quantity, data, true)`.
+     * @dev Equivalent to `_safeMint(to, _nextTokenId(), quantity, '')`.
+     */
+    function _safeMint(address to, uint256 quantity) internal {
+        _safeMint(to, quantity, '');
+    }
+
+
+    /**
+     * @dev Safely mints `quantity` tokens starting at `_nextTokenId()` and transfers them to `to`.
+     *
+     * Requirements:
+     *
+     * - If `to` refers to a smart contract, it must implement
+     *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
+     * - `quantity` must be greater than 0.
+     * - `quantity` must be less than or equal to `_maxBatchSize()`.
+     *
+     * Emits a {Transfer} event for each mint.
      */
     function _safeMint(
         address to,
@@ -479,10 +496,14 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_safeMint(to, _nextTokenId(), quantity, '')`.
+     * @dev Equivalent to `_safeMint(to, startTokenId, quantity, '')`.
      */
-    function _safeMint(address to, uint256 quantity) internal {
-        _safeMint(to, quantity, '');
+    function _safeMint(
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal {
+        _safeMint(to, startTokenId, quantity, '');
     }
 
     /**
@@ -545,15 +566,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Mints `quantity` tokens starting at _nextTokenId() and transfers them to `to`.
-     *
-     * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     * - `quantity` must be greater than 0.
-     * - `quantity` must be less than or equal to `_maxBatchSize()`.
-     *
-     * Emits a {Transfer} event for each mint.
+     * @dev Equivalent to `_mint(to, _nextTokenId(), quantity)`.
      */
     function _mint(address to, uint256 quantity) internal {
         _mint(to, (_packedMintCounters >> BITPOS_CURRENT_INDEX), quantity, true);
