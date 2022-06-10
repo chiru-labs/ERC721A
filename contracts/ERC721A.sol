@@ -5,7 +5,7 @@
 pragma solidity ^0.8.4;
 
 import './IERC721A.sol';
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 /**
  * @dev ERC721 token receiver interface.
@@ -125,7 +125,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
- * @dev Returns the lowest possible token ID for non-sequential minting.
+     * @dev Returns the lowest possible token ID for non-sequential minting.
      * To change the lowest possible token ID, please override this function.
      */
     function _minimumTokenId() internal view virtual returns (uint128) {
@@ -140,8 +140,8 @@ contract ERC721A is IERC721A {
     }
 
     /**
-    * @dev Returns the max minting batch size.
-    * To change the max batch size, please override this function.
+     * @dev Returns the max minting batch size.
+     * To change the max batch size, please override this function.
      */
     function _maxBatchSize() internal view virtual returns (uint256) {
         return 10;
@@ -234,7 +234,11 @@ contract ERC721A is IERC721A {
     /**
      * Returns the packed ownership data of `tokenId`.
      */
-    function _packedOwnershipOf(uint256 tokenId) private view returns (uint256 packedOwnership, uint256 ownershipIndex) {
+    function _packedOwnershipOf(uint256 tokenId)
+        private
+        view
+        returns (uint256 packedOwnership, uint256 ownershipIndex)
+    {
         uint256 curr = tokenId;
         if (_minimumTokenId() <= curr) {
             uint256 packed = _packedOwnerships[curr];
@@ -244,7 +248,7 @@ contract ERC721A is IERC721A {
                 if (tokenId >= _maxBatchSize()) {
                     lowestTokenToCheck = tokenId - _maxBatchSize() + 1;
                 }
-                for (; curr >= lowestTokenToCheck && curr >= _minimumTokenId();) {
+                for (; curr >= lowestTokenToCheck && curr >= _minimumTokenId(); ) {
                     // If there exists an ownership record with a quantity that "covers" this token's id,
                     // return that ownership record.  Otherwise, the token doesn't exist so revert.
                     if (packed != 0) {
@@ -285,7 +289,8 @@ contract ERC721A is IERC721A {
         if (_packedOwnerships[index] == 0) {
             (uint256 packedOwnership, uint256 ownershipIndex) = _packedOwnershipOf(index);
             uint256 newQuantity = uint256(uint8(packedOwnership >> BITPOS_QUANTITY)) + ownershipIndex - index;
-            _packedOwnerships[index] = (packedOwnership & BITMASK_QUANTITY_COMPLEMENT) |
+            _packedOwnerships[index] =
+                (packedOwnership & BITMASK_QUANTITY_COMPLEMENT) |
                 (newQuantity << BITPOS_QUANTITY);
         }
     }
@@ -295,7 +300,7 @@ contract ERC721A is IERC721A {
      * It gradually moves to O(1) as tokens get transferred around in the collection over time.
      */
     function _ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
-        (uint256 packedOwnership,) = _packedOwnershipOf(tokenId);
+        (uint256 packedOwnership, ) = _packedOwnershipOf(tokenId);
         return _unpackedOwnership(packedOwnership);
     }
 
@@ -303,7 +308,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
-        (uint256 packedOwnership,) = _packedOwnershipOf(tokenId);
+        (uint256 packedOwnership, ) = _packedOwnershipOf(tokenId);
         return address(uint160(packedOwnership));
     }
 
@@ -362,7 +367,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public override {
-        (uint256 packedOwnership,) = _packedOwnershipOf(tokenId);
+        (uint256 packedOwnership, ) = _packedOwnershipOf(tokenId);
         address owner = address(uint160(packedOwnership));
 
         if (_msgSenderERC721A() != owner)
@@ -446,8 +451,7 @@ contract ERC721A is IERC721A {
      * Tokens start existing when they are minted (`_mint`),
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        return _isMinted(tokenId) && // If it's minted
-            _packedOwnerships[tokenId] & BITMASK_BURNED == 0; // and not burned.
+        return _isMinted(tokenId) && _packedOwnerships[tokenId] & BITMASK_BURNED == 0; // If it's minted // and not burned.
     }
 
     function _isMinted(uint256 tokenId) internal view returns (bool) {
@@ -473,7 +477,6 @@ contract ERC721A is IERC721A {
     function _safeMint(address to, uint256 quantity) internal {
         _safeMint(to, quantity, '');
     }
-
 
     /**
      * @dev Safely mints `quantity` tokens starting at `_nextTokenId()` and transfers them to `to`.
@@ -583,7 +586,11 @@ contract ERC721A is IERC721A {
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 startTokenId, uint256 quantity) internal {
+    function _mint(
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal {
         _mint(to, startTokenId, quantity, false);
     }
 
@@ -598,7 +605,12 @@ contract ERC721A is IERC721A {
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 startTokenId, uint256 quantity, bool sequential) private {
+    function _mint(
+        address to,
+        uint256 startTokenId,
+        uint256 quantity,
+        bool sequential
+    ) private {
         if (_addressToUint256(to) == 0) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
         if (quantity > _maxBatchSize()) revert MintLargeQuantity();
@@ -633,11 +645,13 @@ contract ERC721A is IERC721A {
                 emit Transfer(address(0), to, startTokenId + offset++);
             } while (offset < quantity);
 
-        // Updates:
-        // - `mintCounter` to `mintCounter` + `quantity`
-        // - `currentIndex` to `currentIndex` + `quantity` if this is a sequential mint, otherwise `currentIndex`
-        _packedMintCounters = uint128((_packedMintCounters) + quantity) | // Update mintCounter
-            (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) << BITPOS_CURRENT_INDEX); // Conditionally update currentIndex
+            // Updates:
+            // - `mintCounter` to `mintCounter` + `quantity`
+            // - `currentIndex` to `currentIndex` + `quantity` if this is a sequential mint, otherwise `currentIndex`
+            _packedMintCounters =
+                uint128((_packedMintCounters) + quantity) | // Update mintCounter
+                (((_packedMintCounters >> BITPOS_CURRENT_INDEX) + (_boolToUint256(sequential) * quantity)) <<
+                    BITPOS_CURRENT_INDEX); // Conditionally update currentIndex
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -709,7 +723,8 @@ contract ERC721A is IERC721A {
                     if ((prevOwnershipIndex + prevOwnershipQuantity - 1) > tokenId) {
                         // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
                         // The next slot's quantity should now be `prevOwnershipIndex` + `prevOwnershipQuantity` - 1 - `tokenId`
-                        _packedOwnerships[nextTokenId] = (prevOwnershipPacked & BITMASK_QUANTITY_COMPLEMENT) |
+                        _packedOwnerships[nextTokenId] =
+                            (prevOwnershipPacked & BITMASK_QUANTITY_COMPLEMENT) |
                             ((prevOwnershipIndex + prevOwnershipQuantity - 1 - tokenId) << BITPOS_QUANTITY);
                     }
                 }
@@ -782,7 +797,7 @@ contract ERC721A is IERC721A {
             _packedOwnerships[tokenId] =
                 _addressToUint256(from) |
                 (block.timestamp << BITPOS_START_TIMESTAMP) |
-                BITMASK_BURNED | 
+                BITMASK_BURNED |
                 BITMASK_NEXT_INITIALIZED |
                 (1 << BITPOS_QUANTITY);
 
@@ -795,8 +810,10 @@ contract ERC721A is IERC721A {
                     if ((prevOwnershipIndex + prevOwnershipQuantity - 1) > tokenId) {
                         // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
                         // The next slot's quantity should now be `prevOwnershipIndex` + `prevOwnershipQuantity` - 1 - `tokenId`
-                        _packedOwnerships[nextTokenId] = (prevOwnershipPacked & BITMASK_QUANTITY_COMPLEMENT) |
-                            (uint256(uint8(prevOwnershipIndex + prevOwnershipQuantity - 1 - tokenId)) << BITPOS_QUANTITY);
+                        _packedOwnerships[nextTokenId] =
+                            (prevOwnershipPacked & BITMASK_QUANTITY_COMPLEMENT) |
+                            (uint256(uint8(prevOwnershipIndex + prevOwnershipQuantity - 1 - tokenId)) <<
+                                BITPOS_QUANTITY);
                     }
                 }
             }

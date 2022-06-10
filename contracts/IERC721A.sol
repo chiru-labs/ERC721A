@@ -39,8 +39,8 @@ interface IERC721A {
     error MintZeroQuantity();
 
     /**
-    * The quantity of tokens minted must be less than or equal to `_maxBatchSize()`.
-    */
+     * The quantity of tokens minted must be less than or equal to `_maxBatchSize()`.
+     */
     error MintLargeQuantity();
 
     /**
