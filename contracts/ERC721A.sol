@@ -114,6 +114,8 @@ contract ERC721A is IERC721A {
         _name = name_;
         _symbol = symbol_;
         _packedMintCounters = (uint256(_startTokenId()) << BITPOS_CURRENT_INDEX);
+
+        require(_startTokenId() >= _minimumTokenId(), '_startTokenId must be greater than or equal to _minimumTokenId');
     }
 
     /**
@@ -143,7 +145,7 @@ contract ERC721A is IERC721A {
      * @dev Returns the max minting batch size.
      * To change the max batch size, please override this function.
      */
-    function _maxBatchSize() internal view virtual returns (uint256) {
+    function _maxBatchSize() internal view virtual returns (uint8) {
         return 10;
     }
 
@@ -249,7 +251,7 @@ contract ERC721A is IERC721A {
                     lowestTokenToCheck = tokenId - _maxBatchSize() + 1;
                 }
                 for (; curr >= lowestTokenToCheck && curr >= _minimumTokenId(); ) {
-                    // If there exists an ownership record with a quantity that "covers" this token's id,
+                    // If there exists an ownership record with a `quantity` that "covers" this token id,
                     // return that ownership record.  Otherwise, the token doesn't exist so revert.
                     if (packed != 0) {
                         if ((curr + uint256(uint8(packed >> BITPOS_QUANTITY)) - 1) >= tokenId) {
@@ -257,6 +259,10 @@ contract ERC721A is IERC721A {
                         } else {
                             break;
                         }
+                    }
+                    // Avoid underflow
+                    if (curr == 0) {
+                        break;
                     }
                     packed = _packedOwnerships[--curr];
                 }
@@ -466,6 +472,10 @@ contract ERC721A is IERC721A {
             if (packedOwnership != 0) {
                 // If the ownership record's quantity overlaps this tokenId
                 return (curr + uint256(uint8(packedOwnership >> BITPOS_QUANTITY)) - 1) >= tokenId;
+            }
+            // Avoid underflow
+            if (curr == 0) {
+                return false;
             }
         }
         return false;
