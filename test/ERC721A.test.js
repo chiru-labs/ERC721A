@@ -604,7 +604,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             }
           });
 
-          it.only('requires quantity to be greater than 0', async function () {
+          it('requires quantity to be greater than 0', async function () {
             if (sequential) {
               await expect(this.erc721a[this.mintFn](this.owner.address, 0)).to.be.revertedWith('MintZeroQuantity');
             } else {
