@@ -5,7 +5,6 @@
 pragma solidity ^0.8.4;
 
 import './IERC721A.sol';
-import 'hardhat/console.sol';
 
 /**
  * @dev ERC721 token receiver interface.
