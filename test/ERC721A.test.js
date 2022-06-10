@@ -593,7 +593,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 this.mintFn = 'mint(address,uint256,uint256)'
               }
             }
-            // this.mintFn = safe ? 'safeMint(address,uint256)' : 'mint(address,uint256)';
           });
 
           it('rejects mints to the zero address', async function () {
