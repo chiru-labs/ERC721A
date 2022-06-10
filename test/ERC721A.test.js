@@ -580,39 +580,15 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         const testUnsuccessfulMint = function (safe, sequential = true) {
           beforeEach(async function () {
-            if (safe) {
-              if (sequential) {
-                this.mintFn = 'safeMint(address,uint256)'
-              } else {
-                this.mintFn = 'safeMint(address,uint256,uint256)'
-              }
-            } else {
-              if (sequential) {
-                this.mintFn = 'mint(address,uint256)'
-              } else {
-                this.mintFn = 'mint(address,uint256,uint256)'
-              }
-            }
+            this.mintFn = safe ? 'safeMint(address,uint256)' : 'mint(address,uint256)';
           });
 
           it('rejects mints to the zero address', async function () {
-            if (sequential) {
-              await expect(this.erc721a[this.mintFn](ZERO_ADDRESS, 1))
-                .to.be.revertedWith('MintToZeroAddress');
-            } else {
-              await expect(this.erc721a[this.mintFn](ZERO_ADDRESS, offsetted(1).toNumber(), 1))
-                .to.be.revertedWith('MintToZeroAddress');
-            }
+            await expect(this.erc721a[this.mintFn](ZERO_ADDRESS, 1)).to.be.revertedWith('MintToZeroAddress');
           });
 
-          context('requires quantity to be greater than 0', async function () {
-            if (sequential) {
-              await expect(this.erc721a[this.mintFn](this.owner.address, 0))
-                .to.be.revertedWith('MintZeroQuantity');
-            } else {
-              await expect(this.erc721a[this.mintFn](this.owner.address, offsetted(1).toNumber(),0))
-                .to.be.revertedWith('MintZeroQuantity');
-            }
+          it('requires quantity to be greater than 0', async function () {
+            await expect(this.erc721a[this.mintFn](this.owner.address, 0)).to.be.revertedWith('MintZeroQuantity');
           });
         };
 
