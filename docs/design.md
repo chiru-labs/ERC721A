@@ -79,7 +79,7 @@ ERC721A maintains an internal mapping of address balances. This is an important 
 
 - In the context of saving gas, we are able to allow whitelist minting achieve the same amount of `SSTORE`s when compared to implementations without the mapping. See `ERC721A._getAux` and `ERC721A._setAux`. 
 
-  The address balance mapping is also used to store the mint and burn counts per address with neligible overhead, which can be very useful for tokenomics.
+  The address balance mapping is also used to store the mint and burn counts per address with negligible overhead, which can be very useful for tokenomics.
 
 In all, the address balance mapping gives a good balance of features and gas savings, which makes it desirable to keep.
 
