@@ -207,10 +207,12 @@ contract ERC721A is IERC721A {
      * Returns the packed ownership data of `tokenId`.
      */
     function _packedOwnershipOf(uint256 tokenId) private view returns (uint256) {
+        uint256 curr = tokenId;
+
         unchecked {
-            if (_startTokenId() <= tokenId)
-                if (tokenId < _currentIndex) {
-                    uint256 packed = _packedOwnerships[tokenId];
+            if (_startTokenId() <= curr)
+                if (curr < _currentIndex) {
+                    uint256 packed = _packedOwnerships[curr];
                     // If not burned.
                     if (_isZero(packed & BITMASK_BURNED)) {
                         // Invariant:
@@ -220,7 +222,6 @@ contract ERC721A is IERC721A {
                         //
                         // We can directly compare the packed value.
                         // If the address is zero, packed is zero.
-                        uint256 curr = tokenId;
                         while (_isZero(packed)) {
                             packed = _packedOwnerships[--curr];
                         }
