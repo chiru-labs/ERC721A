@@ -1,9 +1,5 @@
 const { deployContract, offsettedIndex } = require('../helpers.js');
 const { expect } = require('chai');
-const { BigNumber } = require('ethers');
-const { constants } = require('@openzeppelin/test-helpers');
-const ether = require('@openzeppelin/test-helpers/src/ether.js');
-const { ZERO_ADDRESS } = constants;
 
 const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
@@ -19,24 +15,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         offsetted = (...arr) => offsettedIndex(this.startTokenId, arr);
       });
-
-      const expectExplicitOwnershipBurned = function (explicitOwnership, address) {
-        expect(explicitOwnership.burned).to.eql(true);
-        expect(explicitOwnership.addr).to.eql(address);
-        expect(explicitOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
-      };
-
-      const expectExplicitOwnershipNotExists = function (explicitOwnership) {
-        expect(explicitOwnership.burned).to.eql(false);
-        expect(explicitOwnership.addr).to.eql(ZERO_ADDRESS);
-        expect(explicitOwnership.startTimestamp).to.eql(BigNumber.from(0));
-      };
-
-      const expectExplicitOwnershipExists = function (explicitOwnership, address) {
-        expect(explicitOwnership.burned).to.eql(false);
-        expect(explicitOwnership.addr).to.eql(address);
-        expect(explicitOwnership.startTimestamp).to.not.eql(BigNumber.from(0));
-      };
 
       context('with minted tokens', async function () {
         beforeEach(async function () {
@@ -110,7 +88,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
     });
   };
 
-describe.only(
+describe(
   'ERC721A override _extraData()',
   createTestSuite({
     contract: 'ERC721ATransferCounterMock',
