@@ -21,16 +21,19 @@ interface IERC721AQueryable is IERC721A {
      * If the `tokenId` is out of bounds:
      *   - `addr` = `address(0)`
      *   - `startTimestamp` = `0`
+     *   - `extraData` = `0`
      *   - `burned` = `false`
      *
      * If the `tokenId` is burned:
      *   - `addr` = `<Address of owner before token was burned>`
      *   - `startTimestamp` = `<Timestamp when token was burned>`
+     *   - `extraData` = `<_extraData when token was burned>`
      *   - `burned = `true`
      *
      * Otherwise:
      *   - `addr` = `<Address of owner>`
      *   - `startTimestamp` = `<Timestamp of start of ownership>`
+     *   - `extraData` = `<_extraData at start of ownership>`
      *   - `burned = `false`
      */
     function explicitOwnershipOf(uint256 tokenId) external view returns (TokenOwnership memory);

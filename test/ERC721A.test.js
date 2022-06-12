@@ -296,7 +296,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await this.erc721a.connect(sender).setApprovalForAll(this.to.address, true);
 
               const ownershipBefore = await this.erc721a.getOwnershipAt(this.tokenId);
-              this.timestampBefore = parseInt(ownershipBefore.extraData);
+              this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
               this.timestampToMine = (await getBlockTimestamp()) + 100;
               await mineBlockTimestamp(this.timestampToMine);
               this.timestampMined = await getBlockTimestamp();
@@ -306,7 +306,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 .connect(sender)[transferFn](this.from, this.to.address, this.tokenId);
 
               const ownershipAfter = await this.erc721a.getOwnershipAt(this.tokenId);
-              this.timestampAfter = parseInt(ownershipAfter.extraData);
+              this.timestampAfter = parseInt(ownershipAfter.startTimestamp);
             });
 
             it('transfers the ownership of the given token ID to the given address', async function () {
@@ -327,7 +327,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               expect(await this.erc721a.balanceOf(this.from)).to.be.equal(1);
             });
 
-            it('extraData updated correctly', async function () {
+            it('startTimestamp updated correctly', async function () {
               expect(this.timestampBefore).to.be.lt(this.timestampToMine);
               expect(this.timestampAfter).to.be.gte(this.timestampToMine);
               expect(this.timestampToMine).to.be.eq(this.timestampMined);
@@ -527,13 +527,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           it('adjusts OwnershipAt and OwnershipOf', async function () {
             const ownership = await this.erc721a.getOwnershipAt(offsetted(0));
-            expect(ownership.extraData).to.be.gte(this.timestampToMine);
+            expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
             expect(ownership.burned).to.be.false;
 
             for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
               const ownership = await this.erc721a.getOwnershipOf(tokenId);
               expect(ownership.addr).to.equal(this.minter.address);
-              expect(ownership.extraData).to.be.gte(this.timestampToMine);
+              expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
               expect(ownership.burned).to.be.false;
             }
 
@@ -678,4 +678,9 @@ describe('ERC721A', createTestSuite({ contract: 'ERC721AMock', constructorArgs: 
 describe(
   'ERC721A override _startTokenId()',
   createTestSuite({ contract: 'ERC721AStartTokenIdMock', constructorArgs: ['Azuki', 'AZUKI', 1] })
+);
+
+describe(
+  'ERC721A override _extraData()',
+  createTestSuite({ contract: 'ERC721ATransferCounterMock', constructorArgs: ['Azuki', 'AZUKI'] })
 );

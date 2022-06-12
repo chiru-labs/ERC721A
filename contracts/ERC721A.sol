@@ -44,17 +44,20 @@ contract ERC721A is IERC721A {
     // Mask of all 256 bits in packed address data except the 64 bits for `aux`.
     uint256 private constant BITMASK_AUX_COMPLEMENT = (1 << 192) - 1;
 
+    // The bit position of `startTimestamp` in packed ownership.
+    uint256 private constant BITPOS_START_TIMESTAMP = 160;
+
     // The bit position of `extraData` in packed ownership.
-    uint256 private constant BITPOS_EXTRA_DATA = 160;
+    uint256 private constant BITPOS_EXTRA_DATA = 224;
 
     // The bit mask of the `burned` bit in packed ownership.
-    uint256 private constant BITMASK_BURNED = 1 << 224;
+    uint256 private constant BITMASK_BURNED = 1 << 248;
 
     // The bit position of the `nextInitialized` bit in packed ownership.
-    uint256 private constant BITPOS_NEXT_INITIALIZED = 225;
+    uint256 private constant BITPOS_NEXT_INITIALIZED = 249;
 
     // The bit mask of the `nextInitialized` bit in packed ownership.
-    uint256 private constant BITMASK_NEXT_INITIALIZED = 1 << 225;
+    uint256 private constant BITMASK_NEXT_INITIALIZED = 1 << 249;
 
     // The tokenId of the next token to be minted.
     uint256 private _currentIndex;
@@ -74,9 +77,10 @@ contract ERC721A is IERC721A {
     //
     // Bits Layout:
     // - [0..159]   `addr`
-    // - [160..223] `extraData`
-    // - [224]      `burned`
-    // - [225]      `nextInitialized`
+    // - [160..223] `startTimestamp`
+    // - [224..247] `extraData`
+    // - [248]      `burned`
+    // - [249]      `nextInitialized`
     mapping(uint256 => uint256) private _packedOwnerships;
 
     // Mapping owner address to address data.
@@ -237,15 +241,16 @@ contract ERC721A is IERC721A {
      */
     function _unpackedOwnership(uint256 packed) private pure returns (TokenOwnership memory ownership) {
         ownership.addr = address(uint160(packed));
-        ownership.extraData = uint64(packed >> BITPOS_EXTRA_DATA);
+        ownership.startTimestamp = uint64(packed >> BITPOS_START_TIMESTAMP);
+        ownership.extraData = uint24(packed >> BITPOS_EXTRA_DATA);
         ownership.burned = packed & BITMASK_BURNED != 0;
     }
 
     /**
      * Returns the unpacked `extraData` field from `packed`.
      */
-    function _unpackExtraData(uint256 packed) private pure returns (uint64) {
-        return uint64(packed >> BITPOS_EXTRA_DATA);
+    function _unpackExtraData(uint256 packed) private pure returns (uint24) {
+        return uint24(packed >> BITPOS_EXTRA_DATA);
     }
 
     /**
@@ -475,6 +480,7 @@ contract ERC721A is IERC721A {
      */
     function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
+
         if (_addressToUint256(to) == 0) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
@@ -493,11 +499,12 @@ contract ERC721A is IERC721A {
 
             // Updates:
             // - `address` to the owner.
-            // - `extraData` to the timestamp of minting.
+            // - `startTimestamp` to the timestamp of minting.
             // - `burned` to `false`.
             // - `nextInitialized` to `quantity == 1`.
             _packedOwnerships[startTokenId] =
                 _addressToUint256(to) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
                 (_extraData(address(0), to, 0) << BITPOS_EXTRA_DATA) |
                 (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
 
@@ -556,11 +563,12 @@ contract ERC721A is IERC721A {
 
             // Updates:
             // - `address` to the next owner.
-            // - `extraData` to the timestamp of transfering.
+            // - `startTimestamp` to the timestamp of transfering.
             // - `burned` to `false`.
             // - `nextInitialized` to `true`.
             _packedOwnerships[tokenId] =
                 _addressToUint256(to) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
                 (_extraData(from, to, _unpackExtraData(prevOwnershipPacked)) << BITPOS_EXTRA_DATA) |
                 BITMASK_NEXT_INITIALIZED;
 
@@ -634,11 +642,12 @@ contract ERC721A is IERC721A {
 
             // Updates:
             // - `address` to the last owner.
-            // - `extraData` to the timestamp of burning.
+            // - `startTimestamp` to the timestamp of burning.
             // - `burned` to `true`.
             // - `nextInitialized` to `true`.
             _packedOwnerships[tokenId] =
                 _addressToUint256(from) |
+                (block.timestamp << BITPOS_START_TIMESTAMP) |
                 (_extraData(from, address(0), _unpackExtraData(prevOwnershipPacked)) << BITPOS_EXTRA_DATA) |
                 BITMASK_BURNED |
                 BITMASK_NEXT_INITIALIZED;
@@ -696,13 +705,25 @@ contract ERC721A is IERC721A {
         }
     }
 
+    /**
+     * @dev Called during each token transfer to set the 24bit `extraData` field.
+     * Intended to be overridden by the cosumer contract.
+     *
+     * previousExtraData - the value of `extraData` before transfer.
+     *
+     * Calling conditions:
+     *
+     * - When `from` and `to` are both non-zero, `from`'s `tokenId` will be
+     * transferred to `to`.
+     * - When `from` is zero, `tokenId` will be minted for `to`.
+     * - When `to` is zero, `tokenId` will be burned by `from`.
+     * - `from` and `to` are never both zero.
+     */
     function _extraData(
         address from,
         address to,
-        uint64 previousExtraData
-    ) internal view virtual returns (uint256) {
-        return block.timestamp;
-    }
+        uint24 previousExtraData
+    ) internal view virtual returns (uint256) {}
 
     /**
      * @dev Hook that is called before a set of serially-ordered token ids are about to be transferred. This includes minting.
