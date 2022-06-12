@@ -163,7 +163,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        if (_isZero(_addressToUint256(owner))) revert BalanceQueryForZeroAddress();
+        if (_isZero(owner)) revert BalanceQueryForZeroAddress();
         return _packedAddressData[owner] & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
@@ -485,7 +485,7 @@ contract ERC721A is IERC721A {
      */
     function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
-        if (_isZero(_addressToUint256(to))) revert MintToZeroAddress();
+        if (_isZero(to)) revert MintToZeroAddress();
         if (_isZero(quantity)) revert MintZeroQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
