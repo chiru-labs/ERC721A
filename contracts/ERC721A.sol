@@ -163,7 +163,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        if (_addressToUint256(owner) == 0) revert BalanceQueryForZeroAddress();
+        if (_isZero(_addressToUint256(owner))) revert BalanceQueryForZeroAddress();
         return _packedAddressData[owner] & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
@@ -214,7 +214,7 @@ contract ERC721A is IERC721A {
                 if (curr < _currentIndex) {
                     uint256 packed = _packedOwnerships[curr];
                     // If not burned.
-                    if (packed & BITMASK_BURNED == 0) {
+                    if (_isZero(packed & BITMASK_BURNED)) {
                         // Invariant:
                         // There will always be an ownership that has an address and is not burned
                         // before an ownership that does not have an address and is not burned.
@@ -222,7 +222,7 @@ contract ERC721A is IERC721A {
                         //
                         // We can directly compare the packed value.
                         // If the address is zero, packed is zero.
-                        while (packed == 0) {
+                        while (_isZero(packed)) {
                             packed = _packedOwnerships[--curr];
                         }
                         return packed;
@@ -252,7 +252,7 @@ contract ERC721A is IERC721A {
      * @dev Initializes the ownership slot minted at `index` for efficiency purposes.
      */
     function _initializeOwnershipAt(uint256 index) internal {
-        if (_packedOwnerships[index] == 0) {
+        if (_isZero(_packedOwnerships[index])) {
             _packedOwnerships[index] = _packedOwnershipOf(index);
         }
     }
@@ -320,6 +320,24 @@ contract ERC721A is IERC721A {
     function _boolToUint256(bool value) private pure returns (uint256 result) {
         assembly {
             result := value
+        }
+    }
+
+    /**
+     * @dev Checks if val == 0.
+     */
+    function _isZero(uint256 val) private pure returns (bool isZero) {
+        assembly {
+            isZero := iszero(val)
+        }
+    }
+
+    /**
+     * @dev Checks if val == 0.
+     */
+    function _isZero(address val) private pure returns (bool isZero) {
+        assembly {
+            isZero := iszero(val)
         }
     }
 
@@ -413,7 +431,7 @@ contract ERC721A is IERC721A {
         return
             _startTokenId() <= tokenId &&
             tokenId < _currentIndex && // If within bounds,
-            _packedOwnerships[tokenId] & BITMASK_BURNED == 0; // and not burned.
+            _isZero(_packedOwnerships[tokenId] & BITMASK_BURNED); // and not burned.
     }
 
     /**
@@ -468,8 +486,8 @@ contract ERC721A is IERC721A {
      */
     function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
-        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
-        if (quantity == 0) revert MintZeroQuantity();
+        if (_isZero(_addressToUint256(to))) revert MintToZeroAddress();
+        if (_isZero(quantity)) revert MintZeroQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
@@ -530,7 +548,7 @@ contract ERC721A is IERC721A {
             approvedAddress == _msgSenderERC721A());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-        if (_addressToUint256(to) == 0) revert TransferToZeroAddress();
+        if (_isZero(to)) revert TransferToZeroAddress();
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
@@ -558,10 +576,10 @@ contract ERC721A is IERC721A {
                 BITMASK_NEXT_INITIALIZED;
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
-            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
+            if (_isZero(prevOwnershipPacked & BITMASK_NEXT_INITIALIZED)) {
                 uint256 nextTokenId = tokenId + 1;
                 // If the next slot's address is zero and not burned (i.e. packed value is zero).
-                if (_packedOwnerships[nextTokenId] == 0) {
+                if (_isZero(_packedOwnerships[nextTokenId])) {
                     // If the next slot is within bounds.
                     if (nextTokenId != _currentIndex) {
                         // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
@@ -637,10 +655,10 @@ contract ERC721A is IERC721A {
                 BITMASK_NEXT_INITIALIZED;
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
-            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
+            if (_isZero(prevOwnershipPacked & BITMASK_NEXT_INITIALIZED)) {
                 uint256 nextTokenId = tokenId + 1;
                 // If the next slot's address is zero and not burned (i.e. packed value is zero).
-                if (_packedOwnerships[nextTokenId] == 0) {
+                if (_isZero(_packedOwnerships[nextTokenId])) {
                     // If the next slot is within bounds.
                     if (nextTokenId != _currentIndex) {
                         // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
@@ -679,7 +697,7 @@ contract ERC721A is IERC721A {
         ) {
             return retval == ERC721A__IERC721Receiver(to).onERC721Received.selector;
         } catch (bytes memory reason) {
-            if (reason.length == 0) {
+            if (_isZero(reason.length)) {
                 revert TransferToNonERC721ReceiverImplementer();
             } else {
                 assembly {
