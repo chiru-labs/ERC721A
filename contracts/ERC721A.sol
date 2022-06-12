@@ -494,10 +494,11 @@ contract ERC721A is IERC721A {
                 (block.timestamp << BITPOS_START_TIMESTAMP) |
                 (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
 
-            uint256 offset;
+            uint256 offset = startTokenId;
+            uint256 end = quantity + startTokenId;
             do {
-                emit Transfer(address(0), to, startTokenId + offset++);
-            } while (offset < quantity);
+                emit Transfer(address(0), to, offset++);
+            } while (offset < end);
 
             _currentIndex = startTokenId + quantity;
         }
