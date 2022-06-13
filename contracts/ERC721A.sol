@@ -266,6 +266,16 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Packs ownership data into a single uint256.
+     */
+    function _packOwnershipData(address owner, uint256 flags) private view returns (uint256 value) {
+        assembly {
+            // `owner | (block.timestamp << BITPOS_START_TIMESTAMP) | flags`.
+            value := or(owner, or(shl(BITPOS_START_TIMESTAMP, timestamp()), flags))
+        }
+    }
+
+    /**
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
@@ -489,10 +499,10 @@ contract ERC721A is IERC721A {
             // - `startTimestamp` to the timestamp of minting.
             // - `burned` to `false`.
             // - `nextInitialized` to `quantity == 1`.
-            _packedOwnerships[startTokenId] =
-                _addressToUint256(to) |
-                (block.timestamp << BITPOS_START_TIMESTAMP) |
-                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
+            _packedOwnerships[startTokenId] = _packOwnershipData(
+                to,
+                _boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED
+            );
 
             uint256 offset = startTokenId;
             uint256 end = quantity + startTokenId;
@@ -553,7 +563,7 @@ contract ERC721A is IERC721A {
             // - `startTimestamp` to the timestamp of transfering.
             // - `burned` to `false`.
             // - `nextInitialized` to `true`.
-            _packedOwnerships[tokenId] = _packTransferOwnershipData(to);
+            _packedOwnerships[tokenId] = _packOwnershipData(to, BITMASK_NEXT_INITIALIZED);
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
@@ -571,15 +581,6 @@ contract ERC721A is IERC721A {
 
         emit Transfer(from, to, tokenId);
         _afterTokenTransfers(from, to, tokenId, 1);
-    }
-
-    /**
-     * @dev Packs ownership data into single uint
-     */
-    function _packTransferOwnershipData(address to) private view returns (uint256 packedData) {
-        assembly {
-            packedData := or(to, or(shl(BITPOS_START_TIMESTAMP, timestamp()), BITMASK_NEXT_INITIALIZED))
-        }
     }
 
     /**
@@ -637,7 +638,7 @@ contract ERC721A is IERC721A {
             // - `startTimestamp` to the timestamp of burning.
             // - `burned` to `true`.
             // - `nextInitialized` to `true`.
-            _packedOwnerships[tokenId] = _packBurnOwnershipData(from);
+            _packedOwnerships[tokenId] = _packOwnershipData(from, BITMASK_BURNED | BITMASK_NEXT_INITIALIZED);
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
@@ -659,18 +660,6 @@ contract ERC721A is IERC721A {
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
         unchecked {
             _burnCounter++;
-        }
-    }
-
-    /**
-     * @dev Packs ownership data into single uint
-     */
-    function _packBurnOwnershipData(address from) private view returns (uint256 packedData) {
-        assembly {
-            packedData := or(
-                from,
-                or(shl(BITPOS_START_TIMESTAMP, timestamp()), or(BITMASK_BURNED, BITMASK_NEXT_INITIALIZED))
-            )
         }
     }
 
