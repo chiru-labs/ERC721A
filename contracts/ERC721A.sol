@@ -611,6 +611,7 @@ contract ERC721A is IERC721A {
 
         // Clear approvals from the previous owner.
         if (approvedAddress != address(0)) {
+            // delete _tokenApprovals[tokenId];
             assembly {
                 mstore(0, tokenId)
                 mstore(32, _tokenApprovals.slot)
@@ -690,7 +691,13 @@ contract ERC721A is IERC721A {
 
         // Clear approvals from the previous owner.
         if (approvedAddress != address(0)) {
-            delete _tokenApprovals[tokenId];
+            // delete _tokenApprovals[tokenId];
+            assembly {
+                mstore(0, tokenId)
+                mstore(32, _tokenApprovals.slot)
+                let hash := keccak256(0, 64)
+                sstore(hash, 0)
+            }
         }
 
         // Underflow of the sender's balance is impossible because we check for

@@ -293,7 +293,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               this.tokenId = this.addr2.expected.tokens[0];
               this.from = sender.address;
               this.to = transferToContract ? this.receiver : this.addr4;
-              await this.erc721a.connect(sender).setApprovalForAll(this.to.address, true);
+              await this.erc721a.connect(sender).approve(this.to.address, this.tokenId);
 
               const ownershipBefore = await this.erc721a.getOwnershipAt(this.tokenId);
               this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
