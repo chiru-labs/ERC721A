@@ -56,6 +56,12 @@ contract ERC721A is IERC721A {
     // The bit mask of the `nextInitialized` bit in packed ownership.
     uint256 private constant BITMASK_NEXT_INITIALIZED = 1 << 225;
 
+    // The maximum `quantity` that can be minted with `_mintERC2309`.
+    // This limit is to prevent overflows on the address data entries.
+    // For a limit of 5000, a total of 3.689e15 calls to `_mintERC2309`
+    // is required to cause an overflow, which is unrealistic.
+    uint256 private constant MAX_MINT_ERC2309_QUANTITY_LIMIT = 5000;
+
     // The tokenId of the next token to be minted.
     uint256 private _currentIndex;
 
@@ -466,10 +472,6 @@ contract ERC721A is IERC721A {
      * - `to` cannot be the zero address.
      * - `quantity` must be greater than 0.
      *
-     * Note: some marketplaces may have difficulties fully registering a very large `quantity`.
-     * We have verified full support on OpenSea's and LooksRare's Rinkeby testnet marketplaces
-     * for `quantity = 5000` on 5th June 2022. Support may vary, and may change over time.
-     *
      * Emits a {Transfer} event for each mint.
      */
     function _mint(address to, uint256 quantity) internal {
@@ -513,19 +515,16 @@ contract ERC721A is IERC721A {
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
-     * This function is intended for efficient minting during contract creation.
+     * This function is intended for efficient minting only during contract creation.
      *
      * It emits only one {ConsecutiveTransfer} as defined in
      * [ERC2309](https://eips.ethereum.org/EIPS/eip-2309),
      * instead of a sequence of {Transfer} event(s).
      *
-     * Calling this function outside of contract creation WILL break the ERC721 standard.
+     * Calling this function outside of contract creation WILL make your contract
+     * non-compliant with the ERC721 standard.
      * For full ERC721 compliance, substituting ERC721 {Transfer} event(s) with the ERC2309
      * {ConsecutiveTransfer} event is only permissible during contract creation.
-     *
-     * Note: some marketplaces may have difficulties fully registering a very large `quantity`.
-     * We have verified full support on OpenSea's and LooksRare's Rinkeby testnet marketplaces
-     * for `quantity = 5000` on 5th June 2022. Support may vary, and may change over time.
      *
      * Requirements:
      *
@@ -538,12 +537,11 @@ contract ERC721A is IERC721A {
         uint256 startTokenId = _currentIndex;
         if (_addressToUint256(to) == 0) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
+        if (quantity > MAX_MINT_ERC2309_QUANTITY_LIMIT) revert MintERC2309QuantityExceedsLimit();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
-        // Overflows are incredibly unrealistic.
-        // balance or numberMinted overflow if current value of either + quantity > 1.8e19 (2**64) - 1
-        // updatedIndex overflows if _currentIndex + quantity > 1.2e77 (2**256) - 1
+        // Overflows are unrealistic due to the above check for `quantity` to be below the limit.
         unchecked {
             // Updates:
             // - `balance += quantity`.

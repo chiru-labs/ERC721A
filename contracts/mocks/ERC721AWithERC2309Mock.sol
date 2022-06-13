@@ -8,12 +8,20 @@ import '../ERC721A.sol';
 
 /**
  * @dev Mock for testing and benchmarking purposes.
- * Calling `_mintERC2309` outside of contract creation breaks the ERC721 standard.
- * The mock exposes the function for simplicity of testing and gas comparisons with
- * the other mint functions.
+ * The mock exposes the function for gas benchmarks with other mint functions.
  */
 contract ERC721AWithERC2309Mock is ERC721A {
-    constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        address to,
+        uint256 quantity,
+        bool mintInConstructor
+    ) ERC721A(name_, symbol_) {
+        if (mintInConstructor) {
+            _mintERC2309(to, quantity);
+        }
+    }
 
     function mintOneERC2309(address to) public {
         _mintERC2309(to, 1);

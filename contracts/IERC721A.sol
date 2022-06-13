@@ -68,6 +68,11 @@ interface IERC721A {
      */
     error URIQueryForNonexistentToken();
 
+    /**
+     * The `quantity` minted with ERC2309 exceeds the safety limit.
+     */
+    error MintERC2309QuantityExceedsLimit();
+
     struct TokenOwnership {
         // The address of the owner.
         address addr;

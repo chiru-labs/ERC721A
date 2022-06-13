@@ -683,32 +683,45 @@ describe(
 
 describe('ERC721A with ERC2309', async function () {
   beforeEach(async function () {
-    this.erc721a = await deployContract('ERC721AWithERC2309Mock', ['Azuki', 'AZUKI']);
     const [owner, addr1] = await ethers.getSigners();
     this.owner = owner;
     this.addr1 = addr1;
-    this.testEmit = async (methodName, fromTokenId, toTokenId) => {
-      await expect(await this.erc721a[methodName](this.addr1.address))
-        .to.emit(this.erc721a, 'ConsecutiveTransfer')
-        .withArgs(fromTokenId, toTokenId, ZERO_ADDRESS, this.addr1.address);
-    };
+
+    let args;
+    args = ['Azuki', 'AZUKI', this.owner.address, 1, true];
+    this.erc721aMint1 = await deployContract('ERC721AWithERC2309Mock', args);
+    args = ['Azuki', 'AZUKI', this.owner.address, 10, true];
+    this.erc721aMint10 = await deployContract('ERC721AWithERC2309Mock', args);
   });
 
-  it('emits a ConsecutiveTransfer event for single mint', async function () {
-    await this.testEmit('mintOneERC2309', 0, 0);
-    await this.testEmit('mintOneERC2309', 1, 1);
+  it('emits a ConsecutiveTransfer event for single mint', async function () {    
+    expect(this.erc721aMint1.deployTransaction)
+      .to.emit(this.erc721aMint1, 'ConsecutiveTransfer')
+      .withArgs(0, 0, ZERO_ADDRESS, this.owner.address);
   });
 
-  it('emits a ConsecutiveTransfer event for batch mint', async function () {
-    await this.testEmit('mintTenERC2309', 0, 9);
-    await this.testEmit('mintTenERC2309', 10, 19);
+  it('emits a ConsecutiveTransfer event for a batch mint', async function () {    
+    expect(this.erc721aMint10.deployTransaction)
+      .to.emit(this.erc721aMint10, 'ConsecutiveTransfer')
+      .withArgs(0, 9, ZERO_ADDRESS, this.owner.address);
   });
+
+  it('requires quantity to be below mint limit', async function () {
+    let args;
+    const mintLimit = 5000;
+    args = ['Azuki', 'AZUKI', this.owner.address, mintLimit, true];
+    await deployContract('ERC721AWithERC2309Mock', args);
+    args = ['Azuki', 'AZUKI', this.owner.address, mintLimit + 1, true];
+    await expect(deployContract('ERC721AWithERC2309Mock', args)).to.be.revertedWith('MintERC2309QuantityExceedsLimit');
+  })
 
   it('rejects mints to the zero address', async function () {
-    await expect(this.erc721a.mintERC2309(ZERO_ADDRESS, 1)).to.be.revertedWith('MintToZeroAddress');
+    let args = ['Azuki', 'AZUKI', ZERO_ADDRESS, 1, true];
+    await expect(deployContract('ERC721AWithERC2309Mock', args)).to.be.revertedWith('MintToZeroAddress');
   });
 
   it('requires quantity to be greater than 0', async function () {
-    await expect(this.erc721a.mintERC2309(this.owner.address, 0)).to.be.revertedWith('MintZeroQuantity');
+    let args = ['Azuki', 'AZUKI', this.owner.address, 0, true];
+    await expect(deployContract('ERC721AWithERC2309Mock', args)).to.be.revertedWith('MintZeroQuantity');
   });
 });

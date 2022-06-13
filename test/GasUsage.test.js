@@ -41,14 +41,16 @@ describe('ERC721A Gas Usage', function () {
   });
 
   it('mintOneERC2309', async function () {
-    let contract = await deployContract('ERC721AWithERC2309Mock', ['Azuki', 'AZUKI']);
+    let args = ['Azuki', 'AZUKI', this.owner.address, 0, false];
+    let contract = await deployContract('ERC721AWithERC2309Mock', args);
     await contract.mintOneERC2309(this.owner.address);
     await contract.mintOneERC2309(this.owner.address);
     await contract.mintOneERC2309(this.addr1.address); 
   });
 
   it('mintTenERC2309', async function () {
-    let contract = await deployContract('ERC721AWithERC2309Mock', ['Azuki', 'AZUKI']);
+    let args = ['Azuki', 'AZUKI', this.owner.address, 0, false];
+    let contract = await deployContract('ERC721AWithERC2309Mock', args);
     await contract.mintTenERC2309(this.owner.address);
     await contract.mintTenERC2309(this.owner.address);
     await contract.mintTenERC2309(this.addr1.address);  
