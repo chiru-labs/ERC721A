@@ -6,10 +6,6 @@ pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
 
-/**
- * @dev Mock for testing and benchmarking purposes.
- * The mock exposes the function for gas benchmarks with other mint functions.
- */
 contract ERC721AWithERC2309Mock is ERC721A {
     constructor(
         string memory name_,
@@ -23,10 +19,18 @@ contract ERC721AWithERC2309Mock is ERC721A {
         }
     }
 
+    /**
+     * @dev This function is only for gas benchmarking purposes.
+     * Calling `_mintERC3201` outside of contract creation is non-compliant with ERC721.
+     */
     function mintOneERC2309(address to) public {
         _mintERC2309(to, 1);
     }
 
+    /**
+     * @dev This function is only for gas benchmarking purposes.
+     * Calling `_mintERC3201` outside of contract creation is non-compliant with ERC721.
+     */
     function mintTenERC2309(address to) public {
         _mintERC2309(to, 10);
     }

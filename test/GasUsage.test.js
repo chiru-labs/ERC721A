@@ -40,22 +40,6 @@ describe('ERC721A Gas Usage', function () {
     });
   });
 
-  it('mintOneERC2309', async function () {
-    let args = ['Azuki', 'AZUKI', this.owner.address, 0, false];
-    let contract = await deployContract('ERC721AWithERC2309Mock', args);
-    await contract.mintOneERC2309(this.owner.address);
-    await contract.mintOneERC2309(this.owner.address);
-    await contract.mintOneERC2309(this.addr1.address); 
-  });
-
-  it('mintTenERC2309', async function () {
-    let args = ['Azuki', 'AZUKI', this.owner.address, 0, false];
-    let contract = await deployContract('ERC721AWithERC2309Mock', args);
-    await contract.mintTenERC2309(this.owner.address);
-    await contract.mintTenERC2309(this.owner.address);
-    await contract.mintTenERC2309(this.addr1.address);  
-  });
-
   context('transferFrom', function () {
     beforeEach(async function () {
       await this.erc721a.mintTen(this.owner.address);
@@ -83,5 +67,25 @@ describe('ERC721A Gas Usage', function () {
     it('transferTen average order', async function () {
       await this.erc721a.connect(this.owner).transferTenAvg(this.addr1.address);
     });
+  });
+
+  it('mintOneERC2309', async function () {
+    // The following call `_mintERC3201` internally outside of contract creation.
+    // This is non-compliant with ERC721, and is only meant for gas benchmark purposes.
+    let args = ['Azuki', 'AZUKI', this.owner.address, 0, false];
+    let contract = await deployContract('ERC721AWithERC2309Mock', args);
+    await contract.mintOneERC2309(this.owner.address);
+    await contract.mintOneERC2309(this.owner.address);
+    await contract.mintOneERC2309(this.addr1.address); 
+  });
+
+  it('mintTenERC2309', async function () {
+    // The following call `_mintERC3201` internally outside of contract creation.
+    // This is non-compliant with ERC721, and is only meant for gas benchmark purposes.
+    let args = ['Azuki', 'AZUKI', this.owner.address, 0, false];
+    let contract = await deployContract('ERC721AWithERC2309Mock', args);
+    await contract.mintTenERC2309(this.owner.address);
+    await contract.mintTenERC2309(this.owner.address);
+    await contract.mintTenERC2309(this.addr1.address);  
   });
 });
