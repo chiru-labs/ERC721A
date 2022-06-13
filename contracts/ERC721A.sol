@@ -580,6 +580,18 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Zeroes out _tokenApprovals[tokenId]
+     */
+    function deleteTokenApproval(uint256 tokenId) private {
+        assembly {
+            mstore(0, tokenId)
+            mstore(32, _tokenApprovals.slot)
+            let hash := keccak256(0, 64)
+            sstore(hash, 0)
+        }
+    }
+
+    /**
      * @dev Transfers `tokenId` from `from` to `to`.
      *
      * Requirements:
@@ -611,13 +623,7 @@ contract ERC721A is IERC721A {
 
         // Clear approvals from the previous owner.
         if (approvedAddress != address(0)) {
-            // delete _tokenApprovals[tokenId];
-            assembly {
-                mstore(0, tokenId)
-                mstore(32, _tokenApprovals.slot)
-                let hash := keccak256(0, 64)
-                sstore(hash, 0)
-            }
+            deleteTokenApproval(tokenId);
         }
 
         // Underflow of the sender's balance is impossible because we check for
@@ -691,13 +697,7 @@ contract ERC721A is IERC721A {
 
         // Clear approvals from the previous owner.
         if (approvedAddress != address(0)) {
-            // delete _tokenApprovals[tokenId];
-            assembly {
-                mstore(0, tokenId)
-                mstore(32, _tokenApprovals.slot)
-                let hash := keccak256(0, 64)
-                sstore(hash, 0)
-            }
+            deleteTokenApproval(tokenId);
         }
 
         // Underflow of the sender's balance is impossible because we check for
