@@ -266,6 +266,16 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Packs ownership data into a single uint256.
+     */
+    function _packOwnershipData(address owner, uint256 flags) private view returns (uint256 value) {
+        assembly {
+            // `owner | (block.timestamp << BITPOS_START_TIMESTAMP) | flags`.
+            value := or(owner, or(shl(BITPOS_START_TIMESTAMP, timestamp()), flags))
+        }
+    }
+
+    /**
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view override returns (address) {
@@ -489,15 +499,16 @@ contract ERC721A is IERC721A {
             // - `startTimestamp` to the timestamp of minting.
             // - `burned` to `false`.
             // - `nextInitialized` to `quantity == 1`.
-            _packedOwnerships[startTokenId] =
-                _addressToUint256(to) |
-                (block.timestamp << BITPOS_START_TIMESTAMP) |
-                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
+            _packedOwnerships[startTokenId] = _packOwnershipData(
+                to,
+                _boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED
+            );
 
-            uint256 offset;
+            uint256 offset = startTokenId;
+            uint256 end = quantity + startTokenId;
             do {
-                emit Transfer(address(0), to, startTokenId + offset++);
-            } while (offset < quantity);
+                emit Transfer(address(0), to, offset++);
+            } while (offset < end);
 
             _currentIndex = startTokenId + quantity;
         }
@@ -552,10 +563,7 @@ contract ERC721A is IERC721A {
             // - `startTimestamp` to the timestamp of transfering.
             // - `burned` to `false`.
             // - `nextInitialized` to `true`.
-            _packedOwnerships[tokenId] =
-                _addressToUint256(to) |
-                (block.timestamp << BITPOS_START_TIMESTAMP) |
-                BITMASK_NEXT_INITIALIZED;
+            _packedOwnerships[tokenId] = _packOwnershipData(to, BITMASK_NEXT_INITIALIZED);
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
@@ -630,11 +638,7 @@ contract ERC721A is IERC721A {
             // - `startTimestamp` to the timestamp of burning.
             // - `burned` to `true`.
             // - `nextInitialized` to `true`.
-            _packedOwnerships[tokenId] =
-                _addressToUint256(from) |
-                (block.timestamp << BITPOS_START_TIMESTAMP) |
-                BITMASK_BURNED |
-                BITMASK_NEXT_INITIALIZED;
+            _packedOwnerships[tokenId] = _packOwnershipData(from, BITMASK_BURNED | BITMASK_NEXT_INITIALIZED);
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
