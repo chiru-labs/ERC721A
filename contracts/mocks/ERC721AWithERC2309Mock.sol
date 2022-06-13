@@ -20,16 +20,18 @@ contract ERC721AWithERC2309Mock is ERC721A {
     }
 
     /**
-     * @dev This function is only for gas benchmarking purposes.
-     * Calling `_mintERC3201` outside of contract creation is non-compliant with ERC721.
+     * @dev This function is only for gas comparison purposes.
+     * Calling `_mintERC3201` outside of contract creation is non-compliant
+     * with the ERC721 standard.
      */
     function mintOneERC2309(address to) public {
         _mintERC2309(to, 1);
     }
 
     /**
-     * @dev This function is only for gas benchmarking purposes.
-     * Calling `_mintERC3201` outside of contract creation is non-compliant with ERC721.
+     * @dev This function is only for gas comparison purposes.
+     * Calling `_mintERC3201` outside of contract creation is non-compliant
+     * with the ERC721 standard.
      */
     function mintTenERC2309(address to) public {
         _mintERC2309(to, 10);
