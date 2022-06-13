@@ -583,9 +583,10 @@ contract ERC721A is IERC721A {
      * @dev Zeroes out _tokenApprovals[tokenId]
      */
     function deleteTokenApproval(uint256 tokenId) private {
+        mapping(uint256 => address) storage tokenApprovalPtr = _tokenApprovals;
         assembly {
             mstore(0, tokenId)
-            mstore(32, _tokenApprovals.slot)
+            mstore(32, tokenApprovalPtr.slot)
             let hash := keccak256(0, 64)
             sstore(hash, 0)
         }
