@@ -587,7 +587,7 @@ contract ERC721A is IERC721A {
         assembly {
             mstore(0x00, tokenId)
             mstore(0x20, tokenApprovalPtr.slot)
-            let hash := keccak256(0, 64)
+            let hash := keccak256(0, 0x40)
             sstore(hash, 0)
         }
     }
