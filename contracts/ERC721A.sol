@@ -547,7 +547,7 @@ contract ERC721A is IERC721A {
      */
     function _mintERC2309(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
-        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
+        if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
         if (quantity > MAX_MINT_ERC2309_QUANTITY_LIMIT) revert MintERC2309QuantityExceedsLimit();
 
@@ -567,10 +567,10 @@ contract ERC721A is IERC721A {
             // - `startTimestamp` to the timestamp of minting.
             // - `burned` to `false`.
             // - `nextInitialized` to `quantity == 1`.
-            _packedOwnerships[startTokenId] =
-                _addressToUint256(to) |
-                (block.timestamp << BITPOS_START_TIMESTAMP) |
-                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED);
+            _packedOwnerships[startTokenId] = _packOwnershipData(
+                to,
+                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED) | _nextExtraData(address(0), to, 0)
+            );
 
             emit ConsecutiveTransfer(startTokenId, startTokenId + quantity - 1, address(0), to);
 
