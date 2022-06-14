@@ -580,15 +580,34 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Zeroes out _tokenApprovals[tokenId]
+     * @dev Returns the storage slot and value for the approved address of `tokenId`.
      */
-    function _removeTokenApproval(uint256 tokenId) private {
-        mapping(uint256 => address) storage tokenApprovalPtr = _tokenApprovals;
+    function _getApprovedAddress(
+        uint256 tokenId
+    ) private view returns (uint256 approvedAddressSlot, address approvedAddress) {
+        mapping(uint256 => address) storage tokenApprovalsPtr = _tokenApprovals;
         assembly {
+            // Compute the slot and load it. This is equivalent to `approvedAddress[tokenId]`.
             mstore(0x00, tokenId)
-            mstore(0x20, tokenApprovalPtr.slot)
-            let hash := keccak256(0, 0x40)
-            sstore(hash, 0)
+            mstore(0x20, tokenApprovalsPtr.slot)
+            approvedAddressSlot := keccak256(0x00, 0x40)
+            approvedAddress := sload(approvedAddressSlot)
+        }
+    }
+
+    /**
+     * @dev Returns whether the `approvedAddress` is equals to `from` or `msgSender`.
+     */
+    function _isOwnerOrApproved(
+        address approvedAddress,
+        address from, 
+        address msgSender
+    ) private pure returns (bool result) {
+        assembly {
+            // Mask `from` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            from := and(from, BITMASK_ADDRESS)
+            // `msgSender == from || msgSender == approvedAddress`.
+            result := or(eq(msgSender, from), eq(msgSender, approvedAddress))
         }
     }
 
@@ -611,20 +630,22 @@ contract ERC721A is IERC721A {
 
         if (address(uint160(prevOwnershipPacked)) != from) revert TransferFromIncorrectOwner();
 
-        address approvedAddress = _tokenApprovals[tokenId];
+        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedAddress(tokenId);
 
-        bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
-            isApprovedForAll(from, _msgSenderERC721A()) ||
-            approvedAddress == _msgSenderERC721A());
+        if (!_isOwnerOrApproved(approvedAddress, from, _msgSenderERC721A()))
+            if (!isApprovedForAll(from, _msgSenderERC721A()))
+                revert TransferCallerNotOwnerNorApproved();
 
-        if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
         if (to == address(0)) revert TransferToZeroAddress();
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
         // Clear approvals from the previous owner.
-        if (approvedAddress != address(0)) {
-            _removeTokenApproval(tokenId);
+        assembly {
+            if approvedAddress {
+                // This is equivalent to delete `_tokenApprovals[tokenId]`.
+                sstore(approvedAddressSlot, 0)    
+            }
         }
 
         // Underflow of the sender's balance is impossible because we check for
@@ -684,21 +705,22 @@ contract ERC721A is IERC721A {
         uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
 
         address from = address(uint160(prevOwnershipPacked));
-        address approvedAddress = _tokenApprovals[tokenId];
 
-        if (approvalCheck) {
-            bool isApprovedOrOwner = (_msgSenderERC721A() == from ||
-                isApprovedForAll(from, _msgSenderERC721A()) ||
-                approvedAddress == _msgSenderERC721A());
+        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedAddress(tokenId);
 
-            if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-        }
+        if (approvalCheck) 
+            if (!_isOwnerOrApproved(approvedAddress, from, _msgSenderERC721A())) 
+                if (!isApprovedForAll(from, _msgSenderERC721A()))
+                    revert TransferCallerNotOwnerNorApproved();
 
         _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner.
-        if (approvedAddress != address(0)) {
-            _removeTokenApproval(tokenId);
+        assembly {
+            if approvedAddress {
+                // This is equivalent to delete `_tokenApprovals[tokenId]`.
+                sstore(approvedAddressSlot, 0)    
+            }
         }
 
         // Underflow of the sender's balance is impossible because we check for
