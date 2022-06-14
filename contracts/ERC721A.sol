@@ -586,7 +586,7 @@ contract ERC721A is IERC721A {
         uint256 tokenId
     ) private view returns (uint256 approvedAddressSlot, address approvedAddress) {
         mapping(uint256 => address) storage tokenApprovalsPtr = _tokenApprovals;
-        // The following is equivalent to `approvedAddress[tokenId]`.
+        // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId]`.
         assembly {
             // Compute the slot.    
             mstore(0x00, tokenId)
@@ -608,6 +608,8 @@ contract ERC721A is IERC721A {
         assembly {
             // Mask `from` to the lower 160 bits, in case the upper bits somehow aren't clean.
             from := and(from, BITMASK_ADDRESS)
+            // Mask `msgSender` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            msgSender := and(msgSender, BITMASK_ADDRESS)
             // `msgSender == from || msgSender == approvedAddress`.
             result := or(eq(msgSender, from), eq(msgSender, approvedAddress))
         }
