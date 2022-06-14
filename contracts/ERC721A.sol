@@ -706,10 +706,11 @@ contract ERC721A is IERC721A {
 
         (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedAddress(tokenId);
 
-        if (approvalCheck)
+        if (approvalCheck) {
+            // The nested ifs save around 20+ gas over a compound boolean condition.
             if (!_isOwnerOrApproved(approvedAddress, from, _msgSenderERC721A()))
-                // The nested ifs save around 20+ gas over a compound boolean condition.
                 if (!isApprovedForAll(from, _msgSenderERC721A())) revert TransferCallerNotOwnerNorApproved();
+        }
 
         _beforeTokenTransfers(from, address(0), tokenId, 1);
 
