@@ -61,7 +61,7 @@ contract ERC721A is IERC721A {
 
     // The mask of the lower 160 bits for addresses.
     uint256 private constant BITMASK_ADDRESS = (1 << 160) - 1;
-    
+
     // The maximum `quantity` that can be minted with `_mintERC2309`.
     // This limit is to prevent overflows on the address data entries.
     // For a limit of 5000, a total of 3.689e15 calls to `_mintERC2309`
@@ -580,6 +580,19 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Zeroes out _tokenApprovals[tokenId]
+     */
+    function _removeTokenApproval(uint256 tokenId) private {
+        mapping(uint256 => address) storage tokenApprovalPtr = _tokenApprovals;
+        assembly {
+            mstore(0x00, tokenId)
+            mstore(0x20, tokenApprovalPtr.slot)
+            let hash := keccak256(0, 0x40)
+            sstore(hash, 0)
+        }
+    }
+
+    /**
      * @dev Transfers `tokenId` from `from` to `to`.
      *
      * Requirements:
@@ -611,7 +624,7 @@ contract ERC721A is IERC721A {
 
         // Clear approvals from the previous owner.
         if (approvedAddress != address(0)) {
-            delete _tokenApprovals[tokenId];
+            _removeTokenApproval(tokenId);
         }
 
         // Underflow of the sender's balance is impossible because we check for
@@ -685,7 +698,7 @@ contract ERC721A is IERC721A {
 
         // Clear approvals from the previous owner.
         if (approvedAddress != address(0)) {
-            delete _tokenApprovals[tokenId];
+            _removeTokenApproval(tokenId);
         }
 
         // Underflow of the sender's balance is impossible because we check for
