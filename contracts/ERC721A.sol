@@ -59,6 +59,9 @@ contract ERC721A is IERC721A {
     // The bit position of `extraData` in packed ownership.
     uint256 private constant BITPOS_EXTRA_DATA = 232;
 
+    // The mask of the lower 160 bits for addresses.
+    uint256 private constant BITMASK_ADDRESS = (1 << 160) - 1;
+
     // The tokenId of the next token to be minted.
     uint256 private _currentIndex;
 
@@ -276,7 +279,7 @@ contract ERC721A is IERC721A {
     function _packOwnershipData(address owner, uint256 flags) private view returns (uint256 value) {
         assembly {
             // Mask `owner` to the lower 160 bits, in case the upper bits somehow aren't clean.
-            owner := and(owner, 0xffffffffffffffffffffffffffffffffffffffff)
+            owner := and(owner, BITMASK_ADDRESS)
             // `owner | (block.timestamp << BITPOS_START_TIMESTAMP) | flags`.
             value := or(owner, or(shl(BITPOS_START_TIMESTAMP, timestamp()), flags))
         }
@@ -698,7 +701,8 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Gets the next extra data for the packed ownership data.
+     * @dev Returns the next extra data for the packed ownership data.
+     * The returned result is shifted into position.
      */
     function _nextExtraData(
         address from,
