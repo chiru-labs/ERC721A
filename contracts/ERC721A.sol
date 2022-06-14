@@ -382,78 +382,6 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Transfers `tokenId` from `from` to `to`.
-     *
-     * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must be owned by `from`.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public virtual override {
-        uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
-
-        if (address(uint160(prevOwnershipPacked)) != from) revert TransferFromIncorrectOwner();
-
-        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedAddress(tokenId);
-
-        if (!_isOwnerOrApproved(approvedAddress, from, _msgSenderERC721A()))
-            if (!isApprovedForAll(from, _msgSenderERC721A())) revert TransferCallerNotOwnerNorApproved();
-
-        if (to == address(0)) revert TransferToZeroAddress();
-
-        _beforeTokenTransfers(from, to, tokenId, 1);
-
-        // Clear approvals from the previous owner.
-        assembly {
-            if approvedAddress {
-                // This is equivalent to `delete _tokenApprovals[tokenId]`.
-                sstore(approvedAddressSlot, 0)
-            }
-        }
-
-        // Underflow of the sender's balance is impossible because we check for
-        // ownership above and the recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
-        unchecked {
-            // We can directly increment and decrement the balances.
-            --_packedAddressData[from]; // Updates: `balance -= 1`.
-            ++_packedAddressData[to]; // Updates: `balance += 1`.
-
-            // Updates:
-            // - `address` to the next owner.
-            // - `startTimestamp` to the timestamp of transfering.
-            // - `burned` to `false`.
-            // - `nextInitialized` to `true`.
-            _packedOwnerships[tokenId] = _packOwnershipData(
-                to,
-                BITMASK_NEXT_INITIALIZED | _nextExtraData(from, to, prevOwnershipPacked)
-            );
-
-            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
-            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
-                uint256 nextTokenId = tokenId + 1;
-                // If the next slot's address is zero and not burned (i.e. packed value is zero).
-                if (_packedOwnerships[nextTokenId] == 0) {
-                    // If the next slot is within bounds.
-                    if (nextTokenId != _currentIndex) {
-                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
-                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
-                    }
-                }
-            }
-        }
-
-        emit Transfer(from, to, tokenId);
-        _afterTokenTransfers(from, to, tokenId, 1);
-    }
-
-    /**
      * @dev See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(
@@ -676,6 +604,78 @@ contract ERC721A is IERC721A {
             // `msgSender == from || msgSender == approvedAddress`.
             result := or(eq(msgSender, from), eq(msgSender, approvedAddress))
         }
+    }
+
+    /**
+     * @dev Transfers `tokenId` from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
+
+        if (address(uint160(prevOwnershipPacked)) != from) revert TransferFromIncorrectOwner();
+
+        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedAddress(tokenId);
+
+        if (!_isOwnerOrApproved(approvedAddress, from, _msgSenderERC721A()))
+            if (!isApprovedForAll(from, _msgSenderERC721A())) revert TransferCallerNotOwnerNorApproved();
+
+        if (to == address(0)) revert TransferToZeroAddress();
+
+        _beforeTokenTransfers(from, to, tokenId, 1);
+
+        // Clear approvals from the previous owner.
+        assembly {
+            if approvedAddress {
+                // This is equivalent to `delete _tokenApprovals[tokenId]`.
+                sstore(approvedAddressSlot, 0)
+            }
+        }
+
+        // Underflow of the sender's balance is impossible because we check for
+        // ownership above and the recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        unchecked {
+            // We can directly increment and decrement the balances.
+            --_packedAddressData[from]; // Updates: `balance -= 1`.
+            ++_packedAddressData[to]; // Updates: `balance += 1`.
+
+            // Updates:
+            // - `address` to the next owner.
+            // - `startTimestamp` to the timestamp of transfering.
+            // - `burned` to `false`.
+            // - `nextInitialized` to `true`.
+            _packedOwnerships[tokenId] = _packOwnershipData(
+                to,
+                BITMASK_NEXT_INITIALIZED | _nextExtraData(from, to, prevOwnershipPacked)
+            );
+
+            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
+            if (prevOwnershipPacked & BITMASK_NEXT_INITIALIZED == 0) {
+                uint256 nextTokenId = tokenId + 1;
+                // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                if (_packedOwnerships[nextTokenId] == 0) {
+                    // If the next slot is within bounds.
+                    if (nextTokenId != _currentIndex) {
+                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
+                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                    }
+                }
+            }
+        }
+
+        emit Transfer(from, to, tokenId);
+        _afterTokenTransfers(from, to, tokenId, 1);
     }
 
     /**
