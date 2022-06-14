@@ -1,10 +1,8 @@
-const { deployContract, offsettedIndex } = require('../helpers.js');
+const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
 
 const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
-    let offsetted;
-
     context(`${contract}`, function () {
       beforeEach(async function () {
         this.erc721aCounter = await deployContract(contract, constructorArgs);
