@@ -643,7 +643,7 @@ contract ERC721A is IERC721A {
         // Clear approvals from the previous owner.
         assembly {
             if approvedAddress {
-                // This is equivalent to delete `_tokenApprovals[tokenId]`.
+                // This is equivalent to `delete _tokenApprovals[tokenId]`.
                 sstore(approvedAddressSlot, 0)    
             }
         }
@@ -718,7 +718,7 @@ contract ERC721A is IERC721A {
         // Clear approvals from the previous owner.
         assembly {
             if approvedAddress {
-                // This is equivalent to delete `_tokenApprovals[tokenId]`.
+                // This is equivalent to `delete _tokenApprovals[tokenId]`.
                 sstore(approvedAddressSlot, 0)    
             }
         }
