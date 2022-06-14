@@ -215,7 +215,8 @@ contract ERC721A is IERC721A {
         assembly {
             auxCasted := aux
         }
-        _packedAddressData[owner] = (packed & BITMASK_AUX_COMPLEMENT) | (auxCasted << BITPOS_AUX);
+        packed = (packed & BITMASK_AUX_COMPLEMENT) | (auxCasted << BITPOS_AUX);
+        _packedAddressData[owner] = packed;
     }
 
     /**
@@ -776,7 +777,8 @@ contract ERC721A is IERC721A {
         assembly {
             extraDataCasted := extraData
         }
-        _packedOwnerships[index] = (packed & BITMASK_EXTRA_DATA_COMPLEMENT) | (extraDataCasted << BITPOS_EXTRA_DATA);
+        packed = (packed & BITMASK_EXTRA_DATA_COMPLEMENT) | (extraDataCasted << BITPOS_EXTRA_DATA);
+        _packedOwnerships[index] = packed;
     }
 
     /**
