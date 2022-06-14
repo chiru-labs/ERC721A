@@ -774,15 +774,13 @@ contract ERC721A is IERC721A {
     function _setExtraDataAt(uint256 index, uint24 extraData) internal {
         uint256 packed = _packedOwnerships[index];
         if (packed == 0) revert OwnershipNotInitializedForExtraData();
-        // Update `extraData` with assembly to avoid redundant masking.
+        uint256 extraDataCasted;
+        // Cast `extraData` with assembly to avoid redundant masking.
         assembly {
-            // `(packed & BITMASK_EXTRA_DATA_COMPLEMENT) | (extraData << BITPOS_EXTRA_DATA)`.
-            packed := or(
-                and(packed, BITMASK_EXTRA_DATA_COMPLEMENT), 
-                shl(BITPOS_EXTRA_DATA, extraData)
-            )
+            extraDataCasted := extraData
         }
-        _packedOwnerships[index] = packed;
+        _packedOwnerships[index] = (packed & BITMASK_EXTRA_DATA_COMPLEMENT) |
+            (extraDataCasted << BITPOS_EXTRA_DATA);
     }
 
     /**
