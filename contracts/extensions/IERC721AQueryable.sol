@@ -4,14 +4,17 @@
 
 pragma solidity ^0.8.4;
 
-import './IERC721AQueryable.sol';
-import '../ERC721A.sol';
+import '../IERC721A.sol';
 
 /**
- * @title ERC721A Queryable
- * @dev ERC721A subclass with convenience query functions.
+ * @dev Interface of an ERC721AQueryable compliant contract.
  */
-abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
+interface IERC721AQueryable is IERC721A {
+    /**
+     * Invalid query range (`start` >= `stop`).
+     */
+    error InvalidQueryRange();
+
     /**
      * @dev Returns the `TokenOwnership` struct at `tokenId` without reverting.
      *
@@ -19,46 +22,24 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      *   - `addr` = `address(0)`
      *   - `startTimestamp` = `0`
      *   - `burned` = `false`
-     *   - `extraData` = `0`
      *
      * If the `tokenId` is burned:
      *   - `addr` = `<Address of owner before token was burned>`
      *   - `startTimestamp` = `<Timestamp when token was burned>`
      *   - `burned = `true`
-     *   - `extraData` = `<Extra data when token was burned>`
      *
      * Otherwise:
      *   - `addr` = `<Address of owner>`
      *   - `startTimestamp` = `<Timestamp of start of ownership>`
      *   - `burned = `false`
-     *   - `extraData` = `<Extra data at start of ownership>`
      */
-    function explicitOwnershipOf(uint256 tokenId) public view override returns (TokenOwnership memory) {
-        TokenOwnership memory ownership;
-        if (tokenId < _startTokenId() || tokenId >= _nextTokenId()) {
-            return ownership;
-        }
-        ownership = _ownershipAt(tokenId);
-        if (ownership.burned) {
-            return ownership;
-        }
-        return _ownershipOf(tokenId);
-    }
+    function explicitOwnershipOf(uint256 tokenId) external view returns (TokenOwnership memory);
 
     /**
      * @dev Returns an array of `TokenOwnership` structs at `tokenIds` in order.
      * See {ERC721AQueryable-explicitOwnershipOf}
      */
-    function explicitOwnershipsOf(uint256[] memory tokenIds) external view override returns (TokenOwnership[] memory) {
-        unchecked {
-            uint256 tokenIdsLength = tokenIds.length;
-            TokenOwnership[] memory ownerships = new TokenOwnership[](tokenIdsLength);
-            for (uint256 i; i != tokenIdsLength; ++i) {
-                ownerships[i] = explicitOwnershipOf(tokenIds[i]);
-            }
-            return ownerships;
-        }
-    }
+    function explicitOwnershipsOf(uint256[] memory tokenIds) external view returns (TokenOwnership[] memory);
 
     /**
      * @dev Returns an array of token IDs owned by `owner`,
@@ -76,62 +57,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         address owner,
         uint256 start,
         uint256 stop
-    ) external view override returns (uint256[] memory) {
-        unchecked {
-            if (start >= stop) revert InvalidQueryRange();
-            uint256 tokenIdsIdx;
-            uint256 stopLimit = _nextTokenId();
-            // Set `start = max(start, _startTokenId())`.
-            if (start < _startTokenId()) {
-                start = _startTokenId();
-            }
-            // Set `stop = min(stop, stopLimit)`.
-            if (stop > stopLimit) {
-                stop = stopLimit;
-            }
-            uint256 tokenIdsMaxLength = balanceOf(owner);
-            // Set `tokenIdsMaxLength = min(balanceOf(owner), stop - start)`,
-            // to cater for cases where `balanceOf(owner)` is too big.
-            if (start < stop) {
-                uint256 rangeLength = stop - start;
-                if (rangeLength < tokenIdsMaxLength) {
-                    tokenIdsMaxLength = rangeLength;
-                }
-            } else {
-                tokenIdsMaxLength = 0;
-            }
-            uint256[] memory tokenIds = new uint256[](tokenIdsMaxLength);
-            if (tokenIdsMaxLength == 0) {
-                return tokenIds;
-            }
-            // We need to call `explicitOwnershipOf(start)`,
-            // because the slot at `start` may not be initialized.
-            TokenOwnership memory ownership = explicitOwnershipOf(start);
-            address currOwnershipAddr;
-            // If the starting slot exists (i.e. not burned), initialize `currOwnershipAddr`.
-            // `ownership.address` will not be zero, as `start` is clamped to the valid token ID range.
-            if (!ownership.burned) {
-                currOwnershipAddr = ownership.addr;
-            }
-            for (uint256 i = start; i != stop && tokenIdsIdx != tokenIdsMaxLength; ++i) {
-                ownership = _ownershipAt(i);
-                if (ownership.burned) {
-                    continue;
-                }
-                if (ownership.addr != address(0)) {
-                    currOwnershipAddr = ownership.addr;
-                }
-                if (currOwnershipAddr == owner) {
-                    tokenIds[tokenIdsIdx++] = i;
-                }
-            }
-            // Downsize the array to fit.
-            assembly {
-                mstore(tokenIds, tokenIdsIdx)
-            }
-            return tokenIds;
-        }
-    }
+    ) external view returns (uint256[] memory);
 
     /**
      * @dev Returns an array of token IDs owned by `owner`.
@@ -143,26 +69,5 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      * multiple smaller scans if the collection is large enough to cause
      * an out-of-gas error (10K pfp collections should be fine).
      */
-    function tokensOfOwner(address owner) external view override returns (uint256[] memory) {
-        unchecked {
-            uint256 tokenIdsIdx;
-            address currOwnershipAddr;
-            uint256 tokenIdsLength = balanceOf(owner);
-            uint256[] memory tokenIds = new uint256[](tokenIdsLength);
-            TokenOwnership memory ownership;
-            for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
-                ownership = _ownershipAt(i);
-                if (ownership.burned) {
-                    continue;
-                }
-                if (ownership.addr != address(0)) {
-                    currOwnershipAddr = ownership.addr;
-                }
-                if (currOwnershipAddr == owner) {
-                    tokenIds[tokenIdsIdx++] = i;
-                }
-            }
-            return tokenIds;
-        }
-    }
+    function tokensOfOwner(address owner) external view returns (uint256[] memory);
 }
