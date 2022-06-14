@@ -112,7 +112,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         describe('tokenURI (ERC721Metadata)', async function () {
           describe('tokenURI', async function () {
-            it('sends an emtpy uri by default', async function () {
+            it('sends an empty uri by default', async function () {
               expect(await this.erc721a.tokenURI(offsetted(0))).to.eq('');
             });
 
