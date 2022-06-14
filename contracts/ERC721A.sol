@@ -282,12 +282,12 @@ contract ERC721A is IERC721A {
     /**
      * @dev Packs ownership data into a single uint256.
      */
-    function _packOwnershipData(address owner, uint256 flags) private view returns (uint256 value) {
+    function _packOwnershipData(address owner, uint256 flags) private view returns (uint256 result) {
         assembly {
             // Mask `owner` to the lower 160 bits, in case the upper bits somehow aren't clean.
             owner := and(owner, BITMASK_ADDRESS)
             // `owner | (block.timestamp << BITPOS_START_TIMESTAMP) | flags`.
-            value := or(owner, or(shl(BITPOS_START_TIMESTAMP, timestamp()), flags))
+            result := or(owner, or(shl(BITPOS_START_TIMESTAMP, timestamp()), flags))
         }
     }
 
@@ -329,6 +329,15 @@ contract ERC721A is IERC721A {
      */
     function _baseURI() internal view virtual returns (string memory) {
         return '';
+    }
+
+    /**
+     * @dev Casts the boolean to uint256 without branching.
+     */
+    function _boolToUint256(bool value) private pure returns (uint256 result) {
+        assembly {
+            result := value
+        }
     }
 
     /**
@@ -562,7 +571,7 @@ contract ERC721A is IERC721A {
             // - `nextInitialized` to `quantity == 1`.
             _packedOwnerships[startTokenId] = _packOwnershipData(
                 to,
-                (_toUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED) | _nextExtraData(address(0), to, 0)
+                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED) | _nextExtraData(address(0), to, 0)
             );
 
             uint256 tokenId = startTokenId;
@@ -621,7 +630,7 @@ contract ERC721A is IERC721A {
             // - `nextInitialized` to `quantity == 1`.
             _packedOwnerships[startTokenId] = _packOwnershipData(
                 to,
-                (_toUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED) | _nextExtraData(address(0), to, 0)
+                (_boolToUint256(quantity == 1) << BITPOS_NEXT_INITIALIZED) | _nextExtraData(address(0), to, 0)
             );
 
             emit ConsecutiveTransfer(startTokenId, startTokenId + quantity - 1, address(0), to);
@@ -666,15 +675,6 @@ contract ERC721A is IERC721A {
             msgSender := and(msgSender, BITMASK_ADDRESS)
             // `msgSender == from || msgSender == approvedAddress`.
             result := or(eq(msgSender, from), eq(msgSender, approvedAddress))
-        }
-    }
-
-    /**
-     * @dev Casts the boolean to uint256 without branching.
-     */
-    function _toUint256(bool value) private pure returns (uint256 result) {
-        assembly {
-            result := value
         }
     }
 
