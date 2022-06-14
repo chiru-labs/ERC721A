@@ -19,16 +19,19 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      *   - `addr` = `address(0)`
      *   - `startTimestamp` = `0`
      *   - `burned` = `false`
+     *   - `extraData` = `0`
      *
      * If the `tokenId` is burned:
      *   - `addr` = `<Address of owner before token was burned>`
      *   - `startTimestamp` = `<Timestamp when token was burned>`
      *   - `burned = `true`
+     *   - `extraData` = `<Extra data when token was burned>`
      *
      * Otherwise:
      *   - `addr` = `<Address of owner>`
      *   - `startTimestamp` = `<Timestamp of start of ownership>`
      *   - `burned = `false`
+     *   - `extraData` = `<Extra data at start of ownership>`
      */
     function explicitOwnershipOf(uint256 tokenId) public view override returns (TokenOwnership memory) {
         TokenOwnership memory ownership;
