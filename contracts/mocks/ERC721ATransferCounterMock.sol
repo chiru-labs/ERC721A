@@ -13,7 +13,7 @@ contract ERC721ATransferCounterMock is ERC721AMock {
         address from,
         address to,
         uint24 previousExtraData
-    ) internal view virtual override returns (uint256) {
+    ) internal view virtual override returns (uint24) {
         if (from == address(0)) {
             return 42;
         }
