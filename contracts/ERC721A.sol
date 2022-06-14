@@ -167,7 +167,7 @@ contract ERC721A is IERC721A {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view override returns (uint256) {
-        if (_addressToUint256(owner) == 0) revert BalanceQueryForZeroAddress();
+        if (owner == address(0)) revert BalanceQueryForZeroAddress();
         return _packedAddressData[owner] & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
@@ -320,15 +320,6 @@ contract ERC721A is IERC721A {
      */
     function _baseURI() internal view virtual returns (string memory) {
         return '';
-    }
-
-    /**
-     * @dev Casts the address to uint256 without masking.
-     */
-    function _addressToUint256(address value) private pure returns (uint256 result) {
-        assembly {
-            result := value
-        }
     }
 
     /**
@@ -485,7 +476,7 @@ contract ERC721A is IERC721A {
      */
     function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
-        if (_addressToUint256(to) == 0) revert MintToZeroAddress();
+        if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
@@ -548,12 +539,12 @@ contract ERC721A is IERC721A {
             approvedAddress == _msgSenderERC721A());
 
         if (!isApprovedOrOwner) revert TransferCallerNotOwnerNorApproved();
-        if (_addressToUint256(to) == 0) revert TransferToZeroAddress();
+        if (to == address(0)) revert TransferToZeroAddress();
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
         // Clear approvals from the previous owner.
-        if (_addressToUint256(approvedAddress) != 0) {
+        if (approvedAddress != address(0)) {
             delete _tokenApprovals[tokenId];
         }
 
@@ -627,7 +618,7 @@ contract ERC721A is IERC721A {
         _beforeTokenTransfers(from, address(0), tokenId, 1);
 
         // Clear approvals from the previous owner.
-        if (_addressToUint256(approvedAddress) != 0) {
+        if (approvedAddress != address(0)) {
             delete _tokenApprovals[tokenId];
         }
 
