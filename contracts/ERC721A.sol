@@ -794,10 +794,7 @@ contract ERC721A is IERC721A {
         address to,
         uint256 prevOwnershipPacked
     ) private view returns (uint256) {
-        uint24 extraData;
-        assembly {
-            extraData := shr(BITPOS_EXTRA_DATA, prevOwnershipPacked)
-        }
+        uint24 extraData = uint24(prevOwnershipPacked >> BITPOS_EXTRA_DATA);
         return uint256(_extraData(from, to, extraData)) << BITPOS_EXTRA_DATA;
     }
 
