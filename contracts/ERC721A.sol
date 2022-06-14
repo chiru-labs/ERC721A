@@ -210,15 +210,14 @@ contract ERC721A is IERC721A {
      */
     function _setAux(address owner, uint64 aux) internal {
         uint256 packed = _packedAddressData[owner];
-        // Update `aux` with assembly to avoid redundant masking.
+        uint256 auxCasted;
+        // Cast `aux` with assembly to avoid redundant masking.
         assembly {
-            // `(packed & BITMASK_AUX_COMPLEMENT) | (aux << BITPOS_AUX)`.
-            packed := or(
-                and(packed, BITMASK_AUX_COMPLEMENT), 
-                shl(BITPOS_AUX, aux)
-            )
+            auxCasted := aux
         }
-        _packedAddressData[owner] = packed;
+        _packedAddressData[owner] =
+            (packed & BITMASK_AUX_COMPLEMENT) |
+            (auxCasted << BITPOS_AUX);;
     }
 
     /**
