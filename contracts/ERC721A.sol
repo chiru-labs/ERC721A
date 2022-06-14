@@ -64,7 +64,7 @@ contract ERC721A is IERC721A {
 
     // The mask of the lower 160 bits for addresses.
     uint256 private constant BITMASK_ADDRESS = (1 << 160) - 1;
-    
+
     // The maximum `quantity` that can be minted with `_mintERC2309`.
     // This limit is to prevent overflows on the address data entries.
     // For a limit of 5000, a total of 3.689e15 calls to `_mintERC2309`
@@ -215,9 +215,7 @@ contract ERC721A is IERC721A {
         assembly {
             auxCasted := aux
         }
-        _packedAddressData[owner] =
-            (packed & BITMASK_AUX_COMPLEMENT) |
-            (auxCasted << BITPOS_AUX);;
+        _packedAddressData[owner] = (packed & BITMASK_AUX_COMPLEMENT) | (auxCasted << BITPOS_AUX);
     }
 
     /**
@@ -778,8 +776,7 @@ contract ERC721A is IERC721A {
         assembly {
             extraDataCasted := extraData
         }
-        _packedOwnerships[index] = (packed & BITMASK_EXTRA_DATA_COMPLEMENT) |
-            (extraDataCasted << BITPOS_EXTRA_DATA);
+        _packedOwnerships[index] = (packed & BITMASK_EXTRA_DATA_COMPLEMENT) | (extraDataCasted << BITPOS_EXTRA_DATA);
     }
 
     /**
