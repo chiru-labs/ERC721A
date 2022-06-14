@@ -80,6 +80,8 @@ interface IERC721A {
         uint64 startTimestamp;
         // Whether the token has been burned.
         bool burned;
+        // Arbitrary data similar to `startTimestamp` that can be set through `_extraData`.
+        uint24 extraData;
     }
 
     /**

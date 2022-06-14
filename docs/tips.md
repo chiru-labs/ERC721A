@@ -4,10 +4,10 @@
 
 For users, it is more gas optimal to transfer bulk minted tokens in ascending token ID order.
 
-For example, if you have have bulk minted token IDs (33, 34, ..., 99),  
+For example, if you have bulk minted token IDs (33, 34, ..., 99),  
 you should transfer in the order (33, 34, ..., 99).
 
-The is due to how the lazy-initialization mechanism works internally:  
+This is due to how the lazy-initialization mechanism works internally:  
 it scans uninitialized slots in descending order until it finds an initialized slot.
 
 ## Popularity
@@ -46,7 +46,7 @@ ERC721A keeps track of additional variables in the internal mappings.
 - [`numberMinted`](erc721a.md#_numberMinted) per address.
 - [`numberBurned`](erc721a.md#_numberBurned) per address.
 
-These variables hitchike on the `SLOAD`s and `SSTORE`s at near zero additional gas cost (< 1%).
+These variables hitchhike on the `SLOAD`s and `SSTORE`s at near zero additional gas cost (< 1%).
 
 You can use them to design tokenomics with very minimal gas overhead.
 

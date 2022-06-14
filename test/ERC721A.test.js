@@ -259,15 +259,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('approval allows token transfer', async function () {
-            await expect(this.erc721a.connect(this.addr3)
-              .transferFrom(this.addr1.address, this.addr3.address, this.tokenId))
-            .to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+            await expect(
+              this.erc721a.connect(this.addr3).transferFrom(this.addr1.address, this.addr3.address, this.tokenId)
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
             await this.erc721a.connect(this.addr1).approve(this.addr3.address, this.tokenId);
-            await this.erc721a.connect(this.addr3)
-              .transferFrom(this.addr1.address, this.addr3.address, this.tokenId);
-            await expect(this.erc721a.connect(this.addr1)
-              .transferFrom(this.addr3.address, this.addr1.address, this.tokenId))
-            .to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+            await this.erc721a.connect(this.addr3).transferFrom(this.addr1.address, this.addr3.address, this.tokenId);
+            await expect(
+              this.erc721a.connect(this.addr1).transferFrom(this.addr3.address, this.addr1.address, this.tokenId)
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
           });
         });
 
@@ -725,3 +724,8 @@ describe('ERC721A with ERC2309', async function () {
     await expect(deployContract('ERC721AWithERC2309Mock', args)).to.be.revertedWith('MintZeroQuantity');
   });
 });
+
+describe(
+  'ERC721A override _extraData()',
+  createTestSuite({ contract: 'ERC721ATransferCounterMock', constructorArgs: ['Azuki', 'AZUKI'] })
+);
