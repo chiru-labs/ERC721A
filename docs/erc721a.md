@@ -404,6 +404,35 @@ Requirements:
 
 Emits a `Transfer` event.
 
+### \_mintERC2309
+
+```solidity
+function _mintERC2309(
+    address to,
+    uint256 quantity
+) internal
+```
+
+Mints `quantity` tokens and transfers them to `to`.
+
+This function is intended for efficient minting **only** during contract creation.
+
+It emits only one `ConsecutiveTransfer` as defined in [ERC2309](https://eips.ethereum.org/EIPS/eip-2309), 
+instead of a sequence of `Transfer` event(s).
+
+Calling this function outside of contract creation **will** make your contract non-compliant with the ERC721 standard.
+
+For full ERC721 compliance, substituting ERC721 `Transfer` event(s) with the ERC2309 
+`ConsecutiveTransfer` event is only permissible during contract creation.
+
+> To prevent overflows, the function limits `quantity` to a maximum of 5000.
+
+Requirements:
+
+- `to` cannot be the zero address.
+- `quantity` must be greater than `0`.
+
+Emits a `ConsecutiveTransfer` event.
 
 ### \_burn
 
@@ -490,3 +519,18 @@ event ApprovalForAll(address owner, address operator, bool approved)
 ```
 
 Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
+
+### ConsecutiveTransfer
+
+`IERC2309-ConsecutiveTransfer`
+
+```solidity
+event ConsecutiveTransfer(
+    uint256 indexed fromTokenId, 
+    uint256 toTokenId,
+    address indexed from, 
+    address indexed to
+)
+```
+
+Emitted when tokens from `fromTokenId` to `toTokenId` (inclusive) are transferred from `from` to `to`, during contract creation.
