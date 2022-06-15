@@ -404,6 +404,35 @@ Requirements:
 
 Emits a `Transfer` event.
 
+### \_mintERC2309
+
+```solidity
+function _mintERC2309(
+    address to,
+    uint256 quantity
+) internal
+```
+
+Mints `quantity` tokens and transfers them to `to`.
+
+This function is intended for efficient minting **only** during contract creation.
+
+It emits only one `ConsecutiveTransfer` as defined in [ERC2309](https://eips.ethereum.org/EIPS/eip-2309), 
+instead of a sequence of `Transfer` event(s).
+
+Calling this function outside of contract creation **will** make your contract non-compliant with the ERC721 standard.
+
+For full ERC721 compliance, substituting ERC721 `Transfer` event(s) with the ERC2309 
+`ConsecutiveTransfer` event is only permissible during contract creation.
+
+> To prevent overflows, the function limits `quantity` to a maximum of 5000.
+
+Requirements:
+
+- `to` cannot be the zero address.
+- `quantity` must be greater than `0`.
+
+Emits a `ConsecutiveTransfer` event.
 
 ### \_burn
 
@@ -459,6 +488,47 @@ If you are writing [GSN compatible contracts](https://docs.openzeppelin.com/cont
 you need to override this function   
 (to return `_msgSender()` if using with OpenZeppelin).
 
+### \_extraData
+
+```solidity
+function _extraData(
+    address from,
+    address to,
+    uint24 previousExtraData
+) internal view virtual returns (uint24)
+```
+
+Called during each token transfer to set the 24bit `extraData` field.
+
+This is an advanced storage hitchhiking feature for storing token related data.
+
+Intended to be overridden by the deriving contract to return the value to be stored after transfer.
+
+`previousExtraData` - the value of `extraData` before transfer.
+
+Calling conditions:
+
+- When `from` and `to` are both non-zero, `from`'s `tokenId` will be transferred to `to`.
+- When `from` is zero, `tokenId` will be minted for `to`.
+- When `to` is zero, `tokenId` will be burned by `from`.
+- `from` and `to` are never both zero.
+
+### \_setExtraDataAt
+
+```solidity
+function _setExtraDataAt(uint256 index, uint24 extraData) internal
+```
+
+Directly sets the `extraData` for the ownership data at `index`.
+
+This is an advanced storage hitchhiking feature for storing token related data.
+
+Requirements:
+
+- The token at `index` must be initialized.  
+  For bulk mints, `index` is the value of [`_nextTokenId`](#_nextTokenId) before bulk minting.
+
+
 ## Events
 
 ### Transfer
@@ -490,3 +560,18 @@ event ApprovalForAll(address owner, address operator, bool approved)
 ```
 
 Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
+
+### ConsecutiveTransfer
+
+`IERC2309-ConsecutiveTransfer`
+
+```solidity
+event ConsecutiveTransfer(
+    uint256 indexed fromTokenId, 
+    uint256 toTokenId,
+    address indexed from, 
+    address indexed to
+)
+```
+
+Emitted when tokens from `fromTokenId` to `toTokenId` (inclusive) are transferred from `from` to `to`, during contract creation.
