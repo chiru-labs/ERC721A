@@ -297,7 +297,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
               const ownershipBefore = await this.erc721a.getOwnershipAt(this.tokenId);
               this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
-              this.timestampToMine = (await getBlockTimestamp()) + 100;
+              this.timestampToMine = (await getBlockTimestamp()) + 12345;
               await mineBlockTimestamp(this.timestampToMine);
               this.timestampMined = await getBlockTimestamp();
 
@@ -330,6 +330,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             it('startTimestamp updated correctly', async function () {
               expect(this.timestampBefore).to.be.lt(this.timestampToMine);
               expect(this.timestampAfter).to.be.gte(this.timestampToMine);
+              expect(this.timestampAfter).to.be.lt(this.timestampToMine + 10);
               expect(this.timestampToMine).to.be.eq(this.timestampMined);
             });
           };
@@ -500,7 +501,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             this.balanceBefore = (await this.erc721a.balanceOf(this.minter.address)).toNumber();
 
-            this.timestampToMine = (await getBlockTimestamp()) + 100;
+            this.timestampToMine = (await getBlockTimestamp()) + 12345;
             await mineBlockTimestamp(this.timestampToMine);
             this.timestampMined = await getBlockTimestamp();
 
@@ -528,12 +529,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           it('adjusts OwnershipAt and OwnershipOf', async function () {
             const ownership = await this.erc721a.getOwnershipAt(offsetted(0));
             expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
+            expect(ownership.startTimestamp).to.be.lt(this.timestampToMine + 10);
             expect(ownership.burned).to.be.false;
 
             for (let tokenId = offsetted(0); tokenId < offsetted(quantity); tokenId++) {
               const ownership = await this.erc721a.getOwnershipOf(tokenId);
               expect(ownership.addr).to.equal(this.minter.address);
               expect(ownership.startTimestamp).to.be.gte(this.timestampToMine);
+              expect(ownership.startTimestamp).to.be.lt(this.timestampToMine + 10);
               expect(ownership.burned).to.be.false;
             }
 
