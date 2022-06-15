@@ -132,7 +132,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         const tokenIdToBurn = this.burnedTokenId + 1;
         const ownershipBefore = await this.erc721aBurnable.getOwnershipAt(tokenIdToBurn);
         const timestampBefore = parseInt(ownershipBefore.startTimestamp);
-        const timestampToMine = (await getBlockTimestamp()) + 100;
+        const timestampToMine = (await getBlockTimestamp()) + 12345;
         await mineBlockTimestamp(timestampToMine);
         const timestampMined = await getBlockTimestamp();
         await this.erc721aBurnable.connect(this.addr1).burn(tokenIdToBurn);
@@ -140,6 +140,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         const timestampAfter = parseInt(ownershipAfter.startTimestamp);
         expect(timestampBefore).to.be.lt(timestampToMine);
         expect(timestampAfter).to.be.gte(timestampToMine);
+        expect(timestampAfter).to.be.lt(timestampToMine + 10);
         expect(timestampToMine).to.be.eq(timestampMined);
       });
 
