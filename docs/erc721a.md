@@ -488,6 +488,47 @@ If you are writing [GSN compatible contracts](https://docs.openzeppelin.com/cont
 you need to override this function   
 (to return `_msgSender()` if using with OpenZeppelin).
 
+### \_extraData
+
+```solidity
+function _extraData(
+    address from,
+    address to,
+    uint24 previousExtraData
+) internal view virtual returns (uint24)
+```
+
+Called during each token transfer to set the 24bit `extraData` field.
+
+This is an advanced storage hitchhiking feature for storing token related data.
+
+Intended to be overridden by the deriving contract to return the value to be stored after transfer.
+
+`previousExtraData` - the value of `extraData` before transfer.
+
+Calling conditions:
+
+- When `from` and `to` are both non-zero, `from`'s `tokenId` will be transferred to `to`.
+- When `from` is zero, `tokenId` will be minted for `to`.
+- When `to` is zero, `tokenId` will be burned by `from`.
+- `from` and `to` are never both zero.
+
+### \_setExtraDataAt
+
+```solidity
+function _setExtraDataAt(uint256 index, uint24 extraData) internal
+```
+
+Directly sets the `extraData` for the ownership data at `index`.
+
+This is an advanced storage hitchhiking feature for storing token related data.
+
+Requirements:
+
+- The token at `index` must be initialized.  
+  For bulk mints, `index` is the value of [`_nextTokenId`](#_nextTokenId) before bulk minting.
+
+
 ## Events
 
 ### Transfer
