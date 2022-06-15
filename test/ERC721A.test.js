@@ -724,8 +724,3 @@ describe('ERC721A with ERC2309', async function () {
     await expect(deployContract('ERC721AWithERC2309Mock', args)).to.be.revertedWith('MintZeroQuantity');
   });
 });
-
-describe(
-  'ERC721A override _extraData()',
-  createTestSuite({ contract: 'ERC721ATransferCounterMock', constructorArgs: ['Azuki', 'AZUKI'] })
-);

@@ -1,19 +1,11 @@
-const { deployContract, offsettedIndex } = require('../helpers.js');
+const { deployContract } = require('../helpers.js');
 const { expect } = require('chai');
 
 const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
-    let offsetted;
-
     context(`${contract}`, function () {
       beforeEach(async function () {
         this.erc721aCounter = await deployContract(contract, constructorArgs);
-
-        this.startTokenId = this.erc721aCounter.startTokenId
-          ? (await this.erc721aCounter.startTokenId()).toNumber()
-          : 0;
-
-        offsetted = (...arr) => offsettedIndex(this.startTokenId, arr);
       });
 
       context('with minted tokens', async function () {
@@ -24,12 +16,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           this.addr1.expected = {
             balance: 1,
-            tokens: [offsetted(0)],
+            tokens: [0],
           };
 
           this.owner.expected = {
             balance: 2,
-            tokens: offsetted(1, 2),
+            tokens: [1, 2],
           };
 
           this.mintOrder = [this.addr1, this.owner];
@@ -82,6 +74,25 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               const ownership = await this.erc721aCounter.getOwnershipAt(test.tokenId);
               expect(ownership.extraData).to.equal(test.expectedData);
             }
+          });
+        });
+
+        describe('setExtraData', function () {
+          it('can set and get the extraData directly', async function () {
+            const extraData = 12345;
+            await this.erc721aCounter.setExtraDataAt(0, extraData);
+            const ownership = await this.erc721aCounter.getOwnershipAt(0);
+            expect(ownership.extraData).to.equal(extraData);
+          });
+
+          it('setting the extraData for uninitialized slot reverts', async function () {
+            const extraData = 12345;
+            await expect(this.erc721aCounter.setExtraDataAt(2, extraData))
+              .to.be.revertedWith('OwnershipNotInitializedForExtraData');
+            await this.erc721aCounter.transferFrom(this.owner.address, this.addr1.address, 2);
+            await this.erc721aCounter.setExtraDataAt(2, extraData);
+            const ownership = await this.erc721aCounter.getOwnershipAt(2);
+            expect(ownership.extraData).to.equal(extraData);
           });
         });
       });

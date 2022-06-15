@@ -22,4 +22,8 @@ contract ERC721ATransferCounterMock is ERC721AMock {
         }
         return previousExtraData + 1;
     }
+
+    function setExtraDataAt(uint256 index, uint24 extraData) public {
+        _setExtraDataAt(index, extraData);
+    }
 }

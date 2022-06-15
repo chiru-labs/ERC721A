@@ -60,6 +60,9 @@ contract ERC721A is IERC721A {
     // The bit position of `extraData` in packed ownership.
     uint256 private constant BITPOS_EXTRA_DATA = 232;
 
+    // Mask of all 256 bits in a packed ownership except the 24 bits for `extraData`.
+    uint256 private constant BITMASK_EXTRA_DATA_COMPLEMENT = (1 << 232) - 1;
+
     // The mask of the lower 160 bits for addresses.
     uint256 private constant BITMASK_ADDRESS = (1 << 160) - 1;
 
@@ -209,8 +212,8 @@ contract ERC721A is IERC721A {
     function _setAux(address owner, uint64 aux) internal {
         uint256 packed = _packedAddressData[owner];
         uint256 auxCasted;
+        // Cast `aux` with assembly to avoid redundant masking.
         assembly {
-            // Cast aux without masking.
             auxCasted := aux
         }
         packed = (packed & BITMASK_AUX_COMPLEMENT) | (auxCasted << BITPOS_AUX);
@@ -798,6 +801,21 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Directly sets the extra data for the ownership data `index`.
+     */
+    function _setExtraDataAt(uint256 index, uint24 extraData) internal {
+        uint256 packed = _packedOwnerships[index];
+        if (packed == 0) revert OwnershipNotInitializedForExtraData();
+        uint256 extraDataCasted;
+        // Cast `extraData` with assembly to avoid redundant masking.
+        assembly {
+            extraDataCasted := extraData
+        }
+        packed = (packed & BITMASK_EXTRA_DATA_COMPLEMENT) | (extraDataCasted << BITPOS_EXTRA_DATA);
+        _packedOwnerships[index] = packed;
+    }
+
+    /**
      * @dev Returns the next extra data for the packed ownership data.
      * The returned result is shifted into position.
      */
@@ -805,12 +823,9 @@ contract ERC721A is IERC721A {
         address from,
         address to,
         uint256 prevOwnershipPacked
-    ) internal view virtual returns (uint256) {
-        uint24 previousExtraData;
-        assembly {
-            previousExtraData := shr(BITPOS_EXTRA_DATA, prevOwnershipPacked)
-        }
-        return uint256(_extraData(from, to, previousExtraData)) << BITPOS_EXTRA_DATA;
+    ) private view returns (uint256) {
+        uint24 extraData = uint24(prevOwnershipPacked >> BITPOS_EXTRA_DATA);
+        return uint256(_extraData(from, to, extraData)) << BITPOS_EXTRA_DATA;
     }
 
     /**

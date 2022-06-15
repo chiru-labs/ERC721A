@@ -73,6 +73,11 @@ interface IERC721A {
      */
     error MintERC2309QuantityExceedsLimit();
 
+    /**
+     * The `extraData` cannot be set on an unintialized ownership slot.
+     */
+    error OwnershipNotInitializedForExtraData();
+
     struct TokenOwnership {
         // The address of the owner.
         address addr;
