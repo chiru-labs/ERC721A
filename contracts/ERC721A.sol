@@ -487,7 +487,6 @@ contract ERC721A is IERC721A {
      */
     function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
-        if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
 
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
@@ -514,12 +513,13 @@ contract ERC721A is IERC721A {
             );
 
             uint256 end = startTokenId + quantity;
+            uint256 toMasked;
 
             // Use assembly to loop and emit the `Transfer` event for gas savings.
             assembly {
                 // Mask `to` to the lower 160 bits,
                 // in case the upper bits somehow aren't clean.
-                let toMasked := and(to, BITMASK_ADDRESS)
+                toMasked := and(to, BITMASK_ADDRESS)
                 // Emit the `Transfer` event.
                 log4(
                     0, // Start of data (0, since no data).
@@ -539,6 +539,7 @@ contract ERC721A is IERC721A {
                     log4(0, 0, TRANSFER_EVENT_SIGNATURE, 0, toMasked, tokenId)
                 }
             }
+            if (toMasked == 0) revert MintToZeroAddress();
 
             _currentIndex = end;
         }
