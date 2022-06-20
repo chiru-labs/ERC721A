@@ -512,13 +512,12 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
-            uint256 end = startTokenId + quantity;
             uint256 toMasked;
+            uint256 end = startTokenId + quantity;
 
             // Use assembly to loop and emit the `Transfer` event for gas savings.
             assembly {
-                // Mask `to` to the lower 160 bits,
-                // in case the upper bits somehow aren't clean.
+                // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
                 toMasked := and(to, BITMASK_ADDRESS)
                 // Emit the `Transfer` event.
                 log4(
