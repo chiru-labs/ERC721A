@@ -72,6 +72,11 @@ contract ERC721A is IERC721A {
     // is required to cause an overflow, which is unrealistic.
     uint256 private constant MAX_MINT_ERC2309_QUANTITY_LIMIT = 5000;
 
+    // The `Transfer` event signature is given by:
+    // `keccak256(bytes("Transfer(address,address,uint256)"))`.
+    uint256 private constant TRANSFER_EVENT_SIGNATURE =
+        0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
+
     // The tokenId of the next token to be minted.
     uint256 private _currentIndex;
 
@@ -508,11 +513,32 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
-            uint256 tokenId = startTokenId;
             uint256 end = startTokenId + quantity;
-            do {
-                emit Transfer(address(0), to, tokenId++);
-            } while (tokenId < end);
+
+            // Use assembly to loop and emit the `Transfer` event for gas savings.
+            assembly {
+                // Mask `to` to the lower 160 bits,
+                // in case the upper bits somehow aren't clean.
+                let toMasked := and(to, BITMASK_ADDRESS)
+                // Emit the `Transfer` event.
+                log4(
+                    0, // Start of data (0, since no data).
+                    0, // End of data (0, since no data).
+                    TRANSFER_EVENT_SIGNATURE, // Signature.
+                    0, // `address(0)`.
+                    toMasked, // `to`.
+                    startTokenId // `tokenId`.
+                )
+
+                for {
+                    let tokenId := add(startTokenId, 1)
+                } iszero(eq(tokenId, end)) {
+                    tokenId := add(tokenId, 1)
+                } {
+                    // Emit the `Transfer` event. Similar to above.
+                    log4(0, 0, TRANSFER_EVENT_SIGNATURE, 0, toMasked, tokenId)
+                }
+            }
 
             _currentIndex = end;
         }
