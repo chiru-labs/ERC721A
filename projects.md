@@ -61,3 +61,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [Goblincatz](https://www.goblincatz.wtf/) | [Etherscan](https://etherscan.io/address/0x3249c4c8e4ee09b82560dfc19c5962b9d49b6c1f) | [Opensea](https://opensea.io/collection/goblincatz) | [Twitter](https://twitter.com/goblincatzwtf)
 - [Zero Gravity Club](https://www.thezerogravity.club/) | [Etherscan](https://etherscan.io/address/0xfa399699B3b0528A690e7f8b37adCD9b819511bA) | [Opensea](https://opensea.io/collection/zgc) | [Twitter](https://twitter.com/0gravityclub)
 - [Buildship](https://buildship.xyz/) | [Github](https://github.com/buildship-dev/nft-contracts) | [Twitter](https://twitter.com/buildship_dev)
+- [SkyPunk Legacy](https://www.neonskies.io/) | Etherscan | [Twitter](https://twitter.com/NeonSkies)
