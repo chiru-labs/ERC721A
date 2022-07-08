@@ -64,3 +64,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [The Miners Comic](https://www.theminersnft.com/) | [Etherscan](https://etherscan.io/address/0x42E61f03efd1C05281da5fe17Ce40a8d3B3dE908) | [Twitter](https://twitter.com/TheMinersNFT)
 - [SkyPunk Legacy](https://www.neonskies.io/) | Etherscan | [Twitter](https://twitter.com/NeonSkies)
 - [Edge Of Fusion 2D](https://www.edgeoffusion.com/) | [Etherscan](https://etherscan.io/address/0xBA0B93f3ef64be8cb1b239de248d94CA3657741a#code) | [Twitter](https://twitter.com/edgeoffusion)
+- [MEN F Tease](https://menftea.se/) | [Etherscan](https://etherscan.io/address/0xfe1f2b944e3d308581de33a37b1c22b582b0ff2c#code) | [Twitter](https://twitter.com/MenfTease)
