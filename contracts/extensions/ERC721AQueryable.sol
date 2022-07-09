@@ -33,7 +33,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      *   - `burned = `false`
      *   - `extraData` = `<Extra data at start of ownership>`
      */
-    function explicitOwnershipOf(uint256 tokenId) public view override returns (TokenOwnership memory) {
+    function explicitOwnershipOf(uint256 tokenId) public view virtual override returns (TokenOwnership memory) {
         TokenOwnership memory ownership;
         if (tokenId < _startTokenId() || tokenId >= _nextTokenId()) {
             return ownership;
@@ -52,6 +52,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
     function explicitOwnershipsOf(uint256[] calldata tokenIds)
         external
         view
+        virtual
         override
         returns (TokenOwnership[] memory)
     {
@@ -81,7 +82,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         address owner,
         uint256 start,
         uint256 stop
-    ) external view override returns (uint256[] memory) {
+    ) external view virtual override returns (uint256[] memory) {
         unchecked {
             if (start >= stop) revert InvalidQueryRange();
             uint256 tokenIdsIdx;
@@ -148,7 +149,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      * multiple smaller scans if the collection is large enough to cause
      * an out-of-gas error (10K pfp collections should be fine).
      */
-    function tokensOfOwner(address owner) external view override returns (uint256[] memory) {
+    function tokensOfOwner(address owner) external view virtual override returns (uint256[] memory) {
         unchecked {
             uint256 tokenIdsIdx;
             address currOwnershipAddr;
