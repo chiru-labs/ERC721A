@@ -49,7 +49,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      * @dev Returns an array of `TokenOwnership` structs at `tokenIds` in order.
      * See {ERC721AQueryable-explicitOwnershipOf}
      */
-    function explicitOwnershipsOf(uint256[] memory tokenIds)
+    function explicitOwnershipsOf(uint256[] calldata tokenIds)
         external
         view
         virtual
