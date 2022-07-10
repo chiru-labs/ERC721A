@@ -31,7 +31,7 @@ interface ERC721A__IERC721Receiver {
  */
 contract ERC721A is IERC721A {
     // Reference type for token approval.
-    struct TokenApproval {
+    struct TokenApprovalRef {
         address value;
     }
 
@@ -111,7 +111,7 @@ contract ERC721A is IERC721A {
     mapping(address => uint256) private _packedAddressData;
 
     // Mapping from token ID to approved address.
-    mapping(uint256 => TokenApproval) private _tokenApprovals;
+    mapping(uint256 => TokenApprovalRef) private _tokenApprovals;
 
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
@@ -587,7 +587,7 @@ contract ERC721A is IERC721A {
         view
         returns (uint256 approvedAddressSlot, address approvedAddress)
     {
-        TokenApproval storage tokenApproval = _tokenApprovals[tokenId];
+        TokenApprovalRef storage tokenApproval = _tokenApprovals[tokenId];
         // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId]`.
         assembly {
             approvedAddressSlot := tokenApproval.slot
