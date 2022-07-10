@@ -582,12 +582,11 @@ contract ERC721A is IERC721A {
         view
         returns (uint256 approvedAddressSlot, address approvedAddress)
     {
-        mapping(uint256 => address) storage tokenApprovalsPtr = _tokenApprovals;
         // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId]`.
         assembly {
             // Compute the slot.
             mstore(0x00, tokenId)
-            mstore(0x20, tokenApprovalsPtr.slot)
+            mstore(0x20, _tokenApprovals.slot)
             approvedAddressSlot := keccak256(0x00, 0x40)
             // Load the slot's value from storage.
             approvedAddress := sload(approvedAddressSlot)
