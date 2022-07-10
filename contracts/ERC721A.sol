@@ -30,6 +30,11 @@ interface ERC721A__IERC721Receiver {
  * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
 contract ERC721A is IERC721A {
+    // Reference type for token approval.
+    struct TokenApproval {
+        address value;
+    }
+
     // Mask of an entry in packed address data.
     uint256 private constant BITMASK_ADDRESS_DATA_ENTRY = (1 << 64) - 1;
 
@@ -106,7 +111,7 @@ contract ERC721A is IERC721A {
     mapping(address => uint256) private _packedAddressData;
 
     // Mapping from token ID to approved address.
-    mapping(uint256 => address) private _tokenApprovals;
+    mapping(uint256 => TokenApproval) private _tokenApprovals;
 
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
@@ -128,7 +133,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Returns the next token ID to be minted.
      */
-    function _nextTokenId() internal view virtual returns (uint256) {
+    function _nextTokenId() internal view returns (uint256) {
         return _currentIndex;
     }
 
@@ -137,7 +142,7 @@ contract ERC721A is IERC721A {
      * Burned tokens will reduce the count.
      * To get the total number of tokens minted, please see `_totalMinted`.
      */
-    function totalSupply() public view virtual override returns (uint256) {
+    function totalSupply() public view override returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
         // more than `_currentIndex - _startTokenId()` times.
         unchecked {
@@ -148,7 +153,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Returns the total amount of tokens minted in the contract.
      */
-    function _totalMinted() internal view virtual returns (uint256) {
+    function _totalMinted() internal view returns (uint256) {
         // Counter underflow is impossible as _currentIndex does not decrement,
         // and it is initialized to `_startTokenId()`
         unchecked {
@@ -159,7 +164,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Returns the total number of tokens burned.
      */
-    function _totalBurned() internal view virtual returns (uint256) {
+    function _totalBurned() internal view returns (uint256) {
         return _burnCounter;
     }
 
@@ -179,7 +184,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev See {IERC721-balanceOf}.
      */
-    function balanceOf(address owner) public view virtual override returns (uint256) {
+    function balanceOf(address owner) public view override returns (uint256) {
         if (owner == address(0)) revert BalanceQueryForZeroAddress();
         return _packedAddressData[owner] & BITMASK_ADDRESS_DATA_ENTRY;
     }
@@ -187,21 +192,21 @@ contract ERC721A is IERC721A {
     /**
      * Returns the number of tokens minted by `owner`.
      */
-    function _numberMinted(address owner) internal view virtual returns (uint256) {
+    function _numberMinted(address owner) internal view returns (uint256) {
         return (_packedAddressData[owner] >> BITPOS_NUMBER_MINTED) & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
     /**
      * Returns the number of tokens burned by or on behalf of `owner`.
      */
-    function _numberBurned(address owner) internal view virtual returns (uint256) {
+    function _numberBurned(address owner) internal view returns (uint256) {
         return (_packedAddressData[owner] >> BITPOS_NUMBER_BURNED) & BITMASK_ADDRESS_DATA_ENTRY;
     }
 
     /**
      * Returns the auxiliary data for `owner`. (e.g. number of whitelist mint slots used).
      */
-    function _getAux(address owner) internal view virtual returns (uint64) {
+    function _getAux(address owner) internal view returns (uint64) {
         return uint64(_packedAddressData[owner] >> BITPOS_AUX);
     }
 
@@ -209,7 +214,7 @@ contract ERC721A is IERC721A {
      * Sets the auxiliary data for `owner`. (e.g. number of whitelist mint slots used).
      * If there are multiple variables, please pack them into a uint64.
      */
-    function _setAux(address owner, uint64 aux) internal virtual {
+    function _setAux(address owner, uint64 aux) internal {
         uint256 packed = _packedAddressData[owner];
         uint256 auxCasted;
         // Cast `aux` with assembly to avoid redundant masking.
@@ -262,14 +267,14 @@ contract ERC721A is IERC721A {
     /**
      * Returns the unpacked `TokenOwnership` struct at `index`.
      */
-    function _ownershipAt(uint256 index) internal view virtual returns (TokenOwnership memory) {
+    function _ownershipAt(uint256 index) internal view returns (TokenOwnership memory) {
         return _unpackedOwnership(_packedOwnerships[index]);
     }
 
     /**
      * @dev Initializes the ownership slot minted at `index` for efficiency purposes.
      */
-    function _initializeOwnershipAt(uint256 index) internal virtual {
+    function _initializeOwnershipAt(uint256 index) internal {
         if (_packedOwnerships[index] == 0) {
             _packedOwnerships[index] = _packedOwnershipOf(index);
         }
@@ -279,7 +284,7 @@ contract ERC721A is IERC721A {
      * Gas spent here starts off proportional to the maximum mint batch size.
      * It gradually moves to O(1) as tokens get transferred around in the collection over time.
      */
-    function _ownershipOf(uint256 tokenId) internal view virtual returns (TokenOwnership memory) {
+    function _ownershipOf(uint256 tokenId) internal view returns (TokenOwnership memory) {
         return _unpackedOwnership(_packedOwnershipOf(tokenId));
     }
 
@@ -298,7 +303,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev See {IERC721-ownerOf}.
      */
-    function ownerOf(uint256 tokenId) public view virtual override returns (address) {
+    function ownerOf(uint256 tokenId) public view override returns (address) {
         return address(uint160(_packedOwnershipOf(tokenId)));
     }
 
@@ -349,7 +354,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev See {IERC721-approve}.
      */
-    function approve(address to, uint256 tokenId) public virtual override {
+    function approve(address to, uint256 tokenId) public override {
         address owner = ownerOf(tokenId);
 
         if (_msgSenderERC721A() != owner)
@@ -357,17 +362,17 @@ contract ERC721A is IERC721A {
                 revert ApprovalCallerNotOwnerNorApproved();
             }
 
-        _tokenApprovals[tokenId] = to;
+        _tokenApprovals[tokenId].value = to;
         emit Approval(owner, to, tokenId);
     }
 
     /**
      * @dev See {IERC721-getApproved}.
      */
-    function getApproved(uint256 tokenId) public view virtual override returns (address) {
+    function getApproved(uint256 tokenId) public view override returns (address) {
         if (!_exists(tokenId)) revert ApprovalQueryForNonexistentToken();
 
-        return _tokenApprovals[tokenId];
+        return _tokenApprovals[tokenId].value;
     }
 
     /**
@@ -421,7 +426,7 @@ contract ERC721A is IERC721A {
      *
      * Tokens start existing when they are minted (`_mint`),
      */
-    function _exists(uint256 tokenId) internal view virtual returns (bool) {
+    function _exists(uint256 tokenId) internal view returns (bool) {
         return
             _startTokenId() <= tokenId &&
             tokenId < _currentIndex && // If within bounds,
@@ -431,7 +436,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Equivalent to `_safeMint(to, quantity, '')`.
      */
-    function _safeMint(address to, uint256 quantity) internal virtual {
+    function _safeMint(address to, uint256 quantity) internal {
         _safeMint(to, quantity, '');
     }
 
@@ -452,7 +457,7 @@ contract ERC721A is IERC721A {
         address to,
         uint256 quantity,
         bytes memory _data
-    ) internal virtual {
+    ) internal {
         _mint(to, quantity);
 
         unchecked {
@@ -480,7 +485,7 @@ contract ERC721A is IERC721A {
      *
      * Emits a {Transfer} event for each mint.
      */
-    function _mint(address to, uint256 quantity) internal virtual {
+    function _mint(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
@@ -540,7 +545,7 @@ contract ERC721A is IERC721A {
      *
      * Emits a {ConsecutiveTransfer} event.
      */
-    function _mintERC2309(address to, uint256 quantity) internal virtual {
+    function _mintERC2309(address to, uint256 quantity) internal {
         uint256 startTokenId = _currentIndex;
         if (to == address(0)) revert MintToZeroAddress();
         if (quantity == 0) revert MintZeroQuantity();
@@ -582,13 +587,10 @@ contract ERC721A is IERC721A {
         view
         returns (uint256 approvedAddressSlot, address approvedAddress)
     {
+        TokenApproval storage tokenApproval = _tokenApprovals[tokenId];
         // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId]`.
         assembly {
-            // Compute the slot.
-            mstore(0x00, tokenId)
-            mstore(0x20, _tokenApprovals.slot)
-            approvedAddressSlot := keccak256(0x00, 0x40)
-            // Load the slot's value from storage.
+            approvedAddressSlot := tokenApproval.slot
             approvedAddress := sload(approvedAddressSlot)
         }
     }
@@ -802,7 +804,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Directly sets the extra data for the ownership data `index`.
      */
-    function _setExtraDataAt(uint256 index, uint24 extraData) internal virtual {
+    function _setExtraDataAt(uint256 index, uint24 extraData) internal {
         uint256 packed = _packedOwnerships[index];
         if (packed == 0) revert OwnershipNotInitializedForExtraData();
         uint256 extraDataCasted;
@@ -905,7 +907,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Converts a `uint256` to its ASCII `string` decimal representation.
      */
-    function _toString(uint256 value) internal pure virtual returns (string memory ptr) {
+    function _toString(uint256 value) internal pure returns (string memory ptr) {
         assembly {
             // The maximum value of a uint256 contains 78 digits (1 byte per digit),
             // but we allocate 128 bytes to keep the free memory pointer 32-byte word aliged.
