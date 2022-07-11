@@ -30,6 +30,11 @@ interface ERC721A__IERC721Receiver {
  * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
 contract ERC721A is IERC721A {
+    // Reference type for token approval.
+    struct TokenApprovalRef {
+        address value;
+    }
+
     // Mask of an entry in packed address data.
     uint256 private constant BITMASK_ADDRESS_DATA_ENTRY = (1 << 64) - 1;
 
@@ -106,7 +111,7 @@ contract ERC721A is IERC721A {
     mapping(address => uint256) private _packedAddressData;
 
     // Mapping from token ID to approved address.
-    mapping(uint256 => address) private _tokenApprovals;
+    mapping(uint256 => TokenApprovalRef) private _tokenApprovals;
 
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
@@ -357,7 +362,7 @@ contract ERC721A is IERC721A {
                 revert ApprovalCallerNotOwnerNorApproved();
             }
 
-        _tokenApprovals[tokenId] = to;
+        _tokenApprovals[tokenId].value = to;
         emit Approval(owner, to, tokenId);
     }
 
@@ -367,7 +372,7 @@ contract ERC721A is IERC721A {
     function getApproved(uint256 tokenId) public view virtual override returns (address) {
         if (!_exists(tokenId)) revert ApprovalQueryForNonexistentToken();
 
-        return _tokenApprovals[tokenId];
+        return _tokenApprovals[tokenId].value;
     }
 
     /**
@@ -582,14 +587,10 @@ contract ERC721A is IERC721A {
         view
         returns (uint256 approvedAddressSlot, address approvedAddress)
     {
-        mapping(uint256 => address) storage tokenApprovalsPtr = _tokenApprovals;
+        TokenApprovalRef storage tokenApproval = _tokenApprovals[tokenId];
         // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId]`.
         assembly {
-            // Compute the slot.
-            mstore(0x00, tokenId)
-            mstore(0x20, tokenApprovalsPtr.slot)
-            approvedAddressSlot := keccak256(0x00, 0x40)
-            // Load the slot's value from storage.
+            approvedAddressSlot := tokenApproval.slot
             approvedAddress := sload(approvedAddressSlot)
         }
     }
