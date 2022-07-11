@@ -40,10 +40,11 @@ contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
         assembly {
             // If `data.length > 0`.
             if mload(data) {
-                // Load the first byte of `data`.
+                // Load the 0th byte of `data`.
                 dataValue := byte(0, mload(add(data, 0x20)))
             }
         }
+        
         // For testing reverts with a message from the receiver contract.
         if (dataValue == 0x01) {
             revert('reverted in the receiver contract!');
