@@ -18,9 +18,6 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     // The bit position of `expires` in packed user info.
     uint256 private constant _BITPOS_EXPIRES = 160;
 
-    // The mask of the lower 160 bits for addresses.
-    uint256 private constant _BITMASK_ADDRESS = (1 << 160) - 1;
-
     // Mapping from token ID to user info.
     //
     // Bits Layout:
@@ -100,18 +97,17 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         super._beforeTokenTransfers(from, to, startTokenId, quantity);
         
         bool mayNeedClearing;
+        // For branchless boolean. Saves 60+ gas.
         assembly {
-            // Mask `to` and `from` to the lower 160 bits,
-            // incase the upper bits aren't clean.
-            let fromMasked := and(from, _BITMASK_ADDRESS)
-            let toMasked := and(to, _BITMASK_ADDRESS)
-            // Equivalent to `quantity == 1 && from != address(0) && to != from`.
+            // The amount of bits to left shift to clear the upper bits of addresses.
+            let addrShift := sub(256, _BITPOS_EXPIRES)
+            // Equivalent to `quantity == 1 && !(from == address(0) || to == from)`.
             mayNeedClearing := and(
-                eq(quantity, 1), 
-                and(
-                    gt(fromMasked, 0),
-                    iszero(eq(fromMasked, toMasked))
-                )
+                eq(quantity, 1),
+                iszero(or(
+                    iszero(shl(addrShift, from)),
+                    eq(shl(addrShift, from), shl(addrShift, to))
+                ))
             )
         }
 
