@@ -34,16 +34,7 @@ contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
         uint256 tokenId,
         bytes memory data
     ) public override returns (bytes4) {
-        uint256 dataValue;
-        // In v0.8.4, we can't directly cast via `bytes1(data)`.
-        // This assembly allows us to do the casting.
-        assembly {
-            // If `data.length > 0`.
-            if mload(data) {
-                // Load the 0th byte of `data`.
-                dataValue := byte(0, mload(add(data, 0x20)))
-            }
-        }
+        uint256 dataValue = data.length == 0 ? 0 : uint256(uint8(data[0]));
         
         // For testing reverts with a message from the receiver contract.
         if (dataValue == 0x01) {
