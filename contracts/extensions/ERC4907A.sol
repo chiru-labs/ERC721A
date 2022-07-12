@@ -18,6 +18,9 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     // The bit position of `expires` in packed user info.
     uint256 private constant _BITPOS_EXPIRES = 160;
 
+    // The mask of the lower 160 bits for addresses.
+    uint256 private constant _BITMASK_ADDRESS = (1 << 160) - 1;
+
     // Mapping from token ID to user info.
     //
     // Bits Layout:
@@ -38,10 +41,9 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         address user,
         uint64 expires
     ) public {
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert TransferCallerNotOwnerNorApproved();
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert SetUserCallerNotOwnerNorApproved();
 
-        uint256 packed = (uint256(expires) << _BITPOS_EXPIRES) | uint256(uint160(user));
-        _packedUserInfo[tokenId] = packed;
+        _packedUserInfo[tokenId] = (uint256(expires) << _BITPOS_EXPIRES) | uint256(uint160(user));
 
         emit UpdateUser(tokenId, user, expires);
     }
@@ -76,7 +78,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721A, IERC721A) returns (bool) {
         // The interface ID for ERC4907 is `0xad092b5c`.
         // See: https://eips.ethereum.org/EIPS/eip-4907
-        return ERC721A.supportsInterface(interfaceId) || interfaceId == 0xad092b5c;
+        return super.supportsInterface(interfaceId) || interfaceId == 0xad092b5c;
     }
 
     /**
@@ -84,5 +86,39 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
      */
     function _explicitUserOf(uint256 tokenId) internal view returns (address) {
         return address(uint160(_packedUserInfo[tokenId]));
+    }
+
+    /**
+     * @dev Overrides the `_beforeTokenTransfers` hook to clear the user info upon transfer.
+     */
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual override {
+        super._beforeTokenTransfers(from, to, startTokenId, quantity);
+        
+        bool mayNeedClearing;
+        assembly {
+            // Mask `to` and `from` to the lower 160 bits,
+            // incase the upper bits aren't clean.
+            let fromMasked := and(from, _BITMASK_ADDRESS)
+            let toMasked := and(to, _BITMASK_ADDRESS)
+            // Equivalent to `quantity == 1 && from != address(0) && to != from`.
+            mayNeedClearing := and(
+                eq(quantity, 1), 
+                and(
+                    gt(fromMasked, 0),
+                    iszero(eq(fromMasked, toMasked))
+                )
+            )
+        }
+
+        if (mayNeedClearing)
+            if (_packedUserInfo[startTokenId] != 0) {
+                delete _packedUserInfo[startTokenId];
+                emit UpdateUser(startTokenId, address(0), 0);
+            }
     }
 }

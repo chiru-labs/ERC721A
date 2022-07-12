@@ -11,6 +11,11 @@ import '../IERC721A.sol';
  */
 interface IERC4907A is IERC721A {
     /**
+     * The caller must own the token or be an approved operator.
+     */
+    error SetUserCallerNotOwnerNorApproved();
+
+    /**
      * @dev Emitted when the `user` of an NFT or the `expires` of the `user` is changed.
      * The zero address for user indicates that there is no user address.
      */
