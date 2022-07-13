@@ -34,18 +34,20 @@ contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
         uint256 tokenId,
         bytes memory data
     ) public override returns (bytes4) {
-        // for testing reverts with a message from the receiver contract
-        if (bytes1(data) == 0x01) {
+        uint256 dataValue = data.length == 0 ? 0 : uint256(uint8(data[0]));
+        
+        // For testing reverts with a message from the receiver contract.
+        if (dataValue == 0x01) {
             revert('reverted in the receiver contract!');
         }
 
-        // for testing with the returned wrong value from the receiver contract
-        if (bytes1(data) == 0x02) {
+        // For testing with the returned wrong value from the receiver contract.
+        if (dataValue == 0x02) {
             return 0x0;
         }
 
-        // for testing the reentrancy protection
-        if (bytes1(data) == 0x03) {
+        // For testing the reentrancy protection.
+        if (dataValue == 0x03) {
             IERC721AMock(_erc721aMock).safeMint(address(this), 1);
         }
 
