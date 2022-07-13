@@ -56,7 +56,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
             // Set `packed` to zero if the user has expired.
-            // Equivalent to `packed *= !(block.timestamp > expires) ? 1 : 0`
+            // Equivalent to `packed *= !(block.timestamp > expires) ? 1 : 0`.
             packed := mul(
                 packed,
                 iszero(gt(timestamp(), shr(_BITPOS_EXPIRES, packed)))
@@ -103,14 +103,14 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         // For branchless boolean. Saves 60+ gas.
         assembly {
             // Equivalent to `quantity == 1 && !(from == address(0) || from == to)`.
-            // We need to mask all the address with `_BITMASK_ADDRESS` to
+            // We need to mask the addresses with `_BITMASK_ADDRESS` to
             // clear any non-zero excess upper bits.
             mayNeedClearing := and(
                 eq(quantity, 1),
                 iszero(or(
-                    // Whether it is a mint.
+                    // Whether it is a mint (i.e. `from == address(0)`).
                     iszero(and(from, _BITMASK_ADDRESS)),
-                    // Whether `from == to`.
+                    // Whether the owner is unchanged (i.e. `from == to`).
                     eq(and(from, _BITMASK_ADDRESS), and(to, _BITMASK_ADDRESS))
                 ))
             )
