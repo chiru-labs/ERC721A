@@ -58,12 +58,10 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
             // Branchless `packed *= !(block.timestamp > expires) ? 1 : 0`.
             packed := mul(
                 packed,
-                // `!(block.timestamp > expires) ? 1 : 0`.
-                iszero(
-                    gt(
-                        timestamp(),
-                        shr(_BITPOS_EXPIRES, packed) // `expires`.
-                    )
+                // `block.timestamp <= expires ? 1 : 0`.
+                lt(
+                    shl(_BITPOS_EXPIRES, timestamp()),
+                    packed
                 )
             )
         }
