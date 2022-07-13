@@ -55,11 +55,17 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     function userOf(uint256 tokenId) public view returns (address) {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
-            // Set `packed` to zero if the user has expired.
+            // Set `packed` to zero if the user has expired without branching.
             // Equivalent to `packed *= !(block.timestamp > expires) ? 1 : 0`.
             packed := mul(
                 packed,
-                iszero(gt(timestamp(), shr(_BITPOS_EXPIRES, packed)))
+                // `!(block.timestamp > expires) ? 1 : 0`.
+                iszero(
+                    gt(
+                        timestamp(),
+                        shr(_BITPOS_EXPIRES, packed) // `expires`.
+                    )
+                )
             )
         }
         return address(uint160(packed));
@@ -107,19 +113,24 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
             // clear any non-zero excess upper bits.
             mayNeedClearing := and(
                 eq(quantity, 1),
-                iszero(or(
-                    // Whether it is a mint (i.e. `from == address(0)`).
-                    iszero(and(from, _BITMASK_ADDRESS)),
-                    // Whether the owner is unchanged (i.e. `from == to`).
-                    eq(and(from, _BITMASK_ADDRESS), and(to, _BITMASK_ADDRESS))
-                ))
+                // `!(from == address(0) || from == to)`.
+                iszero(
+                    or(
+                        // Whether it is a mint (i.e. `from == address(0)`).
+                        iszero(and(from, _BITMASK_ADDRESS)),
+                        // Whether the owner is unchanged (i.e. `from == to`).
+                        eq(and(from, _BITMASK_ADDRESS), and(to, _BITMASK_ADDRESS))
+                    )
+                )
             )
         }
 
-        if (mayNeedClearing)
+        if (mayNeedClearing) {
+            // If either `user` or `expires` are non-zero.
             if (_packedUserInfo[startTokenId] != 0) {
                 delete _packedUserInfo[startTokenId];
                 emit UpdateUser(startTokenId, address(0), 0);
             }
+        }
     }
 }
