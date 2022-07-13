@@ -18,6 +18,9 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     // The bit position of `expires` in packed user info.
     uint256 private constant _BITPOS_EXPIRES = 160;
 
+    // The mask of the lower 160 bits for addresses.
+    uint256 private constant _BITMASK_ADDRESS = (1 << 160) - 1;
+
     // Mapping from token ID to user info.
     //
     // Bits Layout:
@@ -52,11 +55,12 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     function userOf(uint256 tokenId) public view returns (address) {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
-            let expiry := shr(_BITPOS_EXPIRES, packed)
-            // `expires >= block.timestamp ? 1 : 0`.
-            let notExpired := iszero(lt(expiry, timestamp()))
             // Set `packed` to zero if the user has expired.
-            packed := mul(packed, notExpired)
+            // Equivalent to `packed *= !(block.timestamp > expires) ? 1 : 0`
+            packed := mul(
+                packed,
+                iszero(gt(timestamp(), shr(_BITPOS_EXPIRES, packed)))
+            )
         }
         return address(uint160(packed));
     }
@@ -98,12 +102,18 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         bool mayNeedClearing;
         // For branchless boolean. Saves 60+ gas.
         assembly {
-            // The amount of bits to left shift to clear the upper bits of addresses.
-            let addrShift := sub(256, _BITPOS_EXPIRES)
             // Equivalent to `quantity == 1 && !(from == address(0) || from == to)`.
-            let isMint := iszero(shl(addrShift, from))
-            let fromEqTo := eq(shl(addrShift, from), shl(addrShift, to))
-            mayNeedClearing := and(eq(quantity, 1), iszero(or(isMint, fromEqTo)))
+            // We need to mask all the address with `_BITMASK_ADDRESS` to
+            // clear any non-zero excess upper bits.
+            mayNeedClearing := and(
+                eq(quantity, 1),
+                iszero(or(
+                    // Whether it is a mint.
+                    iszero(and(from, _BITMASK_ADDRESS)),
+                    // Whether `from == to`.
+                    eq(and(from, _BITMASK_ADDRESS), and(to, _BITMASK_ADDRESS))
+                ))
+            )
         }
 
         if (mayNeedClearing)
