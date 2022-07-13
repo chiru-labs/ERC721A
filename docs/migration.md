@@ -69,7 +69,7 @@ function supportsInterface(
 
 The `ERC721AOwnersExplicit` extension has been removed. 
 
-Please use [`_initalizeOwnershipAt`](erc721a.md#_initalizeOwnershipAt) instead.
+Please use [`_initializeOwnershipAt`](erc721a.md#_initializeOwnershipAt) instead.
 
 You can make your own public wrapper function to initialize the slots for any desired range in a loop.
 
