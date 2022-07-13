@@ -55,7 +55,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     function userOf(uint256 tokenId) public view returns (address) {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
-            // Branchless `packed *= !(block.timestamp > expires) ? 1 : 0`.
+            // Branchless `packed *= block.timestamp <= expires ? 1 : 0`.
             packed := mul(
                 packed,
                 // `block.timestamp <= expires ? 1 : 0`.
