@@ -55,8 +55,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     function userOf(uint256 tokenId) public view returns (address) {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
-            // Set `packed` to zero if the user has expired without branching.
-            // Equivalent to `packed *= !(block.timestamp > expires) ? 1 : 0`.
+            // Branchless `packed *= !(block.timestamp > expires) ? 1 : 0`.
             packed := mul(
                 packed,
                 // `!(block.timestamp > expires) ? 1 : 0`.
@@ -106,10 +105,10 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         super._beforeTokenTransfers(from, to, startTokenId, quantity);
 
         bool mayNeedClearing;
-        // For branchless boolean. Saves 60+ gas.
         assembly {
-            // Equivalent to `quantity == 1 && !(from == address(0) || from == to)`.
-            // We need to mask the addresses with `_BITMASK_ADDRESS` to
+            // Branchless `quantity == 1 && !(from == address(0) || from == to)`.
+            // Saves 60+ gas.
+            // The addresses are masked with `_BITMASK_ADDRESS` to
             // clear any non-zero excess upper bits.
             mayNeedClearing := and(
                 eq(quantity, 1),
