@@ -27,10 +27,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           expect(await this.erc4097a.supportsInterface('0xad092b5c')).to.eq(true);
         });
 
-        it('does not support ERC721Enumerable', async function () {
-          expect(await this.erc4097a.supportsInterface('0x780e9d63')).to.eq(false);
-        });
-
         it('does not support random interface', async function () {
           expect(await this.erc4097a.supportsInterface('0x00000042')).to.eq(false);
         });
@@ -75,8 +71,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             
             this.setupAuthTest = async () => {
               this.tokenId = 0;
-              await expect(this.setUser())
-                .to.be.revertedWith('SetUserCallerNotOwnerNorApproved');
+              await expect(this.setUser()).to.be.revertedWith('SetUserCallerNotOwnerNorApproved');
             };
           });
 
@@ -103,9 +98,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           
           it('reverts for an invalid token', async function () {
             this.tokenId = 123;
-            await expect(
-              this.setUser()
-            ).to.be.revertedWith('OwnerQueryForNonexistentToken');
+            await expect(this.setUser()).to.be.revertedWith('OwnerQueryForNonexistentToken');
           });
 
           it('requires token ownership', async function () {
@@ -128,10 +121,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
         
         describe('after expiry', async function () {
-          it('userOf returns zero address after expires', async function () {
+          beforeEach(async function () {
             await this.erc4097a.connect(this.addr1)
               .setUser(this.tokenId, this.user.address, this.expires);
-            
+          });
+
+          it('userOf returns zero address after expires', async function () {
             expect(await this.erc4097a.userOf(this.tokenId)).to.equal(this.user.address);
             await mineBlockTimestamp(this.expires);
             expect(await this.erc4097a.userOf(this.tokenId)).to.equal(this.user.address);
@@ -140,9 +135,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('explicitUserOf returns correct address after expiry', async function () {
-            await this.erc4097a.connect(this.addr1)
-              .setUser(this.tokenId, this.user.address, this.expires);
-            
             expect(await this.erc4097a.explicitUserOf(this.tokenId)).to.equal(this.user.address);
             await mineBlockTimestamp(this.expires);
             expect(await this.erc4097a.explicitUserOf(this.tokenId)).to.equal(this.user.address);
@@ -152,58 +144,44 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
 
         describe('after transfer', async function () {
-          it('resets if set', async function () {
+          beforeEach(async function () {
             await this.erc4097a.connect(this.addr1)
               .setUser(this.tokenId, this.user.address, this.expires);
-            
-            this.transferTx = await this.erc4097a.connect(this.addr1)
-              .transferFrom(this.addr1.address, this.owner.address, this.tokenId);
 
+            this.destination = this.owner
+
+            this.transfer = () => this.erc4097a.connect(this.addr1)
+              .transferFrom(this.addr1.address, this.destination.address, this.tokenId);
+          });
+
+          it('resets if set', async function () {            
+            await this.transfer();
             expect(await this.erc4097a.explicitUserOf(this.tokenId)).to.equal(ZERO_ADDRESS);
             expect(await this.erc4097a.userOf(this.tokenId)).to.equal(ZERO_ADDRESS);
             expect(await this.erc4097a.userExpires(this.tokenId)).to.equal(0);
           });
 
           it('emits UpdateUser event if set', async function () {
-            await this.erc4097a.connect(this.addr1)
-              .setUser(this.tokenId, this.user.address, this.expires);
-            
-            this.transferTx = await this.erc4097a.connect(this.addr1)
-              .transferFrom(this.addr1.address, this.owner.address, this.tokenId);
-
-            await expect(await this.transferTx)
+            await expect(await this.transfer())
               .to.emit(this.erc4097a, 'UpdateUser')
               .withArgs(this.tokenId, ZERO_ADDRESS, 0);
           });
 
           it('does not emits UpdateUser event if not set', async function () {
-            await this.erc4097a.connect(this.addr1)
-              .setUser(this.tokenId, this.user.address, this.expires);
-
-            await this.erc4097a.connect(this.addr1)
-              .setUser(this.tokenId, ZERO_ADDRESS, 0);
-
-            this.transferTx = await this.erc4097a.connect(this.addr1)
-              .transferFrom(this.addr1.address, this.owner.address, this.tokenId);
-
-            await expect(await this.transferTx)
-              .to.not.emit(this.erc4097a, 'UpdateUser');
+            await this.erc4097a.connect(this.addr1).setUser(this.tokenId, ZERO_ADDRESS, 0);
+            await expect(await this.transfer()).to.not.emit(this.erc4097a, 'UpdateUser');
           });
 
           it('does not emits UpdateUser event if owner is unchanged', async function () {
-            this.transferTx = await this.erc4097a.connect(this.addr1)
-              .transferFrom(this.addr1.address, this.addr1.address, this.tokenId);
-
-            await expect(await this.transferTx)
-              .to.not.emit(this.erc4097a, 'UpdateUser');
+            this.destination = this.addr1;
+            await expect(await this.transfer()).to.not.emit(this.erc4097a, 'UpdateUser');
           });
 
           it('minting does not emits UpdateUser event', async function () {
-            this.mintTx = await this.erc4097a['safeMint(address,uint256)'](this.owner.address, 1);
-            await expect(await this.mintTx).to.not.emit(this.erc4097a, 'UpdateUser');
-
-            this.mintTx = await this.erc4097a['safeMint(address,uint256)'](this.owner.address, 2);
-            await expect(await this.mintTx).to.not.emit(this.erc4097a, 'UpdateUser');
+            for (let quantity = 1; quantity < 3; ++quantity) {
+              let tx = await this.erc4097a['safeMint(address,uint256)'](this.owner.address, quantity);
+              await expect(tx).to.not.emit(this.erc4097a, 'UpdateUser');
+            }
           });
         });
       });
