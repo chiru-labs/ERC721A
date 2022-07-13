@@ -52,12 +52,11 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     function userOf(uint256 tokenId) public view returns (address) {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
+            let expiry := shr(_BITPOS_EXPIRES, packed)
+            // `expires >= block.timestamp ? 1 : 0`.
+            let notExpired := iszero(lt(expiry, timestamp()))
             // Set `packed` to zero if the user has expired.
-            packed := mul(
-                packed,
-                // `expires >= block.timestamp`.
-                iszero(lt(shr(_BITPOS_EXPIRES, packed), timestamp()))
-            )
+            packed := mul(packed, notExpired)
         }
         return address(uint160(packed));
     }
@@ -95,20 +94,16 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         uint256 quantity
     ) internal virtual override {
         super._beforeTokenTransfers(from, to, startTokenId, quantity);
-        
+
         bool mayNeedClearing;
         // For branchless boolean. Saves 60+ gas.
         assembly {
             // The amount of bits to left shift to clear the upper bits of addresses.
             let addrShift := sub(256, _BITPOS_EXPIRES)
-            // Equivalent to `quantity == 1 && !(from == address(0) || to == from)`.
-            mayNeedClearing := and(
-                eq(quantity, 1),
-                iszero(or(
-                    iszero(shl(addrShift, from)),
-                    eq(shl(addrShift, from), shl(addrShift, to))
-                ))
-            )
+            // Equivalent to `quantity == 1 && !(from == address(0) || from == to)`.
+            let isMint := iszero(shl(addrShift, from))
+            let fromEqTo := eq(shl(addrShift, from), shl(addrShift, to))
+            mayNeedClearing := and(eq(quantity, 1), iszero(or(isMint, fromEqTo)))
         }
 
         if (mayNeedClearing)
