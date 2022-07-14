@@ -13,6 +13,8 @@
 
 > **📢 Version 4.x introduces several breaking changes. [Please refer to the documentation for more details.](https://chiru-labs.github.io/ERC721A/#/migration)**
 
+_We highly recommend reading the migration guide_, **especially** _if you are using with OpenZeppelin extensions_ (e.g. ERC2981).
+
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
