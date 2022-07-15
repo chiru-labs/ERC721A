@@ -17,15 +17,6 @@ contract ERC4907AMock is ERC721A, ERC4907A {
         return super.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfers(
-        address from,
-        address to,
-        uint256 startTokenId,
-        uint256 quantity
-    ) internal virtual override(ERC721A, ERC4907A) {
-        super._beforeTokenTransfers(from, to, startTokenId, quantity);
-    }
-
     function explicitUserOf(uint256 tokenId) public view returns (address) {
         return _explicitUserOf(tokenId);
     }

@@ -142,48 +142,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(await this.erc4097a.explicitUserOf(this.tokenId)).to.equal(this.user.address);
           });
         });
-
-        describe('after transfer', async function () {
-          beforeEach(async function () {
-            await this.erc4097a.connect(this.addr1)
-              .setUser(this.tokenId, this.user.address, this.expires);
-
-            this.destination = this.owner
-
-            this.transfer = () => this.erc4097a.connect(this.addr1)
-              .transferFrom(this.addr1.address, this.destination.address, this.tokenId);
-          });
-
-          it('resets if set', async function () {            
-            await this.transfer();
-            expect(await this.erc4097a.explicitUserOf(this.tokenId)).to.equal(ZERO_ADDRESS);
-            expect(await this.erc4097a.userOf(this.tokenId)).to.equal(ZERO_ADDRESS);
-            expect(await this.erc4097a.userExpires(this.tokenId)).to.equal(0);
-          });
-
-          it('emits UpdateUser event if set', async function () {
-            await expect(await this.transfer())
-              .to.emit(this.erc4097a, 'UpdateUser')
-              .withArgs(this.tokenId, ZERO_ADDRESS, 0);
-          });
-
-          it('does not emits UpdateUser event if not set', async function () {
-            await this.erc4097a.connect(this.addr1).setUser(this.tokenId, ZERO_ADDRESS, 0);
-            await expect(await this.transfer()).to.not.emit(this.erc4097a, 'UpdateUser');
-          });
-
-          it('does not emits UpdateUser event if owner is unchanged', async function () {
-            this.destination = this.addr1;
-            await expect(await this.transfer()).to.not.emit(this.erc4097a, 'UpdateUser');
-          });
-
-          it('minting does not emits UpdateUser event', async function () {
-            for (let quantity = 1; quantity < 3; ++quantity) {
-              let tx = await this.erc4097a['safeMint(address,uint256)'](this.owner.address, quantity);
-              await expect(tx).to.not.emit(this.erc4097a, 'UpdateUser');
-            }
-          });
-        });
       });
     });
   };

@@ -87,40 +87,4 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     function _explicitUserOf(uint256 tokenId) internal view returns (address) {
         return address(uint160(_packedUserInfo[tokenId]));
     }
-
-    /**
-     * @dev Overrides the `_beforeTokenTransfers` hook to clear the user info upon transfer.
-     */
-    function _beforeTokenTransfers(
-        address from,
-        address to,
-        uint256 startTokenId,
-        uint256 quantity
-    ) internal virtual override {
-        super._beforeTokenTransfers(from, to, startTokenId, quantity);
-
-        bool mayNeedClearing;
-        assembly {
-            // Branchless `!(from == address(0) || from == to)`.
-            // Saves 60+ gas.
-            // The addresses are masked with `_BITMASK_ADDRESS` to
-            // clear any non-zero excess upper bits.
-            mayNeedClearing := iszero(
-                or(
-                    // Whether it is a mint (i.e. `from == address(0)`).
-                    iszero(and(from, _BITMASK_ADDRESS)),
-                    // Whether the owner is unchanged (i.e. `from == to`).
-                    eq(and(from, _BITMASK_ADDRESS), and(to, _BITMASK_ADDRESS))
-                )
-            )
-        }
-
-        if (mayNeedClearing) {
-            // If either `user` or `expires` are non-zero.
-            if (_packedUserInfo[startTokenId] != 0) {
-                delete _packedUserInfo[startTokenId];
-                emit UpdateUser(startTokenId, address(0), 0);
-            }
-        }
-    }
 }
