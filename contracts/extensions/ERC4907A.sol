@@ -18,9 +18,6 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     // The bit position of `expires` in packed user info.
     uint256 private constant _BITPOS_EXPIRES = 160;
 
-    // The mask of the lower 160 bits for addresses.
-    uint256 private constant _BITMASK_ADDRESS = (1 << 160) - 1;
-
     // Mapping from token ID to user info.
     //
     // Bits Layout:
