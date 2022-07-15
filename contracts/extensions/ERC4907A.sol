@@ -59,10 +59,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
             packed := mul(
                 packed,
                 // `block.timestamp <= expires ? 1 : 0`.
-                lt(
-                    shl(_BITPOS_EXPIRES, timestamp()),
-                    packed
-                )
+                lt(shl(_BITPOS_EXPIRES, timestamp()), packed)
             )
         }
         return address(uint160(packed));
@@ -104,20 +101,16 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
 
         bool mayNeedClearing;
         assembly {
-            // Branchless `quantity == 1 && !(from == address(0) || from == to)`.
+            // Branchless `!(from == address(0) || from == to)`.
             // Saves 60+ gas.
             // The addresses are masked with `_BITMASK_ADDRESS` to
             // clear any non-zero excess upper bits.
-            mayNeedClearing := and(
-                eq(quantity, 1),
-                // `!(from == address(0) || from == to)`.
-                iszero(
-                    or(
-                        // Whether it is a mint (i.e. `from == address(0)`).
-                        iszero(and(from, _BITMASK_ADDRESS)),
-                        // Whether the owner is unchanged (i.e. `from == to`).
-                        eq(and(from, _BITMASK_ADDRESS), and(to, _BITMASK_ADDRESS))
-                    )
+            mayNeedClearing := iszero(
+                or(
+                    // Whether it is a mint (i.e. `from == address(0)`).
+                    iszero(and(from, _BITMASK_ADDRESS)),
+                    // Whether the owner is unchanged (i.e. `from == to`).
+                    eq(and(from, _BITMASK_ADDRESS), and(to, _BITMASK_ADDRESS))
                 )
             )
         }
