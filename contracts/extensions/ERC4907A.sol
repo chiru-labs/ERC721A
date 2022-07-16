@@ -37,7 +37,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         uint256 tokenId,
         address user,
         uint64 expires
-    ) public {
+    ) public virtual {
         if (!_isApprovedOrOwner(msg.sender, tokenId)) revert SetUserCallerNotOwnerNorApproved();
 
         _packedUserInfo[tokenId] = (uint256(expires) << _BITPOS_EXPIRES) | uint256(uint160(user));
@@ -49,7 +49,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
      * @dev Returns the user address for `tokenId`.
      * The zero address indicates that there is no user or if the user is expired.
      */
-    function userOf(uint256 tokenId) public view returns (address) {
+    function userOf(uint256 tokenId) public view virtual returns (address) {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
             // Branchless `packed *= block.timestamp <= expires ? 1 : 0`.
@@ -65,7 +65,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     /**
      * @dev Returns the user's expires of `tokenId`.
      */
-    function userExpires(uint256 tokenId) public view returns (uint256) {
+    function userExpires(uint256 tokenId) public view virtual returns (uint256) {
         return _packedUserInfo[tokenId] >> _BITPOS_EXPIRES;
     }
 
@@ -81,7 +81,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     /**
      * @dev Returns the user address for `tokenId`, ignoring the expiry status.
      */
-    function _explicitUserOf(uint256 tokenId) internal view returns (address) {
+    function _explicitUserOf(uint256 tokenId) internal view virtual returns (address) {
         return address(uint160(_packedUserInfo[tokenId]));
     }
 }
