@@ -622,7 +622,11 @@ contract ERC721A is IERC721A {
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
         address owner = ownerOf(tokenId);
-        return (spender == owner || isApprovedForAll(owner, spender) || getApproved(tokenId) == spender);
+        bool result = true;
+        if (spender != owner)
+            if (!isApprovedForAll(owner, spender))
+                if (getApproved(tokenId) != spender) result = false;
+        return result;
     }
 
     /**
