@@ -5,7 +5,7 @@
 pragma solidity ^0.8.4;
 
 /**
- * @dev Interface of an ERC721A compliant contract.
+ * @dev Interface of ERC721A.
  */
 interface IERC721A {
     /**
@@ -54,7 +54,8 @@ interface IERC721A {
     error TransferFromIncorrectOwner();
 
     /**
-     * Cannot safely transfer to a contract that does not implement the ERC721Receiver interface.
+     * Cannot safely transfer to a contract that does not implement the
+     * ERC721Receiver interface.
      */
     error TransferToNonERC721ReceiverImplementer();
 
@@ -78,41 +79,49 @@ interface IERC721A {
      */
     error OwnershipNotInitializedForExtraData();
 
+    // =============================================================
+    //                            STRUCTS
+    // =============================================================
+
     struct TokenOwnership {
         // The address of the owner.
         address addr;
-        // Keeps track of the start time of ownership with minimal overhead for tokenomics.
+        // Stores the start time of ownership with minimal overhead for tokenomics.
         uint64 startTimestamp;
         // Whether the token has been burned.
         bool burned;
-        // Arbitrary data similar to `startTimestamp` that can be set through `_extraData`.
+        // Arbitrary data similar to `startTimestamp` that can be set via {_extraData}.
         uint24 extraData;
     }
 
+    // =============================================================
+    //                         TOKEN COUNTERS
+    // =============================================================
+
     /**
-     * @dev Returns the total amount of tokens stored by the contract.
-     *
-     * Burned tokens are calculated here, use `_totalMinted()` if you want to count just minted tokens.
+     * @dev Returns the total number of tokens in existence.
+     * Burned tokens will reduce the count.
+     * To get the total number of tokens minted, please see {_totalMinted}.
      */
     function totalSupply() external view returns (uint256);
 
-    // ==============================
-    //            IERC165
-    // ==============================
+    // =============================================================
+    //                            IERC165
+    // =============================================================
 
     /**
      * @dev Returns true if this contract implements the interface defined by
      * `interfaceId`. See the corresponding
-     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
+     * [EIP section](https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified)
      * to learn more about how these ids are created.
      *
-     * This function call must use less than 30 000 gas.
+     * This function call must use less than 30000 gas.
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 
-    // ==============================
-    //            IERC721
-    // ==============================
+    // =============================================================
+    //                            IERC721
+    // =============================================================
 
     /**
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
@@ -125,12 +134,13 @@ interface IERC721A {
     event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
 
     /**
-     * @dev Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
+     * @dev Emitted when `owner` enables or disables
+     * (`approved`) `operator` to manage all of its assets.
      */
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
     /**
-     * @dev Returns the number of tokens in ``owner``'s account.
+     * @dev Returns the number of tokens in `owner`'s account.
      */
     function balanceOf(address owner) external view returns (uint256 balance);
 
@@ -144,15 +154,19 @@ interface IERC721A {
     function ownerOf(uint256 tokenId) external view returns (address owner);
 
     /**
-     * @dev Safely transfers `tokenId` token from `from` to `to`.
+     * @dev Safely transfers `tokenId` token from `from` to `to`,
+     * checking first that contract recipients are aware of the ERC721 protocol
+     * to prevent tokens from being forever locked.
      *
      * Requirements:
      *
      * - `from` cannot be the zero address.
      * - `to` cannot be the zero address.
      * - `tokenId` token must exist and be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     * - If the caller is not `from`, it must be have been allowed to move
+     * this token by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement
+     * {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
      *
      * Emits a {Transfer} event.
      */
@@ -164,18 +178,7 @@ interface IERC721A {
     ) external;
 
     /**
-     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
-     * are aware of the ERC721 protocol to prevent tokens from being forever locked.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If the caller is not `from`, it must be have been allowed to move this token by either {approve} or {setApprovalForAll}.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-     *
-     * Emits a {Transfer} event.
+     * @dev Equivalent to `safeTransferFrom(from, to, tokenId, '')`.
      */
     function safeTransferFrom(
         address from,
@@ -184,16 +187,18 @@ interface IERC721A {
     ) external;
 
     /**
-     * @dev Transfers `tokenId` token from `from` to `to`.
+     * @dev Transfers `tokenId` from `from` to `to`.
      *
-     * WARNING: Usage of this method is discouraged, use {safeTransferFrom} whenever possible.
+     * WARNING: Usage of this method is discouraged, use {safeTransferFrom}
+     * whenever possible.
      *
      * Requirements:
      *
      * - `from` cannot be the zero address.
      * - `to` cannot be the zero address.
      * - `tokenId` token must be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     * - If the caller is not `from`, it must be approved to move this token
+     * by either {approve} or {setApprovalForAll}.
      *
      * Emits a {Transfer} event.
      */
@@ -207,7 +212,8 @@ interface IERC721A {
      * @dev Gives permission to `to` to transfer `tokenId` token to another account.
      * The approval is cleared when the token is transferred.
      *
-     * Only a single account can be approved at a time, so approving the zero address clears previous approvals.
+     * Only a single account can be approved at a time, so approving the
+     * zero address clears previous approvals.
      *
      * Requirements:
      *
@@ -220,7 +226,8 @@ interface IERC721A {
 
     /**
      * @dev Approve or remove `operator` as an operator for the caller.
-     * Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller.
+     * Operators can call {transferFrom} or {safeTransferFrom}
+     * for any token owned by the caller.
      *
      * Requirements:
      *
@@ -242,13 +249,13 @@ interface IERC721A {
     /**
      * @dev Returns if the `operator` is allowed to manage all of the assets of `owner`.
      *
-     * See {setApprovalForAll}
+     * See {setApprovalForAll}.
      */
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 
-    // ==============================
-    //        IERC721Metadata
-    // ==============================
+    // =============================================================
+    //                        IERC721Metadata
+    // =============================================================
 
     /**
      * @dev Returns the token collection name.
@@ -265,13 +272,16 @@ interface IERC721A {
      */
     function tokenURI(uint256 tokenId) external view returns (string memory);
 
-    // ==============================
-    //            IERC2309
-    // ==============================
+    // =============================================================
+    //                           IERC2309
+    // =============================================================
 
     /**
-     * @dev Emitted when tokens in `fromTokenId` to `toTokenId` (inclusive) is transferred from `from` to `to`,
-     * as defined in the ERC2309 standard. See `_mintERC2309` for more details.
+     * @dev Emitted when tokens in `fromTokenId` to `toTokenId`
+     * (inclusive) is transferred from `from` to `to`, as defined in the
+     * [ERC2309](https://eips.ethereum.org/EIPS/eip-2309) standard.
+     *
+     * See {_mintERC2309} for more details.
      */
     event ConsecutiveTransfer(uint256 indexed fromTokenId, uint256 toTokenId, address indexed from, address indexed to);
 }
