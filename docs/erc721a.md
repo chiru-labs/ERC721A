@@ -341,10 +341,10 @@ Returns the token ownership data at the `index` slot. See [`TokenOwnership`](#To
 The token ownership data may or may not be initialized. 
 
 
-### \_initalizeOwnershipAt
+### \_initializeOwnershipAt
 
 ```solidity
-function _initalizeOwnershipAt(uint256 index) internal
+function _initializeOwnershipAt(uint256 index) internal
 ```
 
 Initializes the token ownership data at the `index` slot, if it has not been initialized.

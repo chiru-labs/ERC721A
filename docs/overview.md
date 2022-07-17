@@ -2,6 +2,13 @@
 
 ERC721A is an improved implementation of the [ERC721](https://eips.ethereum.org/EIPS/eip-721) Non-Fungible Token Standard that supports minting multiple tokens for close to the cost of one.
 
+## Announcements
+
+> **📢 Version 4.x introduces several breaking changes.  
+> [Please refer to the migration guide for more details.](migration.md)**
+
+_We highly recommend reading the migration guide_, **especially** _the part on [`supportsInterface`](migration.md?id=supportsinterface) if you are using with OpenZeppelin extensions_ (e.g. ERC2981).
+
 ## Installation
 
 ```
