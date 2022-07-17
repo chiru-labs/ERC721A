@@ -163,8 +163,8 @@ contract ERC721A is IERC721A {
      * @dev Returns the total amount of tokens minted in the contract.
      */
     function _totalMinted() internal view virtual returns (uint256) {
-        // Counter underflow is impossible as _currentIndex does not decrement,
-        // and it is initialized to `_startTokenId()`
+        // Counter underflow is impossible as `_currentIndex` does not decrement,
+        // and it is initialized to `_startTokenId()`.
         unchecked {
             return _currentIndex - _startTokenId();
         }
@@ -189,7 +189,7 @@ contract ERC721A is IERC721A {
         // The interface IDs are constants representing the first 4 bytes
         // of the XOR of all function selectors in the interface.
         // See: [ERC165](https://eips.ethereum.org/EIPS/eip-165)
-        // e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`
+        // (e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`)
         return
             interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
             interfaceId == 0x80ac58cd || // ERC165 interface ID for ERC721.
@@ -260,7 +260,7 @@ contract ERC721A is IERC721A {
                         // Hence, `curr` will not underflow.
                         //
                         // We can directly compare the packed value.
-                        // If the address is zero, packed is zero.
+                        // If the address is zero, packed will be zero.
                         while (packed == 0) {
                             packed = _packedOwnerships[--curr];
                         }
@@ -693,7 +693,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Transfers `tokenId` token from `from` to `to`.
+     * @dev Transfers `tokenId` from `from` to `to`.
      *
      * Requirements:
      *

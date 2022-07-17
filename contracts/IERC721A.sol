@@ -179,7 +179,7 @@ interface IERC721A {
     ) external;
 
     /**
-     * @dev Transfers `tokenId` token from `from` to `to`.
+     * @dev Transfers `tokenId` from `from` to `to`.
      *
      * WARNING: Usage of this method is discouraged, use {safeTransferFrom}
      * whenever possible.
