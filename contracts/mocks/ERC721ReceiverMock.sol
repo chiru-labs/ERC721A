@@ -35,7 +35,7 @@ contract ERC721ReceiverMock is ERC721A__IERC721Receiver {
         bytes memory data
     ) public override returns (bytes4) {
         uint256 dataValue = data.length == 0 ? 0 : uint256(uint8(data[0]));
-        
+
         // For testing reverts with a message from the receiver contract.
         if (dataValue == 0x01) {
             revert('reverted in the receiver contract!');

@@ -7,7 +7,7 @@ pragma solidity ^0.8.4;
 import './IERC721A.sol';
 
 /**
- * @dev ERC721 token receiver interface.
+ * @dev Interface of ERC721 token receiver.
  */
 interface ERC721A__IERC721Receiver {
     function onERC721Received(
@@ -19,15 +19,19 @@ interface ERC721A__IERC721Receiver {
 }
 
 /**
- * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard,
- * including the Metadata extension. Built to optimize for lower gas during batch mints.
+ * @title ERC721A
  *
- * Assumes serials are sequentially minted starting at `_startTokenId()`
- * (defaults to 0, e.g. 0, 1, 2, 3..).
+ * @dev Implementation of the [ERC721](https://eips.ethereum.org/EIPS/eip-721)
+ * Non-Fungible Token Standard, including the Metadata extension.
+ * Optimized for lower gas during batch mints.
  *
- * Assumes that an owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
+ * Token IDs are minted in sequential order (e.g. 0, 1, 2, 3, ...)
+ * starting from `_startTokenId()`.
  *
- * Assumes that the maximum token id cannot exceed 2**256 - 1 (max value of uint256).
+ * Assumptions:
+ *
+ * - An owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
+ * - The maximum token id cannot exceed 2**256 - 1 (max value of uint256).
  */
 contract ERC721A is IERC721A {
     // Reference type for token approval.
@@ -71,9 +75,9 @@ contract ERC721A is IERC721A {
     // The mask of the lower 160 bits for addresses.
     uint256 private constant _BITMASK_ADDRESS = (1 << 160) - 1;
 
-    // The maximum `quantity` that can be minted with `_mintERC2309`.
+    // The maximum `quantity` that can be minted with {_mintERC2309}.
     // This limit is to prevent overflows on the address data entries.
-    // For a limit of 5000, a total of 3.689e15 calls to `_mintERC2309`
+    // For a limit of 5000, a total of 3.689e15 calls to {_mintERC2309}
     // is required to cause an overflow, which is unrealistic.
     uint256 private constant _MAX_MINT_ERC2309_QUANTITY_LIMIT = 5000;
 
@@ -82,7 +86,7 @@ contract ERC721A is IERC721A {
     bytes32 private constant _TRANSFER_EVENT_SIGNATURE =
         0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
 
-    // The tokenId of the next token to be minted.
+    // The next token ID to be minted.
     uint256 private _currentIndex;
 
     // The number of tokens burned.
@@ -96,7 +100,7 @@ contract ERC721A is IERC721A {
 
     // Mapping from token ID to ownership details
     // An empty struct value does not necessarily mean the token is unowned.
-    // See `_packedOwnershipOf` implementation for details.
+    // See {_packedOwnershipOf} implementation for details.
     //
     // Bits Layout:
     // - [0..159]   `addr`
@@ -145,7 +149,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Returns the total number of tokens in existence.
      * Burned tokens will reduce the count.
-     * To get the total number of tokens minted, please see `_totalMinted`.
+     * To get the total number of tokens minted, please see {_totalMinted}.
      */
     function totalSupply() public view virtual override returns (uint256) {
         // Counter underflow is impossible as _burnCounter cannot be incremented
@@ -174,11 +178,17 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC165-supportsInterface}.
+     * @dev Returns true if this contract implements the interface defined by
+     * `interfaceId`. See the corresponding
+     * [EIP section](https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified)
+     * to learn more about how these ids are created.
+     *
+     * This function call must use less than 30000 gas.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        // The interface IDs are constants representing the first 4 bytes of the XOR of
-        // all function selectors in the interface. See: https://eips.ethereum.org/EIPS/eip-165
+        // The interface IDs are constants representing the first 4 bytes
+        // of the XOR of all function selectors in the interface.
+        // See: [ERC165](https://eips.ethereum.org/EIPS/eip-165)
         // e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`
         return
             interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
@@ -187,7 +197,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC721-balanceOf}.
+     * @dev Returns the number of tokens in `owner`'s account.
      */
     function balanceOf(address owner) public view virtual override returns (uint256) {
         if (owner == address(0)) revert BalanceQueryForZeroAddress();
@@ -243,9 +253,11 @@ contract ERC721A is IERC721A {
                     // If not burned.
                     if (packed & _BITMASK_BURNED == 0) {
                         // Invariant:
-                        // There will always be an ownership that has an address and is not burned
-                        // before an ownership that does not have an address and is not burned.
-                        // Hence, curr will not underflow.
+                        // There will always be an initialized ownership slot
+                        // (i.e. `ownership.addr != address(0) && ownership.burned == false`)
+                        // before an unintialized ownership slot
+                        // (i.e. `ownership.addr == address(0) && ownership.burned == false`)
+                        // Hence, `curr` will not underflow.
                         //
                         // We can directly compare the packed value.
                         // If the address is zero, packed is zero.
@@ -260,7 +272,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * Returns the unpacked `TokenOwnership` struct from `packed`.
+     * @dev Returns the unpacked `TokenOwnership` struct from `packed`.
      */
     function _unpackedOwnership(uint256 packed) private pure returns (TokenOwnership memory ownership) {
         ownership.addr = address(uint160(packed));
@@ -270,7 +282,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * Returns the unpacked `TokenOwnership` struct at `index`.
+     * @dev Returns the unpacked `TokenOwnership` struct at `index`.
      */
     function _ownershipAt(uint256 index) internal view virtual returns (TokenOwnership memory) {
         return _unpackedOwnership(_packedOwnerships[index]);
@@ -286,8 +298,8 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * Gas spent here starts off proportional to the maximum mint batch size.
-     * It gradually moves to O(1) as tokens get transferred around in the collection over time.
+     * @dev Gas spent here starts off proportional to the maximum mint batch size.
+     * It gradually moves to O(1) as tokens get transferred around over time.
      */
     function _ownershipOf(uint256 tokenId) internal view virtual returns (TokenOwnership memory) {
         return _unpackedOwnership(_packedOwnershipOf(tokenId));
@@ -306,28 +318,32 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC721-ownerOf}.
+     * @dev Returns the owner of the `tokenId` token.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
         return address(uint160(_packedOwnershipOf(tokenId)));
     }
 
     /**
-     * @dev See {IERC721Metadata-name}.
+     * @dev Returns the token collection name.
      */
     function name() public view virtual override returns (string memory) {
         return _name;
     }
 
     /**
-     * @dev See {IERC721Metadata-symbol}.
+     * @dev Returns the token collection symbol.
      */
     function symbol() public view virtual override returns (string memory) {
         return _symbol;
     }
 
     /**
-     * @dev See {IERC721Metadata-tokenURI}.
+     * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
@@ -357,7 +373,18 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC721-approve}.
+     * @dev Gives permission to `to` to transfer `tokenId` token to another account.
+     * The approval is cleared when the token is transferred.
+     *
+     * Only a single account can be approved at a time, so approving the
+     * zero address clears previous approvals.
+     *
+     * Requirements:
+     *
+     * - The caller must own the token or be an approved operator.
+     * - `tokenId` must exist.
+     *
+     * Emits an {Approval} event.
      */
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ownerOf(tokenId);
@@ -372,7 +399,11 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC721-getApproved}.
+     * @dev Returns the account approved for `tokenId` token.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
      */
     function getApproved(uint256 tokenId) public view virtual override returns (address) {
         if (!_exists(tokenId)) revert ApprovalQueryForNonexistentToken();
@@ -381,7 +412,15 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC721-setApprovalForAll}.
+     * @dev Approve or remove `operator` as an operator for the caller.
+     * Operators can call {transferFrom} or {safeTransferFrom}
+     * for any token owned by the caller.
+     *
+     * Requirements:
+     *
+     * - The `operator` cannot be the caller.
+     *
+     * Emits an {ApprovalForAll} event.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
         if (operator == _msgSenderERC721A()) revert ApproveToCaller();
@@ -391,14 +430,16 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC721-isApprovedForAll}.
+     * @dev Returns if the `operator` is allowed to manage all of the assets of `owner`.
+     *
+     * See {setApprovalForAll}.
      */
     function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
         return _operatorApprovals[owner][operator];
     }
 
     /**
-     * @dev See {IERC721-safeTransferFrom}.
+     * @dev Equivalent to `safeTransferFrom(from, to, tokenId, '')`.
      */
     function safeTransferFrom(
         address from,
@@ -409,7 +450,19 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev See {IERC721-safeTransferFrom}.
+     * @dev Safely transfers `tokenId` token from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token
+     *   by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement
+     *   {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     *
+     * Emits a {Transfer} event.
      */
     function safeTransferFrom(
         address from,
@@ -429,7 +482,7 @@ contract ERC721A is IERC721A {
      *
      * Tokens can be managed by their owner or approved accounts via {approve} or {setApprovalForAll}.
      *
-     * Tokens start existing when they are minted (`_mint`),
+     * Tokens start existing when they are minted. See {_mint}.
      */
     function _exists(uint256 tokenId) internal view virtual returns (bool) {
         return
@@ -640,12 +693,15 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Transfers `tokenId` from `from` to `to`.
+     * @dev Transfers `tokenId` token from `from` to `to`.
      *
      * Requirements:
      *
+     * - `from` cannot be the zero address.
      * - `to` cannot be the zero address.
      * - `tokenId` token must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token
+     *   by either {approve} or {setApprovalForAll}.
      *
      * Emits a {Transfer} event.
      */
@@ -678,7 +734,7 @@ contract ERC721A is IERC721A {
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as tokenId would have to be 2**256.
+        // Counter overflow is incredibly unrealistic as `tokenId` would have to be 2**256.
         unchecked {
             // We can directly increment and decrement the balances.
             --_packedAddressData[from]; // Updates: `balance -= 1`.
@@ -876,8 +932,8 @@ contract ERC721A is IERC721A {
     ) internal view virtual returns (uint24) {}
 
     /**
-     * @dev Hook that is called before a set of serially-ordered token ids are about to be transferred.
-     * This includes minting.
+     * @dev Hook that is called before a set of serially-ordered token IDs
+     * are about to be transferred. This includes minting.
      * And also called before burning one token.
      *
      * startTokenId - the first token id to be transferred
@@ -899,8 +955,8 @@ contract ERC721A is IERC721A {
     ) internal virtual {}
 
     /**
-     * @dev Hook that is called after a set of serially-ordered token ids have been transferred.
-     * This includes minting.
+     * @dev Hook that is called after a set of serially-ordered token IDs
+     * have been transferred. This includes minting.
      * And also called after one token has been burned.
      *
      * startTokenId - the first token id to be transferred
