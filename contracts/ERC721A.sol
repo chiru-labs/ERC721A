@@ -144,7 +144,7 @@ contract ERC721A is IERC721A {
     }
 
     // =============================================================
-    //                    TOKEN COUNT OPERATIONS
+    //                   TOKEN COUNTING OPERATIONS
     // =============================================================
 
     /**
@@ -688,7 +688,7 @@ contract ERC721A is IERC721A {
     ) internal virtual {}
 
     /**
-     * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target contract.
+     * @dev Private function to invoke {IERC721Receiver-onERC721Received} on a target contract.
      *
      * @param from address representing the previous owner of the given token ID
      * @param to target address that will receive the tokens
@@ -997,19 +997,6 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Returns the next extra data for the packed ownership data.
-     * The returned result is shifted into position.
-     */
-    function _nextExtraData(
-        address from,
-        address to,
-        uint256 prevOwnershipPacked
-    ) private view returns (uint256) {
-        uint24 extraData = uint24(prevOwnershipPacked >> _BITPOS_EXTRA_DATA);
-        return uint256(_extraData(from, to, extraData)) << _BITPOS_EXTRA_DATA;
-    }
-
-    /**
      * @dev Called during each token transfer to set the 24bit `extraData` field.
      * Intended to be overridden by the cosumer contract.
      *
@@ -1028,6 +1015,19 @@ contract ERC721A is IERC721A {
         address to,
         uint24 previousExtraData
     ) internal view virtual returns (uint24) {}
+
+    /**
+     * @dev Returns the next extra data for the packed ownership data.
+     * The returned result is shifted into position.
+     */
+    function _nextExtraData(
+        address from,
+        address to,
+        uint256 prevOwnershipPacked
+    ) private view returns (uint256) {
+        uint24 extraData = uint24(prevOwnershipPacked >> _BITPOS_EXTRA_DATA);
+        return uint256(_extraData(from, to, extraData)) << _BITPOS_EXTRA_DATA;
+    }
 
     // =============================================================
     //                       OTHER OPERATIONS
