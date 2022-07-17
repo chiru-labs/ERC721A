@@ -58,6 +58,8 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         uint256 packed = _packedUserInfo[tokenId];
         assembly {
             // Branchless `packed *= (block.timestamp <= expires ? 1 : 0)`.
+            // If the `block.timestamp == expires`, the `lt` clause will be true
+            // if there is a non-zero user address in the lower 160 bits of `packed`.
             packed := mul(
                 packed,
                 // `block.timestamp <= expires ? 1 : 0`.
