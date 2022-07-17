@@ -8,11 +8,11 @@ import './IERC4907A.sol';
 import '../ERC721A.sol';
 
 /**
- * @dev ERC4907 compliant extension of ERC721A.
+ * @title ERC4907A
  *
- * The ERC4907 standard https://eips.ethereum.org/EIPS/eip-4907[ERC4907] allows
- * owners and authorized addresses to add a time-limited role
- * with restricted permissions to ERC721 tokens.
+ * @dev [ERC4907](https://eips.ethereum.org/EIPS/eip-4907) compliant
+ * extension of ERC721A, which allows owners and authorized addresses
+ * to add a time-limited role with restricted permissions to ERC721 tokens.
  */
 abstract contract ERC4907A is ERC721A, IERC4907A {
     // The bit position of `expires` in packed user info.
@@ -70,11 +70,11 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
     }
 
     /**
-     * @dev See {IERC165-supportsInterface}.
+     * @dev Override of {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721A, IERC721A) returns (bool) {
-        // The interface ID for ERC4907 is `0xad092b5c`.
-        // See: https://eips.ethereum.org/EIPS/eip-4907
+        // The interface ID for ERC4907 is `0xad092b5c`,
+        // as defined in [ERC4907](https://eips.ethereum.org/EIPS/eip-4907).
         return super.supportsInterface(interfaceId) || interfaceId == 0xad092b5c;
     }
 

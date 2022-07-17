@@ -7,7 +7,7 @@ pragma solidity ^0.8.4;
 import '../IERC721A.sol';
 
 /**
- * @dev Interface of an ERC4907A compliant contract.
+ * @dev Interface of ERC4907A.
  */
 interface IERC4907A is IERC721A {
     /**
