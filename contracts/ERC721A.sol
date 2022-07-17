@@ -458,9 +458,9 @@ contract ERC721A is IERC721A {
      * - `to` cannot be the zero address.
      * - `tokenId` token must exist and be owned by `from`.
      * - If the caller is not `from`, it must be approved to move this token
-     *   by either {approve} or {setApprovalForAll}.
+     * by either {approve} or {setApprovalForAll}.
      * - If `to` refers to a smart contract, it must implement
-     *   {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     * {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
      *
      * Emits a {Transfer} event.
      */
@@ -504,7 +504,7 @@ contract ERC721A is IERC721A {
      * Requirements:
      *
      * - If `to` refers to a smart contract, it must implement
-     *   {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
+     * {IERC721Receiver-onERC721Received}, which is called for each safe transfer.
      * - `quantity` must be greater than 0.
      *
      * See {_mint}.
@@ -701,7 +701,7 @@ contract ERC721A is IERC721A {
      * - `to` cannot be the zero address.
      * - `tokenId` token must be owned by `from`.
      * - If the caller is not `from`, it must be approved to move this token
-     *   by either {approve} or {setApprovalForAll}.
+     * by either {approve} or {setApprovalForAll}.
      *
      * Emits a {Transfer} event.
      */
@@ -987,7 +987,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Converts a `uint256` to its ASCII `string` decimal representation.
+     * @dev Converts a uint256 to its ASCII string decimal representation.
      */
     function _toString(uint256 value) internal pure virtual returns (string memory ptr) {
         assembly {
@@ -1011,7 +1011,8 @@ contract ERC721A is IERC721A {
                 let temp := value
                 // Move the pointer 1 byte leftwards to point to an empty character slot.
                 ptr := sub(ptr, 1)
-                // Write the character to the pointer. 48 is the ASCII index of '0'.
+                // Write the character to the pointer.
+                // The ASCII index of the '0' character is 48.
                 mstore8(ptr, add(48, mod(temp, 10)))
                 temp := div(temp, 10)
             } temp {
