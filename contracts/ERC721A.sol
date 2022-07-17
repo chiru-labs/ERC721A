@@ -622,7 +622,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Returns whether the `msgSender` is equal to `owner` or `approvedAddress`.
+     * @dev Returns whether `msgSender` is equal to `approvedAddress` or `owner`.
      */
     function _isSenderApprovedOrOwner(
         address approvedAddress,
@@ -631,9 +631,9 @@ contract ERC721A is IERC721A {
     ) private pure returns (bool result) {
         assembly {
             // Mask `owner` to the lower 160 bits, in case the upper bits somehow aren't clean.
-            owner := and(owner, BITMASK_ADDRESS)
+            owner := and(owner, _BITMASK_ADDRESS)
             // Mask `msgSender` to the lower 160 bits, in case the upper bits somehow aren't clean.
-            msgSender := and(msgSender, BITMASK_ADDRESS)
+            msgSender := and(msgSender, _BITMASK_ADDRESS)
             // `msgSender == owner || msgSender == approvedAddress`.
             result := or(eq(msgSender, owner), eq(msgSender, approvedAddress))
         }
