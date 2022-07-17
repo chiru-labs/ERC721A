@@ -79,6 +79,10 @@ interface IERC721A {
      */
     error OwnershipNotInitializedForExtraData();
 
+    // =============================================================
+    //                            STRUCTS
+    // =============================================================
+
     struct TokenOwnership {
         // The address of the owner.
         address addr;
@@ -90,6 +94,10 @@ interface IERC721A {
         uint24 extraData;
     }
 
+    // =============================================================
+    //                         TOKEN COUNTERS
+    // =============================================================
+
     /**
      * @dev Returns the total number of tokens in existence.
      * Burned tokens will reduce the count.
@@ -97,9 +105,9 @@ interface IERC721A {
      */
     function totalSupply() external view returns (uint256);
 
-    // ==============================
-    //            IERC165
-    // ==============================
+    // =============================================================
+    //                            IERC165
+    // =============================================================
 
     /**
      * @dev Returns true if this contract implements the interface defined by
@@ -111,9 +119,9 @@ interface IERC721A {
      */
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 
-    // ==============================
-    //            IERC721
-    // ==============================
+    // =============================================================
+    //                            IERC721
+    // =============================================================
 
     /**
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
@@ -245,9 +253,9 @@ interface IERC721A {
      */
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 
-    // ==============================
-    //        IERC721Metadata
-    // ==============================
+    // =============================================================
+    //                        IERC721Metadata
+    // =============================================================
 
     /**
      * @dev Returns the token collection name.
@@ -264,9 +272,9 @@ interface IERC721A {
      */
     function tokenURI(uint256 tokenId) external view returns (string memory);
 
-    // ==============================
-    //            IERC2309
-    // ==============================
+    // =============================================================
+    //                           IERC2309
+    // =============================================================
 
     /**
      * @dev Emitted when tokens in `fromTokenId` to `toTokenId`
