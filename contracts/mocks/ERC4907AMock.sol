@@ -9,8 +9,8 @@ import '../extensions/ERC4907A.sol';
 contract ERC4907AMock is ERC721A, ERC4907A {
     constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
 
-    function safeMint(address to, uint256 quantity) public {
-        _safeMint(to, quantity);
+    function mint(address to, uint256 quantity) public {
+        _mint(to, quantity);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721A, ERC4907A) returns (bool) {

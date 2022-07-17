@@ -582,7 +582,7 @@ contract ERC721A is IERC721A {
     /**
      * @dev Returns the storage slot and value for the approved address of `tokenId`.
      */
-    function _getApprovedAddress(uint256 tokenId)
+    function _getApprovedSlotAndAddress(uint256 tokenId)
         private
         view
         returns (uint256 approvedAddressSlot, address approvedAddress)
@@ -596,7 +596,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Returns whether the `approvedAddress` is equals to `from` or `msgSender`.
+     * @dev Returns whether the `approvedAddress` is equal to `from` or `msgSender`.
      */
     function _isSinglyApprovedOrOwner(
         address approvedAddress,
@@ -648,7 +648,7 @@ contract ERC721A is IERC721A {
 
         if (address(uint160(prevOwnershipPacked)) != from) revert TransferFromIncorrectOwner();
 
-        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedAddress(tokenId);
+        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
 
         // The nested ifs save around 20+ gas over a compound boolean condition.
         if (!_isSinglyApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
@@ -724,7 +724,7 @@ contract ERC721A is IERC721A {
 
         address from = address(uint160(prevOwnershipPacked));
 
-        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedAddress(tokenId);
+        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
 
         if (approvalCheck) {
             // The nested ifs save around 20+ gas over a compound boolean condition.

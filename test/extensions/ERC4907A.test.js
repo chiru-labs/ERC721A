@@ -38,8 +38,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           this.owner = owner;
           this.addr1 = addr1;
           
-          await this.erc4097a['safeMint(address,uint256)'](this.owner.address, 1);
-          await this.erc4097a['safeMint(address,uint256)'](this.addr1.address, 2);
+          await this.erc4097a['mint(address,uint256)'](this.owner.address, 1);
+          await this.erc4097a['mint(address,uint256)'](this.addr1.address, 2);
           
           this.expires = (await getBlockTimestamp()) + 123;
           this.tokenId = 2;
