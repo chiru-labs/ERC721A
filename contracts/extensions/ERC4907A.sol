@@ -38,7 +38,10 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         address user,
         uint64 expires
     ) public virtual {
-        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert SetUserCallerNotOwnerNorApproved();
+        address owner = ownerOf(tokenId);
+        if (_msgSenderERC721A() != owner)
+            if (!isApprovedForAll(owner, _msgSenderERC721A()))
+                if (getApproved(tokenId) != _msgSenderERC721A()) revert SetUserCallerNotOwnerNorApproved();
 
         _packedUserInfo[tokenId] = (uint256(expires) << _BITPOS_EXPIRES) | uint256(uint160(user));
 

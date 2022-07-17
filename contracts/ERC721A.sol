@@ -596,37 +596,21 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Returns whether the `approvedAddress` is equal to `from` or `msgSender`.
+     * @dev Returns whether the `msgSender` is equal to `owner` or `approvedAddress`.
      */
-    function _isSinglyApprovedOrOwner(
+    function _isSenderApprovedOrOwner(
         address approvedAddress,
-        address from,
+        address owner,
         address msgSender
     ) private pure returns (bool result) {
         assembly {
-            // Mask `from` to the lower 160 bits, in case the upper bits somehow aren't clean.
-            from := and(from, BITMASK_ADDRESS)
+            // Mask `owner` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            owner := and(owner, BITMASK_ADDRESS)
             // Mask `msgSender` to the lower 160 bits, in case the upper bits somehow aren't clean.
             msgSender := and(msgSender, BITMASK_ADDRESS)
-            // `msgSender == from || msgSender == approvedAddress`.
-            result := or(eq(msgSender, from), eq(msgSender, approvedAddress))
+            // `msgSender == owner || msgSender == approvedAddress`.
+            result := or(eq(msgSender, owner), eq(msgSender, approvedAddress))
         }
-    }
-
-    /**
-     * @dev Returns whether `spender` is allowed to manage `tokenId`.
-     *
-     * Requirements:
-     *
-     * - `tokenId` must exist.
-     */
-    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view virtual returns (bool) {
-        address owner = ownerOf(tokenId);
-        bool result = true;
-        if (spender != owner)
-            if (!isApprovedForAll(owner, spender))
-                if (getApproved(tokenId) != spender) result = false;
-        return result;
     }
 
     /**
@@ -651,7 +635,7 @@ contract ERC721A is IERC721A {
         (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
 
         // The nested ifs save around 20+ gas over a compound boolean condition.
-        if (!_isSinglyApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
+        if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
             if (!isApprovedForAll(from, _msgSenderERC721A())) revert TransferCallerNotOwnerNorApproved();
 
         if (to == address(0)) revert TransferToZeroAddress();
@@ -728,7 +712,7 @@ contract ERC721A is IERC721A {
 
         if (approvalCheck) {
             // The nested ifs save around 20+ gas over a compound boolean condition.
-            if (!_isSinglyApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
+            if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
                 if (!isApprovedForAll(from, _msgSenderERC721A())) revert TransferCallerNotOwnerNorApproved();
         }
 
