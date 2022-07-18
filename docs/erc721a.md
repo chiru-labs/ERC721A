@@ -465,6 +465,58 @@ If set, the resulting URI for each token will be the concatenation of the `baseU
 Empty by default, it can be overridden in child contracts.
 
 
+### \_beforeTokenTransfers
+
+```solidity
+function _beforeTokenTransfers(
+    address from,
+    address to,
+    uint256 startTokenId,
+    uint256 quantity
+) internal virtual
+```
+
+Hook that is called before a set of serially-ordered token IDs are about to be transferred. This includes minting.
+
+Also called before burning one token.
+     
+`startTokenId` - the first token ID to be transferred.  
+`quantity` - the amount to be transferred.
+
+Calling conditions:
+
+- When `from` and `to` are both non-zero, `from`'s `tokenId` will be transferred to `to`.
+- When `from` is zero, `tokenId` will be minted for `to`.
+- When `to` is zero, `tokenId` will be burned by `from`.
+- `from` and `to` are never both zero.
+
+
+### \_afterTokenTransfers
+
+```solidity
+function _afterTokenTransfers(
+    address from,
+    address to,
+    uint256 startTokenId,
+    uint256 quantity
+) internal virtual
+```
+
+Hook that is called after a set of serially-ordered token IDs are about to be transferred. This includes minting.
+
+Also called after burning one token.
+     
+`startTokenId` - the first token ID to be transferred.  
+`quantity` - the amount to be transferred.
+
+Calling conditions:
+
+- When `from` and `to` are both non-zero, `from`'s `tokenId` will be transferred to `to`.
+- When `from` is zero, `tokenId` will be minted for `to`.
+- When `to` is zero, `tokenId` will be burned by `from`.
+- `from` and `to` are never both zero.
+
+
 ### \_toString
 
 ```solidity
