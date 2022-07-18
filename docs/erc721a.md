@@ -158,7 +158,7 @@ Returns the account approved for `tokenId` token.
 
 Requirements:
 
-- tokenId must exist.
+- `tokenId` must exist.
 
 ### setApprovalForAll
 
