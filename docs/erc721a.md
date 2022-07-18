@@ -480,7 +480,7 @@ Hook that is called before a set of serially-ordered token IDs are about to be t
 
 Also called before burning one token.
      
-`startTokenId` - the first token id to be transferred.  
+`startTokenId` - the first token ID to be transferred.  
 `quantity` - the amount to be transferred.
 
 Calling conditions:
@@ -506,7 +506,7 @@ Hook that is called after a set of serially-ordered token IDs are about to be tr
 
 Also called after burning one token.
      
-`startTokenId` - the first token id to be transferred.  
+`startTokenId` - the first token ID to be transferred.  
 `quantity` - the amount to be transferred.
 
 Calling conditions:
