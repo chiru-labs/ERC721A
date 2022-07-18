@@ -43,3 +43,16 @@ Inherits:
 import 'erc721a/contracts/interfaces/IERC721AQueryable.sol';
 
 ```
+
+### IERC4907A
+
+[`erc721a/contracts/extensions/IERC4907A.sol`](https://github.com/chiru-labs/ERC721A/blob/main/contracts/extensions/IERC4907A.sol)
+
+Inherits:
+
+- [IERC721A](#ierc721a)
+
+```solidity
+import 'erc721a/contracts/interfaces/IERC4907A.sol';
+
+```
