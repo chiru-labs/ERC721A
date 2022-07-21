@@ -67,3 +67,4 @@ Here are a list of projects that have or will be implementing ERC721A as part of
 - [MEN F Tease](https://menftea.se/) | [Etherscan](https://etherscan.io/address/0xfe1f2b944e3d308581de33a37b1c22b582b0ff2c#code) | [Twitter](https://twitter.com/MenfTease)
 - [Huxley](https://huxleysaga.com/) | [Etherscan](https://etherscan.io/address/0xc65eF668114A1d0446F960Ac4cAa8c080eFAB786#code) | [Twitter](https://twitter.com/huxleysaga)
 - [Engram](https://engram.social/) | [Twitter](https://twitter.com/EngramSocial)
+- [thirdweb](https://thirdweb.com/) | [Etherscan](https://etherscan.io/address/0x196e4DB2F3779d292F634308D7b11045094BDc3B#code) | [Twitter](https://twitter.com/thirdweb_)
