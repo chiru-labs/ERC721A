@@ -154,7 +154,7 @@ npx hardhat run --network localhost scripts/upgrade.js
 
 ### Testnet / Mainnet
 
-We will use the Rinkeby testnet as an example.
+We will use the Goerli testnet as an example.
 
 Install the following packages if they are not already installed:
 
