@@ -7,6 +7,9 @@
     "/build/contracts/*.json",
     "!/contracts/mocks/**/*"
   ],
+  "engines": {
+    "node": ">=16.0.0 <17.0.0"
+  },
   "scripts": {
     "node": "hardhat node",
     "test": "hardhat test",
