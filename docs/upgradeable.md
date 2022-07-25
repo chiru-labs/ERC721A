@@ -168,7 +168,7 @@ Add the following to your environment file `.env`:
 ```
 ETHERSCAN_KEY="Your Etherscan API Key"
 PRIVATE_KEY="Your Wallet Private Key"
-RPC_URL_RINKEBY="https://Infura Or Alchemy URL With API Key"
+RPC_URL_GOERLI="https://Infura Or Alchemy URL With API Key"
 ```
 
 Add the following to your `hardhat.config.js`:
@@ -183,17 +183,15 @@ require("@nomiclabs/hardhat-etherscan");
 module.exports = {
 	solidity: "0.8.11",
 	networks: {
-		rinkeby: {
-			url: process.env.RPC_URL_RINKEBY,
-			accounts: [process.env.PRIVATE_KEY],
-			gasPrice: 100000000000,
-			gasLimit: 1000000000,
+		goerli: {
+			url: process.env.RPC_URL_GOERLI,
+			accounts: [process.env.PRIVATE_KEY]
 		}
 	},
 	etherscan: {
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
-		apiKey: process.env.ETHERSCAN_KEY,
+		apiKey: process.env.ETHERSCAN_KEY
 	}
 };
 ```
@@ -201,11 +199,11 @@ module.exports = {
 **Deploy**
 
 ```
-npx hardhat run --network rinkeby scripts/deploy.js
+npx hardhat run --network goerli scripts/deploy.js
 ```
 
 **Upgrade**
 
 ```
-npx hardhat run --network rinkeby scripts/upgrade.js
+npx hardhat run --network goerli scripts/upgrade.js
 ```
