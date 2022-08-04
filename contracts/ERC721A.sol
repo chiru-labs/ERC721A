@@ -515,7 +515,7 @@ contract ERC721A is IERC721A {
         returns (uint256 approvedAddressSlot, address approvedAddress)
     {
         TokenApprovalRef storage tokenApproval = _tokenApprovals[tokenId];
-        // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId]`.
+        // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId].value`.
         assembly {
             approvedAddressSlot := tokenApproval.slot
             approvedAddress := sload(approvedAddressSlot)
