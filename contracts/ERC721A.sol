@@ -766,23 +766,21 @@ contract ERC721A is IERC721A {
             assembly {
                 // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
                 toMasked := and(to, _BITMASK_ADDRESS)
-                // Emit the `Transfer` event.
-                log4(
-                    0, // Start of data (0, since no data).
-                    0, // End of data (0, since no data).
-                    _TRANSFER_EVENT_SIGNATURE, // Signature.
-                    0, // `address(0)`.
-                    toMasked, // `to`.
-                    startTokenId // `tokenId`.
-                )
 
                 for {
-                    let tokenId := add(startTokenId, 1)
+                    let tokenId := startTokenId
                 } iszero(eq(tokenId, end)) {
                     tokenId := add(tokenId, 1)
                 } {
-                    // Emit the `Transfer` event. Similar to above.
-                    log4(0, 0, _TRANSFER_EVENT_SIGNATURE, 0, toMasked, tokenId)
+                    // Emit the `Transfer` event.
+                    log4(
+                        0, // Start of data (0, since no data).
+                        0, // End of data (0, since no data).
+                        _TRANSFER_EVENT_SIGNATURE, // Signature.
+                        0, // `address(0)`.
+                        toMasked, // `to`.
+                        tokenId // `tokenId`.
+                    )
                 }
             }
             if (toMasked == 0) revert MintToZeroAddress();
