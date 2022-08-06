@@ -763,8 +763,8 @@ contract ERC721A is IERC721A {
             uint256 end = startTokenId + quantity;
 
             // Use assembly to loop and emit the `Transfer` event for gas savings.
-            // The duplicated `log4` helps removes an extra check and reduce stack juggling.
-            // Operations are delicately balanced and arranged for compiler friendlyness.
+            // The duplicated `log4` removes an extra check and reduces stack juggling.
+            // Delicately arranged to nudge the compiler into producing optimized opcode.
             assembly {
                 // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
                 toMasked := and(to, _BITMASK_ADDRESS)
