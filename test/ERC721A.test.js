@@ -295,11 +295,15 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('caller can approve all with self as operator', async function () {
-            expect(await this.erc721a.connect(this.addr1).isApprovedForAll(this.addr1.address, this.addr1.address)).to.be.false;
+            expect(
+              await this.erc721a.connect(this.addr1).isApprovedForAll(this.addr1.address, this.addr1.address)
+            ).to.be.false;
             await expect(
               this.erc721a.connect(this.addr1).setApprovalForAll(this.addr1.address, true)
             ).to.not.be.reverted;
-            expect(await this.erc721a.connect(this.addr1).isApprovedForAll(this.addr1.address, this.addr1.address)).to.be.true;
+            expect(
+              await this.erc721a.connect(this.addr1).isApprovedForAll(this.addr1.address, this.addr1.address)
+            ).to.be.true;
           });
         });
 
