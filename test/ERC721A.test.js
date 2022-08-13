@@ -270,7 +270,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('token owner can approve self as operator', async function () {
-		    expect(await this.erc721a.getApproved(this.tokenId)).to.not.equal(this.addr1.address);
+            expect(await this.erc721a.getApproved(this.tokenId)).to.not.equal(this.addr1.address);
             await expect(this.erc721a.connect(this.addr1).approve(this.addr1.address, this.tokenId)
             ).to.not.be.reverted;
             expect(await this.erc721a.getApproved(this.tokenId)).to.equal(this.addr1.address);
