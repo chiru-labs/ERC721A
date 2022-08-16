@@ -39,7 +39,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
     });
   };
 
-describe.only(
+describe(
   'ERC721ASoulbound',
   createTestSuite({ contract: 'ERC721ASoulboundMock', constructorArgs: ['Azuki', 'AZUKI'] })
 );
