@@ -19,6 +19,16 @@ _We highly recommend reading the migration guide_, **especially** _the part on [
 
 ## About The Project
 
+### Soulbound NFTs
+This fork of [ERC721A](https://github.com/chiru-labs/ERC721A) is an implementation of an SBT (Soulbound NFT) or a non-transferable NFT (NTT). This token is soulbound to the owner of the token at mint. The token owner is able to burn their token at will.
+
+Soulbound NFTs are an ideal methodology for creating a web3 identity. A community member's web3 identity will be curated from token present on their wallet. 
+
+The current trend of NFT projects is to move away from a members club into a DAO or other community govern society. These newly forming decentralized societies are often govern by the largest financial interest, this metric is not a good measure of societial value as it doesn't account for humanitian metrics like environmental impact and compassion.
+
+A Soulbound NFT ensures credibility, reputation and experience is not bought by the highest bidder. A community member's societial value can be determined by their web3 identity made of non-transferable SBTs.
+
+### ERC721A
 The goal of ERC721A is to provide a fully compliant implementation of IERC721 with significant gas savings for minting multiple NFTs in a single transaction. This project and implementation will be updated regularly and will continue to stay up to date with best practices.
 
 The [Azuki](https://twitter.com/AzukiOfficial) team created ERC721A for its sale on 1/12/22. There was significant demand for 8700 tokens made available to the public, and all were minted within minutes. The network BASEFEE remained low despite huge demand, resulting in low gas costs for minters, while minimizing network disruption for the wider ecosystem as well.
