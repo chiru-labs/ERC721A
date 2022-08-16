@@ -268,6 +268,21 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               this.erc721a.connect(this.addr1).transferFrom(this.addr3.address, this.addr1.address, this.tokenId)
             ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
           });
+
+          it('token owner can approve self as operator', async function () {
+            expect(await this.erc721a.getApproved(this.tokenId)).to.not.equal(this.addr1.address);
+            await expect(this.erc721a.connect(this.addr1).approve(this.addr1.address, this.tokenId)
+            ).to.not.be.reverted;
+            expect(await this.erc721a.getApproved(this.tokenId)).to.equal(this.addr1.address);
+          });
+
+          it('self-approval is cleared on token transfer', async function () {
+            await this.erc721a.connect(this.addr1).approve(this.addr1.address, this.tokenId); 
+            expect(await this.erc721a.getApproved(this.tokenId)).to.equal(this.addr1.address);
+
+            await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.addr2.address, this.tokenId);
+            expect(await this.erc721a.getApproved(this.tokenId)).to.not.equal(this.addr1.address);
+          });
         });
 
         describe('setApprovalForAll', async function () {
@@ -279,10 +294,16 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(await this.erc721a.isApprovedForAll(this.owner.address, this.addr1.address)).to.be.true;
           });
 
-          it('sets rejects approvals for non msg senders', async function () {
+          it('caller can approve all with self as operator', async function () {
+            expect(
+              await this.erc721a.connect(this.addr1).isApprovedForAll(this.addr1.address, this.addr1.address)
+            ).to.be.false;
             await expect(
               this.erc721a.connect(this.addr1).setApprovalForAll(this.addr1.address, true)
-            ).to.be.revertedWith('ApproveToCaller');
+            ).to.not.be.reverted;
+            expect(
+              await this.erc721a.connect(this.addr1).isApprovedForAll(this.addr1.address, this.addr1.address)
+            ).to.be.true;
           });
         });
 
@@ -455,6 +476,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('can burn without approvalCheck parameter', async function () {
+            expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.true;
+            await this.erc721a.connect(this.addr2)['burn(uint256)'](this.tokenIdToBurn);
+            expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.false;
+          });
+
+          it('cannot burn a token owned by another if not approved', async function () {
             expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.true;
             await this.erc721a.connect(this.addr2)['burn(uint256)'](this.tokenIdToBurn);
             expect(await this.erc721a.exists(this.tokenIdToBurn)).to.be.false;

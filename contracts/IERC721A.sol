@@ -19,11 +19,6 @@ interface IERC721A {
     error ApprovalQueryForNonexistentToken();
 
     /**
-     * The caller cannot approve to their own address.
-     */
-    error ApproveToCaller();
-
-    /**
      * Cannot query the balance for the zero address.
      */
     error BalanceQueryForZeroAddress();
