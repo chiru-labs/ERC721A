@@ -34,7 +34,7 @@ interface ERC721A__IERC721Receiver {
  * - The maximum token ID cannot exceed 2**256 - 1 (max value of uint256).
  */
 contract ERC721A is IERC721A {
-    // Reference type for token approval.
+    // Bypass for a `--via-ir` bug (https://github.com/chiru-labs/ERC721A/pull/364).
     struct TokenApprovalRef {
         address value;
     }
