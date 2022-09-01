@@ -777,6 +777,8 @@ contract ERC721A is IERC721A {
                     startTokenId // `tokenId`.
                 )
 
+                // The `eq` operator ensures that large values of `quantity`
+                // that overflows uint256 will make the loop run out of gas.
                 for {
                     let tokenId := add(startTokenId, 1)
                 } iszero(eq(tokenId, end)) {
