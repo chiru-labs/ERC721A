@@ -777,6 +777,9 @@ contract ERC721A is IERC721A {
                     startTokenId // `tokenId`.
                 )
 
+                // The `iszero(eq(,))` check ensures that large values of `quantity`
+                // that overflows uint256 will make the loop run out of gas.
+                // The compiler will optimize the `iszero` away for performance.
                 for {
                     let tokenId := add(startTokenId, 1)
                 } iszero(eq(tokenId, end)) {
