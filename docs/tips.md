@@ -30,7 +30,9 @@ For typical artwork collections, consider using `_mint` over `_safeMint` if you 
 
 ## Batch Size
 
-To prevent overly expensive transfer fees for tokens that are minted in large batches.
+During transfers, ERC721A scans through ownership storage slots until it finds an initialized slot.
+
+To prevent overly expensive first-time transfer fees for tokens that are minted in large batches, you can either:
 
 - Restrict the max batch size for public mints to a reasonable number.
 
