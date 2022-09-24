@@ -409,29 +409,14 @@ contract ERC721A is IERC721A {
     // =============================================================
 
     /**
-     * @dev Gives permission to `to` to transfer `tokenId` token to another account.
-     * The approval is cleared when the token is transferred.
-     *
-     * Only a single account can be approved at a time, so approving the
-     * zero address clears previous approvals.
+     * @dev Gives permission to `to` to transfer `tokenId` token to another account. See {ERC721A-_approve}.
      *
      * Requirements:
      *
      * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     *
-     * Emits an {Approval} event.
      */
     function approve(address to, uint256 tokenId) public payable virtual override {
-        address owner = ownerOf(tokenId);
-
-        if (_msgSenderERC721A() != owner)
-            if (!isApprovedForAll(owner, _msgSenderERC721A())) {
-                revert ApprovalCallerNotOwnerNorApproved();
-            }
-
-        _tokenApprovals[tokenId].value = to;
-        emit Approval(owner, to, tokenId);
+        _approve(to, tokenId, true);
     }
 
     /**
@@ -891,6 +876,43 @@ contract ERC721A is IERC721A {
      */
     function _safeMint(address to, uint256 quantity) internal virtual {
         _safeMint(to, quantity, '');
+    }
+
+    // =============================================================
+    //                       APPROVAL OPERATIONS
+    // =============================================================
+
+
+    /**
+     * @dev Equivalent to `_approve(to, tokenId, false)`.
+     */
+    function _approve(address to, uint256 tokenId) internal virtual {
+        _approve(to, tokenId, false);
+    }
+
+    /**
+     * @dev Gives permission to `to` to transfer `tokenId` token to another account.
+     * The approval is cleared when the token is transferred.
+     *
+     * Only a single account can be approved at a time, so approving the
+     * zero address clears previous approvals.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     *
+     * Emits an {Approval} event.
+     */
+    function _approve(address to, uint256 tokenId, bool approvalCheck) internal virtual {
+        address owner = ownerOf(tokenId);
+
+        if (approvalCheck && _msgSenderERC721A() != owner)
+            if (!isApprovedForAll(owner, _msgSenderERC721A())) {
+                revert ApprovalCallerNotOwnerNorApproved();
+            }
+
+        _tokenApprovals[tokenId].value = to;
+        emit Approval(owner, to, tokenId);
     }
 
     // =============================================================
