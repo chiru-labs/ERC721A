@@ -62,10 +62,15 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
     {
         unchecked {
             uint256 tokenIdsLength = tokenIds.length;
+            uint256 i; 
+            
             TokenOwnership[] memory ownerships = new TokenOwnership[](tokenIdsLength);
-            for (uint256 i; i != tokenIdsLength; ++i) {
+            
+            do {
                 ownerships[i] = explicitOwnershipOf(tokenIds[i]);
-            }
+                i++;
+            } while (i != tokenIdsLength);
+
             return ownerships;
         }
     }
@@ -123,7 +128,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
             if (!ownership.burned) {
                 currOwnershipAddr = ownership.addr;
             }
-            for (uint256 i = start; i != stop && tokenIdsIdx != tokenIdsMaxLength; ++i) {
+            
+            uint256 i = start; 
+            do {
                 ownership = _ownershipAt(i);
                 if (ownership.burned) {
                     continue;
@@ -134,7 +141,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 if (currOwnershipAddr == owner) {
                     tokenIds[tokenIdsIdx++] = i;
                 }
-            }
+                i++;
+            } while (i != stop && tokenIdsIdx != tokenIdsMaxLength);
+
             // Downsize the array to fit.
             assembly {
                 mstore(tokenIds, tokenIdsIdx)
@@ -160,7 +169,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
             uint256 tokenIdsLength = balanceOf(owner);
             uint256[] memory tokenIds = new uint256[](tokenIdsLength);
             TokenOwnership memory ownership;
-            for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
+            
+            uint256 i = _startTokenId(); 
+            do {
                 ownership = _ownershipAt(i);
                 if (ownership.burned) {
                     continue;
@@ -171,7 +182,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 if (currOwnershipAddr == owner) {
                     tokenIds[tokenIdsIdx++] = i;
                 }
-            }
+                i++;
+            } while (tokenIdsIdx != tokenIdsLength);
+            
             return tokenIds;
         }
     }
