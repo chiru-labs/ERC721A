@@ -912,10 +912,11 @@ contract ERC721A is IERC721A {
     function _approve(address to, uint256 tokenId, bool approvalCheck) internal virtual {
         address owner = ownerOf(tokenId);
 
-        if (approvalCheck && _msgSenderERC721A() != owner)
-            if (!isApprovedForAll(owner, _msgSenderERC721A())) {
-                revert ApprovalCallerNotOwnerNorApproved();
-            }
+        if (approvalCheck)
+            if (_msgSenderERC721A() != owner)
+                if (!isApprovedForAll(owner, _msgSenderERC721A())) {
+                    revert ApprovalCallerNotOwnerNorApproved();
+                }
 
         _tokenApprovals[tokenId].value = to;
         emit Approval(owner, to, tokenId);
