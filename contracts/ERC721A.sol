@@ -343,7 +343,7 @@ contract ERC721A is IERC721A {
     /**
      * Returns the packed ownership data of `tokenId`.
      */
-    function _packedOwnershipOf(uint256 tokenId) private view returns (uint256 packed) {    
+    function _packedOwnershipOf(uint256 tokenId) private view returns (uint256 packed) {
         if (_startTokenId() <= tokenId) {
             packed = _packedOwnerships[tokenId];
             // If not burned.
@@ -888,7 +888,6 @@ contract ERC721A is IERC721A {
     //                       APPROVAL OPERATIONS
     // =============================================================
 
-
     /**
      * @dev Equivalent to `_approve(to, tokenId, false)`.
      */
@@ -909,13 +908,18 @@ contract ERC721A is IERC721A {
      *
      * Emits an {Approval} event.
      */
-    function _approve(address to, uint256 tokenId, bool approvalCheck) internal virtual {
+    function _approve(
+        address to,
+        uint256 tokenId,
+        bool approvalCheck
+    ) internal virtual {
         address owner = ownerOf(tokenId);
 
-        if (approvalCheck && _msgSenderERC721A() != owner)
-            if (!isApprovedForAll(owner, _msgSenderERC721A())) {
-                revert ApprovalCallerNotOwnerNorApproved();
-            }
+        if (approvalCheck)
+            if (_msgSenderERC721A() != owner)
+                if (!isApprovedForAll(owner, _msgSenderERC721A())) {
+                    revert ApprovalCallerNotOwnerNorApproved();
+                }
 
         _tokenApprovals[tokenId].value = to;
         emit Approval(owner, to, tokenId);
