@@ -343,13 +343,23 @@ contract ERC721A is IERC721A {
     /**
      * Returns the packed ownership data of `tokenId`.
      */
-    function _packedOwnershipOf(uint256 tokenId) private view returns (uint256) {
+     function _packedOwnershipOf(uint256 tokenId) private view returns (uint256) {
         uint256 curr = tokenId;
 
         unchecked {
-            if (_startTokenId() <= curr)
+            if (_startTokenId() <= curr) {
+
+                // load the packed ownership of the current tokenId
+                uint256 packed = _packedOwnerships[curr];
+
+                // If the data exists, and it's not burned, return it and skip tracing 
+                // This is possible because we have already achieved the target condition
+                // This saves 2143 gas on transfers of initialized tokens.
+                if (packed != 0 && packed & _BITMASK_BURNED == 0) return packed;
+
+                // If the tokenId is within index-bounds
                 if (curr < _currentIndex) {
-                    uint256 packed = _packedOwnerships[curr];
+
                     // If not burned.
                     if (packed & _BITMASK_BURNED == 0) {
                         // Invariant:
@@ -367,6 +377,7 @@ contract ERC721A is IERC721A {
                         return packed;
                     }
                 }
+            }
         }
         revert OwnerQueryForNonexistentToken();
     }
