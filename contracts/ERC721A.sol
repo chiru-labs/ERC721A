@@ -343,40 +343,35 @@ contract ERC721A is IERC721A {
     /**
      * Returns the packed ownership data of `tokenId`.
      */
-     function _packedOwnershipOf(uint256 tokenId) private view returns (uint256) {
-        uint256 curr = tokenId;
-
-        unchecked {
-            if (_startTokenId() <= curr) {
-
-                // load the packed ownership of the current tokenId
-                uint256 packed = _packedOwnerships[curr];
-
-                // If the data exists, and it's not burned, return it and skip tracing 
-                // This is possible because we have already achieved the target condition
-                // This saves 2143 gas on transfers of initialized tokens.
-                if (packed != 0 && packed & _BITMASK_BURNED == 0) return packed;
-
-                // If the tokenId is within index-bounds
-                if (curr < _currentIndex) {
-
-                    // If not burned.
-                    if (packed & _BITMASK_BURNED == 0) {
-                        // Invariant:
-                        // There will always be an initialized ownership slot
-                        // (i.e. `ownership.addr != address(0) && ownership.burned == false`)
-                        // before an unintialized ownership slot
-                        // (i.e. `ownership.addr == address(0) && ownership.burned == false`)
-                        // Hence, `curr` will not underflow.
-                        //
-                        // We can directly compare the packed value.
-                        // If the address is zero, packed will be zero.
-                        while (packed == 0) {
-                            packed = _packedOwnerships[--curr];
+    function _packedOwnershipOf(uint256 tokenId) private view returns (uint256 packed) {    
+        if (_startTokenId() <= tokenId) {
+            packed = _packedOwnerships[tokenId];
+            // If not burned.
+            if (packed & _BITMASK_BURNED == 0) {
+                // If the data at the starting slot does not exist, start the scan.
+                if (packed == 0) {
+                    if (tokenId >= _currentIndex) revert OwnerQueryForNonexistentToken();
+                    // Invariant:
+                    // There will always be an initialized ownership slot
+                    // (i.e. `ownership.addr != address(0) && ownership.burned == false`)
+                    // before an unintialized ownership slot
+                    // (i.e. `ownership.addr == address(0) && ownership.burned == false`)
+                    // Hence, `tokenId` will not underflow.
+                    //
+                    // We can directly compare the packed value.
+                    // If the address is zero, packed will be zero.
+                    for (;;) {
+                        unchecked {
+                            packed = _packedOwnerships[--tokenId];
                         }
+                        if (packed == 0) continue;
                         return packed;
                     }
                 }
+                // Otherwise, the data exists and is not burned. We can skip the scan.
+                // This is possible because we have already achieved the target condition.
+                // This saves 2143 gas on transfers of initialized tokens.
+                return packed;
             }
         }
         revert OwnerQueryForNonexistentToken();
