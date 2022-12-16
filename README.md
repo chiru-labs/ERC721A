@@ -131,7 +131,7 @@ Project Link: [https://github.com/chiru-labs/ERC721A](https://github.com/chiru-l
 [docs-url]: https://chiru-labs.github.io/ERC721A/
 [npm-shield]: https://img.shields.io/npm/v/erc721a.svg?style=for-the-badge
 [npm-url]: https://www.npmjs.com/package/erc721a
-[ci-shield]: https://img.shields.io/github/workflow/status/chiru-labs/ERC721A/ERC721A%20CI?label=build&style=for-the-badge
+[ci-shield]: https://img.shields.io/github/actions/workflow/status/chiru-labs/ERC721A/run_tests.yml?label=build&style=for-the-badge&branch=main
 [ci-url]: https://github.com/chiru-labs/ERC721A/actions/workflows/run_tests.yml
 [contributors-shield]: https://img.shields.io/github/contributors/chiru-labs/ERC721A.svg?style=for-the-badge
 [contributors-url]: https://github.com/chiru-labs/ERC721A/graphs/contributors
