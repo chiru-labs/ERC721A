@@ -1082,7 +1082,7 @@ contract ERC721A is IERC721A {
 
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
         unchecked {
-            _burnCounter++;
+            ++_burnCounter;
         }
     }
 
