@@ -241,6 +241,13 @@ contract ERC721A is IERC721A {
         _packedAddressData[owner] = packed;
     }
 
+    function _revert(bytes4 errorMsg) internal {
+        assembly {
+            mstore(0, errorMsg)
+            revert(0, 4)
+        }
+    }
+
     // =============================================================
     //                            IERC165
     // =============================================================
@@ -722,9 +729,9 @@ contract ERC721A is IERC721A {
      * Emits a {Transfer} event for each mint.
      */
     function _mint(address to, uint256 quantity) internal virtual {
-        uint256 startTokenId = _currentIndex;
         if (quantity == 0) revert MintZeroQuantity();
 
+        uint256 startTokenId = _currentIndex;
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
@@ -748,16 +755,17 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
-            uint256 toMasked;
             uint256 end = startTokenId + quantity;
 
             // Use assembly to loop and emit the `Transfer` event for gas savings.
             // The duplicated `log4` removes an extra check and reduces stack juggling.
             // The assembly, together with the surrounding Solidity code, have been
             // delicately arranged to nudge the compiler into producing optimized opcodes.
+
+            // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            uint256 toMasked = uint160(to) & _BITMASK_ADDRESS;
+            if (toMasked == 0) _revert(0x2E076300); // MintToZeroAddress() hash
             assembly {
-                // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
-                toMasked := and(to, _BITMASK_ADDRESS)
                 // Emit the `Transfer` event.
                 log4(
                     0, // Start of data (0, since no data).
@@ -780,8 +788,6 @@ contract ERC721A is IERC721A {
                     log4(0, 0, _TRANSFER_EVENT_SIGNATURE, 0, toMasked, tokenId)
                 }
             }
-            if (toMasked == 0) revert MintToZeroAddress();
-
             _currentIndex = end;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
