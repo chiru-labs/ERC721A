@@ -815,11 +815,11 @@ contract ERC721A is IERC721A {
      * Emits a {ConsecutiveTransfer} event.
      */
     function _mintERC2309(address to, uint256 quantity) internal virtual {
-        uint256 startTokenId = _currentIndex;
         if (to == address(0)) _revert(0x2e076300); // MintToZeroAddress() hash
         if (quantity == 0) _revert(0xb562e8dd); // MintZeroQuantity() hash
         if (quantity > _MAX_MINT_ERC2309_QUANTITY_LIMIT) _revert(0x3db1f9af); // MintERC2309QuantityExceedsLimit() hash
 
+        uint256 startTokenId = _currentIndex;
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are unrealistic due to the above check for `quantity` to be below the limit.

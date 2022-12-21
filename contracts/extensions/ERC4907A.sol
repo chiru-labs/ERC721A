@@ -43,9 +43,10 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         if (_msgSenderERC721A() != owner)
             if (!isApprovedForAll(owner, _msgSenderERC721A()))
                 if (getApproved(tokenId) != _msgSenderERC721A()) {
+                    bytes4 errorHash = 0x4f1dd8e8; // SetUserCallerNotOwnerNorApproved() hash
                     assembly {
-                        mstore(0, 0x4f1dd8e8) // SetUserCallerNotOwnerNorApproved() hash
-                        revert(0x1C, 4)
+                        mstore(0, errorHash)
+                        revert(0, 4)
                     }
                 }
 
