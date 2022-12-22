@@ -90,8 +90,8 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         unchecked {
             if (start >= stop) {
                 assembly {
-                    mstore(0, 0x32c1995a) // InvalidQueryRange() hash
-                    revert(0x1c, 4)
+                    mstore(0x00, 0x32c1995a) // InvalidQueryRange() hash
+                    revert(0x1c, 0x04)
                 }
             }
             uint256 tokenIdsIdx;

@@ -201,12 +201,8 @@ contract ERC721A is IERC721A {
      * @dev Returns the number of tokens in `owner`'s account.
      */
     function balanceOf(address owner) public view virtual override returns (uint256) {
-        if (owner == address(0)) {
-            assembly {
-                mstore(0, 0x8f4eb604) // BalanceQueryForZeroAddress() hash
-                revert(0x1C, 4)
-            }
-        }
+        if (owner == address(0)) _revert(0x8f4eb604); // BalanceQueryForZeroAddress() hash
+
         return _packedAddressData[owner] & _BITMASK_ADDRESS_DATA_ENTRY;
     }
 
@@ -244,6 +240,13 @@ contract ERC721A is IERC721A {
         }
         packed = (packed & _BITMASK_AUX_COMPLEMENT) | (auxCasted << _BITPOS_AUX);
         _packedAddressData[owner] = packed;
+    }
+
+    function _revert(bytes4 errorSelector) internal pure {
+        assembly {
+            mstore(0x00, errorSelector)
+            revert(0x00, 0x04)
+        }
     }
 
     // =============================================================
@@ -291,12 +294,8 @@ contract ERC721A is IERC721A {
      * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        if (!_exists(tokenId)) {
-            assembly {
-                mstore(0, 0xa14c4b50) // URIQueryForNonexistentToken() hash
-                revert(0x1C, 4)
-            }
-        }
+        if (!_exists(tokenId)) _revert(0xa14c4b50); // URIQueryForNonexistentToken() hash
+
         string memory baseURI = _baseURI();
         return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, _toString(tokenId))) : '';
     }
@@ -360,10 +359,7 @@ contract ERC721A is IERC721A {
                 // If the data at the starting slot does not exist, start the scan.
                 if (packed == 0) {
                     if (tokenId >= _currentIndex) {
-                        assembly {
-                            mstore(0, 0xdf2d9b42) // OwnerQueryForNonexistentToken() hash
-                            revert(0x1C, 4)
-                        }
+                        _revert(0xdf2d9b42); // OwnerQueryForNonexistentToken() hash
                     }
                     // Invariant:
                     // There will always be an initialized ownership slot
@@ -388,10 +384,7 @@ contract ERC721A is IERC721A {
                 return packed;
             }
         }
-        assembly {
-            mstore(0, 0xdf2d9b42) // OwnerQueryForNonexistentToken() hash
-            revert(0x1C, 4)
-        }
+        _revert(0xdf2d9b42); // OwnerQueryForNonexistentToken() hash
     }
 
     /**
@@ -450,12 +443,7 @@ contract ERC721A is IERC721A {
      * - `tokenId` must exist.
      */
     function getApproved(uint256 tokenId) public view virtual override returns (address) {
-        if (!_exists(tokenId)) {
-            assembly {
-                mstore(0, 0xcf4700e4) // ApprovalQueryForNonexistentToken() hash
-                revert(0x1C, 4)
-            }
-        }
+        if (!_exists(tokenId)) _revert(0xcf4700e4); // ApprovalQueryForNonexistentToken() hash
 
         return _tokenApprovals[tokenId].value;
     }
@@ -558,10 +546,7 @@ contract ERC721A is IERC721A {
         uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
 
         if (address(uint160(prevOwnershipPacked)) != from) {
-            assembly {
-                mstore(0, 0xa1148100) // TransferFromIncorrectOwner() hash
-                revert(0x1C, 4)
-            }
+            _revert(0xa1148100); // TransferFromIncorrectOwner() hash
         }
 
         (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
@@ -569,17 +554,11 @@ contract ERC721A is IERC721A {
         // The nested ifs save around 20+ gas over a compound boolean condition.
         if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
             if (!isApprovedForAll(from, _msgSenderERC721A())) {
-                assembly {
-                    mstore(0, 0x59c896be) // TransferCallerNotOwnerNorApproved() hash
-                    revert(0x1C, 4)
-                }
+                _revert(0x59c896be); // TransferCallerNotOwnerNorApproved() hash
             }
 
         if (to == address(0)) {
-            assembly {
-                mstore(0, 0xea553b34) // TransferToZeroAddress() hash
-                revert(0x1C, 4)
-            }
+            _revert(0xea553b34); // TransferToZeroAddress() hash
         }
 
         _beforeTokenTransfers(from, to, tokenId, 1);
@@ -663,10 +642,7 @@ contract ERC721A is IERC721A {
         transferFrom(from, to, tokenId);
         if (to.code.length != 0)
             if (!_checkContractOnERC721Received(from, to, tokenId, _data)) {
-                assembly {
-                    mstore(0, 0xd1a57ed6) // TransferToNonERC721ReceiverImplementer() hash
-                    revert(0x1C, 4)
-                }
+                _revert(0xd1a57ed6); // TransferToNonERC721ReceiverImplementer() hash
             }
     }
 
@@ -738,10 +714,7 @@ contract ERC721A is IERC721A {
             return retval == ERC721A__IERC721Receiver(to).onERC721Received.selector;
         } catch (bytes memory reason) {
             if (reason.length == 0) {
-                assembly {
-                    mstore(0, 0xd1a57ed6) // TransferToNonERC721ReceiverImplementer() hash
-                    revert(0x1C, 4)
-                }
+                _revert(0xd1a57ed6); // TransferToNonERC721ReceiverImplementer() hash
             } else {
                 assembly {
                     revert(add(32, reason), mload(reason))
@@ -765,14 +738,11 @@ contract ERC721A is IERC721A {
      * Emits a {Transfer} event for each mint.
      */
     function _mint(address to, uint256 quantity) internal virtual {
+        uint256 startTokenId = _currentIndex;
         if (quantity == 0) {
-            assembly {
-                mstore(0, 0xb562e8dd) // MintZeroQuantity() hash
-                revert(0x1C, 4)
-            }
+            _revert(0xb562e8dd); // MintZeroQuantity() hash
         }
 
-        uint256 startTokenId = _currentIndex;
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
@@ -795,7 +765,9 @@ contract ERC721A is IERC721A {
                 to,
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
-            uint256 toMasked;
+
+            if (to == address(0)) _revert(0x2E076300); // MintToZeroAddress() hash
+
             uint256 end = startTokenId + quantity;
 
             // Use assembly to loop and emit the `Transfer` event for gas savings.
@@ -805,18 +777,13 @@ contract ERC721A is IERC721A {
 
             // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
             assembly {
-                toMasked := and(to, _BITMASK_ADDRESS)
-                if eq(toMasked, 0) {
-                    mstore(0, 0x2E076300) // MintToZeroAddress() hash
-                    revert(0x1C, 4)
-                }
                 // Emit the `Transfer` event.
                 log4(
                     0, // Start of data (0, since no data).
                     0, // End of data (0, since no data).
                     _TRANSFER_EVENT_SIGNATURE, // Signature.
                     0, // `address(0)`.
-                    toMasked, // `to`.
+                    to, // `to`.
                     startTokenId // `tokenId`.
                 )
 
@@ -829,7 +796,7 @@ contract ERC721A is IERC721A {
                     tokenId := add(tokenId, 1)
                 } {
                     // Emit the `Transfer` event. Similar to above.
-                    log4(0, 0, _TRANSFER_EVENT_SIGNATURE, 0, toMasked, tokenId)
+                    log4(0, 0, _TRANSFER_EVENT_SIGNATURE, 0, to, tokenId)
                 }
             }
             _currentIndex = end;
@@ -859,22 +826,11 @@ contract ERC721A is IERC721A {
      * Emits a {ConsecutiveTransfer} event.
      */
     function _mintERC2309(address to, uint256 quantity) internal virtual {
-        assembly {
-            if eq(to, 0) {
-                mstore(0, 0x2e076300) // MintToZeroAddress() hash
-                revert(0x1C, 4)
-            }
-            if eq(quantity, 0) {
-                mstore(0, 0xb562e8dd) // MintZeroQuantity() hash
-                revert(0x1C, 4)
-            }
-            if gt(quantity, _MAX_MINT_ERC2309_QUANTITY_LIMIT) {
-                mstore(0, 0x3db1f9af) // MintERC2309QuantityExceedsLimit() hash
-                revert(0x1C, 4)
-            }
-        }
-
         uint256 startTokenId = _currentIndex;
+        if (to == address(0)) _revert(0x2e076300); // MintToZeroAddress() hash
+        if (quantity == 0) _revert(0xb562e8dd); // MintZeroQuantity() hash
+        if (quantity > _MAX_MINT_ERC2309_QUANTITY_LIMIT) _revert(0x3db1f9af); // MintERC2309QuantityExceedsLimit() hash
+
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are unrealistic due to the above check for `quantity` to be below the limit.
@@ -929,10 +885,7 @@ contract ERC721A is IERC721A {
                 uint256 index = end - quantity;
                 do {
                     if (!_checkContractOnERC721Received(address(0), to, index++, _data)) {
-                        assembly {
-                            mstore(0, 0xd1a57ed6) // TransferToNonERC721ReceiverImplementer() hash
-                            revert(0x1C, 4)
-                        }
+                        _revert(0xd1a57ed6); // TransferToNonERC721ReceiverImplementer() hash
                     }
                 } while (index < end);
                 // Reentrancy protection.
@@ -982,10 +935,7 @@ contract ERC721A is IERC721A {
         if (approvalCheck)
             if (_msgSenderERC721A() != owner)
                 if (!isApprovedForAll(owner, _msgSenderERC721A())) {
-                    assembly {
-                        mstore(0, 0xcfb3b942) // ApprovalCallerNotOwnerNorApproved() hash
-                        revert(0x1C, 4)
-                    }
+                    _revert(0xcfb3b942); // ApprovalCallerNotOwnerNorApproved() hash
                 }
 
         _tokenApprovals[tokenId].value = to;
@@ -1024,10 +974,7 @@ contract ERC721A is IERC721A {
             // The nested ifs save around 20+ gas over a compound boolean condition.
             if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
                 if (!isApprovedForAll(from, _msgSenderERC721A())) {
-                    assembly {
-                        mstore(0, 0x59c896be) // TransferCallerNotOwnerNorApproved() hash
-                        revert(0x1C, 4)
-                    }
+                    _revert(0x59c896be); // TransferCallerNotOwnerNorApproved() hash
                 }
         }
 
@@ -1096,10 +1043,7 @@ contract ERC721A is IERC721A {
     function _setExtraDataAt(uint256 index, uint24 extraData) internal virtual {
         uint256 packed = _packedOwnerships[index];
         if (packed == 0) {
-            assembly {
-                mstore(0, 0x00d58153) // OwnershipNotInitializedForExtraData() hash
-                revert(0x1C, 4)
-            }
+            _revert(0x00d58153); // OwnershipNotInitializedForExtraData() hash
         }
         uint256 extraDataCasted;
         // Cast `extraData` with assembly to avoid redundant masking.
