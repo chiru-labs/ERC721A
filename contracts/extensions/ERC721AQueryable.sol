@@ -111,22 +111,26 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
     ) external view virtual override returns (uint256[] memory) {
         unchecked {
             if (start >= stop) revert InvalidQueryRange();
-
-            uint256 stopLimit = _nextTokenId();
             // Set `start = max(start, _startTokenId())`.
             if (start < _startTokenId()) {
                 start = _startTokenId();
             }
+            uint256 stopLimit = _nextTokenId();
             // Set `stop = min(stop, stopLimit)`.
             if (stop >= stopLimit) {
                 stop = stopLimit;
             }
             uint256[] memory tokenIds;
             uint256 tokenIdsMaxLength = balanceOf(owner);
-            if (!(tokenIdsMaxLength == 0 || start >= stop)) {
+            bool startLtStop = start < stop;
+            assembly {
+                // Set `tokenIdsMaxLength` to zero if `start` is less than `stop`.
+                tokenIdsMaxLength := mul(tokenIdsMaxLength, startLtStop)
+            }
+            if (tokenIdsMaxLength != 0) {
                 // Set `tokenIdsMaxLength = min(balanceOf(owner), stop - start)`,
                 // to cater for cases where `balanceOf(owner)` is too big.
-                if (stop - start < tokenIdsMaxLength) {
+                if (stop - start <= tokenIdsMaxLength) {
                     tokenIdsMaxLength = stop - start;
                 }
                 assembly {
@@ -156,14 +160,15 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                         // if `ownership.burned == false`.
                         if iszero(mload(add(ownership, 0x40))) {
                             // if `ownership.addr != address(0)`.
-                            // The `addr` already has it's upper 96 bits clearned.
+                            // The `addr` already has it's upper 96 bits clearned,
+                            // since it is written to memory with regular Solidity.
                             if mload(ownership) {
                                 currOwnershipAddr := mload(ownership)
                             }
                             // if `currOwnershipAddr == owner`.
-                            // We don't need to clear the upper 96 bits of `owner`, 
-                            // as this method is an external view method.
-                            if iszero(xor(currOwnershipAddr, owner)) {
+                            // The `shl(96, x)` is to make the comparison agnostic to any
+                            // dirty upper 96 bits in `owner`.
+                            if iszero(shl(96, xor(currOwnershipAddr, owner))) {
                                 tokenIdsIdx := add(tokenIdsIdx, 1)
                                 mstore(add(tokenIds, shl(5, tokenIdsIdx)), start)
                             }
@@ -210,14 +215,15 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 // if `ownership.burned == false`.
                 if iszero(mload(add(ownership, 0x40))) {
                     // if `ownership.addr != address(0)`.
-                    // The `addr` already has it's upper 96 bits clearned.
+                    // The `addr` already has it's upper 96 bits clearned,
+                    // since it is written to memory with regular Solidity.
                     if mload(ownership) {
                         currOwnershipAddr := mload(ownership)
                     }
                     // if `currOwnershipAddr == owner`.
-                    // We don't need to clear the upper 96 bits of `owner`, 
-                    // as this method is an external view method.
-                    if iszero(xor(currOwnershipAddr, owner)) {
+                    // The `shl(96, x)` is to make the comparison agnostic to any
+                    // dirty upper 96 bits in `owner`.
+                    if iszero(shl(96, xor(currOwnershipAddr, owner))) {
                         tokenIdsIdx := add(tokenIdsIdx, 1)
                         mstore(add(tokenIds, shl(5, tokenIdsIdx)), i)
                     }
