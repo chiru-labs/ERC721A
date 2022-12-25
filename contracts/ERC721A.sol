@@ -90,6 +90,21 @@ contract ERC721A is IERC721A {
     bytes32 private constant _TRANSFER_EVENT_SIGNATURE =
         0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
 
+    // The `Approval` event signature is given by:
+    // `keccak256(bytes("Approval(address,address,uint256)"))`.
+    bytes32 private constant _APPROVAL_EVENT_SIGNATURE =
+        0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925;
+
+    // The `ApprovalForAll` event signature is given by:
+    // `keccak256(bytes("ApprovalForAll(address,address,bool)"))`.
+    bytes32 private constant _APPROVAL_FOR_ALL_EVENT_SIGNATURE =
+        0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31;
+
+    // The `Approval` event signature is given by:
+    // `keccak256(bytes("ConsecutiveTransfer(uint256,uint256,address,address)"))`.
+    bytes32 private constant _CONSECUTIVE_TRANSFER_EVENT_SIGNATURE =
+        0xdeaa91b6123d068f5821d0fb0678463d1a8a6079fe8af5de3ce5e896dcf9133d;
+
     // =============================================================
     //                            STORAGE
     // =============================================================
