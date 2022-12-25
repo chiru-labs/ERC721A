@@ -465,8 +465,15 @@ contract ERC721A is IERC721A {
      * Emits an {ApprovalForAll} event.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        _operatorApprovals[_msgSenderERC721A()][operator] = approved;
-        emit ApprovalForAll(_msgSenderERC721A(), operator, approved);
+        address owner = _msgSenderERC721A();
+        _operatorApprovals[owner][operator] = approved;
+
+        assembly{
+            // Emit the `ApprovalForAll` event.
+            let ptr := mload(0x40)
+            mstore(ptr,approved)
+            log3(ptr, 0x20, _APPROVAL_FOR_ALL_EVENT_SIGNATURE, owner, operator)
+        }
     }
 
     /**
@@ -602,7 +609,11 @@ contract ERC721A is IERC721A {
             }
         }
 
-        emit Transfer(from, to, tokenId);
+        // Emit the `Transfer` event.
+        assembly{
+            log4(0, 0, _TRANSFER_EVENT_SIGNATURE, from, to, tokenId)
+        }
+
         _afterTokenTransfers(from, to, tokenId, 1);
     }
 
@@ -833,7 +844,12 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
-            emit ConsecutiveTransfer(startTokenId, startTokenId + quantity - 1, address(0), to);
+            // Emit the `ConsecutiveTransfer` event.
+            assembly{
+                let ptr := mload(0x40)
+                mstore(ptr, sub(add(startTokenId, quantity), 1))
+                log4(ptr, 0x20, _CONSECUTIVE_TRANSFER_EVENT_SIGNATURE, startTokenId, 0, to)
+            }
 
             _currentIndex = startTokenId + quantity;
         }
@@ -919,7 +935,11 @@ contract ERC721A is IERC721A {
             }
 
         _tokenApprovals[tokenId].value = to;
-        emit Approval(owner, to, tokenId);
+
+        // Emit the `Approval` event.
+        assembly{
+            log4(0, 0, _APPROVAL_EVENT_SIGNATURE, owner, to, tokenId)
+        }
     }
 
     // =============================================================
@@ -1002,7 +1022,11 @@ contract ERC721A is IERC721A {
             }
         }
 
-        emit Transfer(from, address(0), tokenId);
+        // Emit the `Transfer` event.
+        assembly{
+            log4(0, 0, _TRANSFER_EVENT_SIGNATURE, from, 0, tokenId)
+        }
+
         _afterTokenTransfers(from, address(0), tokenId, 1);
 
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
