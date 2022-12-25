@@ -724,6 +724,13 @@ contract ERC721A is IERC721A {
         uint256 startTokenId = _currentIndex;
         if (quantity == 0) _revert(MintZeroQuantity.selector);
 
+        assembly {
+            // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            to := and(to, _BITMASK_ADDRESS)
+        }
+
+        if (to == address(0)) _revert(MintToZeroAddress.selector);
+
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
@@ -747,45 +754,22 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
-            uint256 toMasked;
             uint256 end = startTokenId + quantity;
+            uint tokenId = startTokenId;
 
-            // Use assembly to loop and emit the `Transfer` event for gas savings.
-            // The duplicated `log4` removes an extra check and reduces stack juggling.
-            // The assembly, together with the surrounding Solidity code, have been
-            // delicately arranged to nudge the compiler into producing optimized opcodes.
-            assembly {
-                // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
-                toMasked := and(to, _BITMASK_ADDRESS)
+            do {
                 // Emit the `Transfer` event.
-                log4(
-                    0, // Start of data (0, since no data).
-                    0, // End of data (0, since no data).
-                    _TRANSFER_EVENT_SIGNATURE, // Signature.
-                    0, // `address(0)`.
-                    toMasked, // `to`.
-                    startTokenId // `tokenId`.
-                )
-
-                // The `iszero(eq(,))` check ensures that large values of `quantity`
-                // that overflows uint256 will make the loop run out of gas.
-                // The compiler will optimize the `iszero` away for performance.
-                for {
-                    let tokenId := add(startTokenId, 1)
-                } iszero(eq(tokenId, end)) {
-                    tokenId := add(tokenId, 1)
-                } {
-                    // Emit the `Transfer` event. Similar to above.
-                    log4(0, 0, _TRANSFER_EVENT_SIGNATURE, 0, toMasked, tokenId)
+                assembly{
+                    log4(0, 0, _TRANSFER_EVENT_SIGNATURE, 0, to, tokenId)
                 }
-            }
-            if (toMasked == 0) _revert(MintToZeroAddress.selector);
+                // The `++tokenId != end` check ensures that large values of `quantity`
+                // that overflows uint256 will make the loop run out of gas.
+            } while (++tokenId != end);
 
             _currentIndex = end;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
-
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
