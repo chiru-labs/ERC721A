@@ -90,21 +90,6 @@ contract ERC721A is IERC721A {
     bytes32 private constant _TRANSFER_EVENT_SIGNATURE =
         0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
 
-    // The `Approval` event signature is given by:
-    // `keccak256(bytes("Approval(address,address,uint256)"))`.
-    bytes32 private constant _APPROVAL_EVENT_SIGNATURE =
-        0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925;
-
-    // The `ApprovalForAll` event signature is given by:
-    // `keccak256(bytes("ApprovalForAll(address,address,bool)"))`.
-    bytes32 private constant _APPROVAL_FOR_ALL_EVENT_SIGNATURE =
-        0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31;
-
-    // The `Approval` event signature is given by:
-    // `keccak256(bytes("ConsecutiveTransfer(uint256,uint256,address,address)"))`.
-    bytes32 private constant _CONSECUTIVE_TRANSFER_EVENT_SIGNATURE =
-        0xdeaa91b6123d068f5821d0fb0678463d1a8a6079fe8af5de3ce5e896dcf9133d;
-
     // =============================================================
     //                            STORAGE
     // =============================================================
@@ -465,15 +450,8 @@ contract ERC721A is IERC721A {
      * Emits an {ApprovalForAll} event.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        address owner = _msgSenderERC721A();
-        _operatorApprovals[owner][operator] = approved;
-
-        assembly{
-            // Emit the `ApprovalForAll` event.
-            let ptr := mload(0x40)
-            mstore(ptr,approved)
-            log3(ptr, 0x20, _APPROVAL_FOR_ALL_EVENT_SIGNATURE, owner, operator)
-        }
+        _operatorApprovals[_msgSenderERC721A()][operator] = approved;
+        emit ApprovalForAll(_msgSenderERC721A(), operator, approved);
     }
 
     /**
@@ -557,6 +535,9 @@ contract ERC721A is IERC721A {
     ) public payable virtual override {
         uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
 
+        // Mask `from` to the lower 160 bits, in case the upper bits somehow aren't clean.
+        from = address(uint160(uint256(uint160(from)) & _BITMASK_ADDRESS));
+
         if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
 
         (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
@@ -564,8 +545,6 @@ contract ERC721A is IERC721A {
         // The nested ifs save around 20+ gas over a compound boolean condition.
         if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
             if (!isApprovedForAll(from, _msgSenderERC721A())) _revert(TransferCallerNotOwnerNorApproved.selector);
-
-        if (to == address(0)) _revert(TransferToZeroAddress.selector);
 
         _beforeTokenTransfers(from, to, tokenId, 1);
 
@@ -609,10 +588,20 @@ contract ERC721A is IERC721A {
             }
         }
 
-        // Emit the `Transfer` event.
-        assembly{
-            log4(0, 0, _TRANSFER_EVENT_SIGNATURE, from, to, tokenId)
+        // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
+        uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
+        assembly {
+            // Emit the `Transfer` event.
+            log4(
+                0, // Start of data (0, since no data).
+                0, // End of data (0, since no data).
+                _TRANSFER_EVENT_SIGNATURE, // Signature.
+                from, // `from`.
+                toMasked, // `to`.
+                tokenId // `tokenId`.
+            )
         }
+        if (toMasked == 0) _revert(TransferToZeroAddress.selector);
 
         _afterTokenTransfers(from, to, tokenId, 1);
     }
@@ -750,26 +739,12 @@ contract ERC721A is IERC721A {
         uint256 startTokenId = _currentIndex;
         if (quantity == 0) _revert(MintZeroQuantity.selector);
 
-        assembly {
-            // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
-            to := and(to, _BITMASK_ADDRESS)
-        }
-
-        if (to == address(0)) _revert(MintToZeroAddress.selector);
-
         _beforeTokenTransfers(address(0), to, startTokenId, quantity);
 
         // Overflows are incredibly unrealistic.
         // `balance` and `numberMinted` have a maximum limit of 2**64.
         // `tokenId` has a maximum limit of 2**256.
         unchecked {
-            // Updates:
-            // - `balance += quantity`.
-            // - `numberMinted += quantity`.
-            //
-            // We can directly add to the `balance` and `numberMinted`.
-            _packedAddressData[to] += quantity * ((1 << _BITPOS_NUMBER_MINTED) | 1);
-
             // Updates:
             // - `address` to the owner.
             // - `startTimestamp` to the timestamp of minting.
@@ -780,15 +755,34 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
+            // Updates:
+            // - `balance += quantity`.
+            // - `numberMinted += quantity`.
+            //
+            // We can directly add to the `balance` and `numberMinted`.
+            _packedAddressData[to] += quantity * ((1 << _BITPOS_NUMBER_MINTED) | 1);
+
+            // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
+
+            if (toMasked == 0) _revert(MintToZeroAddress.selector);
+
             uint256 end = startTokenId + quantity;
-            uint tokenId = startTokenId;
+            uint256 tokenId = startTokenId;
 
             do {
-                // Emit the `Transfer` event.
-                assembly{
-                    log4(0, 0, _TRANSFER_EVENT_SIGNATURE, 0, to, tokenId)
+                assembly {
+                    // Emit the `Transfer` event.
+                    log4(
+                        0, // Start of data (0, since no data).
+                        0, // End of data (0, since no data).
+                        _TRANSFER_EVENT_SIGNATURE, // Signature.
+                        0, // `address(0)`.
+                        toMasked, // `to`.
+                        tokenId // `tokenId`.
+                    )
                 }
-                // The `++tokenId != end` check ensures that large values of `quantity`
+                // The `!=` check ensures that large values of `quantity`
                 // that overflows uint256 will make the loop run out of gas.
             } while (++tokenId != end);
 
@@ -796,6 +790,7 @@ contract ERC721A is IERC721A {
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
+
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
@@ -844,12 +839,7 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
-            // Emit the `ConsecutiveTransfer` event.
-            assembly{
-                let ptr := mload(0x40)
-                mstore(ptr, sub(add(startTokenId, quantity), 1))
-                log4(ptr, 0x20, _CONSECUTIVE_TRANSFER_EVENT_SIGNATURE, startTokenId, 0, to)
-            }
+            emit ConsecutiveTransfer(startTokenId, startTokenId + quantity - 1, address(0), to);
 
             _currentIndex = startTokenId + quantity;
         }
@@ -935,11 +925,7 @@ contract ERC721A is IERC721A {
             }
 
         _tokenApprovals[tokenId].value = to;
-
-        // Emit the `Approval` event.
-        assembly{
-            log4(0, 0, _APPROVAL_EVENT_SIGNATURE, owner, to, tokenId)
-        }
+        emit Approval(owner, to, tokenId);
     }
 
     // =============================================================
@@ -1022,11 +1008,7 @@ contract ERC721A is IERC721A {
             }
         }
 
-        // Emit the `Transfer` event.
-        assembly{
-            log4(0, 0, _TRANSFER_EVENT_SIGNATURE, from, 0, tokenId)
-        }
-
+        emit Transfer(from, address(0), tokenId);
         _afterTokenTransfers(from, address(0), tokenId, 1);
 
         // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
