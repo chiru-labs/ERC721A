@@ -42,7 +42,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
         address owner = ownerOf(tokenId);
         if (_msgSenderERC721A() != owner)
             if (!isApprovedForAll(owner, _msgSenderERC721A()))
-                if (getApproved(tokenId) != _msgSenderERC721A()) revert SetUserCallerNotOwnerNorApproved();
+                if (getApproved(tokenId) != _msgSenderERC721A()) _revert(SetUserCallerNotOwnerNorApproved.selector);
 
         _packedUserInfo[tokenId] = (uint256(expires) << _BITPOS_EXPIRES) | uint256(uint160(user));
 

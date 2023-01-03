@@ -283,6 +283,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             await this.erc721a.connect(this.addr1).transferFrom(this.addr1.address, this.addr2.address, this.tokenId);
             expect(await this.erc721a.getApproved(this.tokenId)).to.not.equal(this.addr1.address);
           });
+
+          it('direct approve works', async function () {
+            expect(await this.erc721a.getApproved(this.tokenId)).to.not.equal(this.addr1.address);
+            await this.erc721a.connect(this.addr2).directApprove(this.addr1.address, this.tokenId); 
+            expect(await this.erc721a.getApproved(this.tokenId)).to.equal(this.addr1.address);
+          });
         });
 
         describe('setApprovalForAll', async function () {

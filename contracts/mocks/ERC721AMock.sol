@@ -33,6 +33,10 @@ contract ERC721AMock is ERC721A {
         _setAux(owner, aux);
     }
 
+    function directApprove(address to, uint256 tokenId) public {
+        _approve(to, tokenId);
+    }
+
     function baseURI() public view returns (string memory) {
         return _baseURI();
     }
