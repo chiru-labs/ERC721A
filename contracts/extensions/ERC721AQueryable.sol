@@ -110,7 +110,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         uint256 stop
     ) external view virtual override returns (uint256[] memory) {
         unchecked {
-            if (start >= stop) revert InvalidQueryRange();
+            if (start >= stop) _revert(InvalidQueryRange.selector);
             // Set `start = max(start, _startTokenId())`.
             if (start < _startTokenId()) {
                 start = _startTokenId();
