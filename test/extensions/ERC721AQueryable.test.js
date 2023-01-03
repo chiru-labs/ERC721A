@@ -166,7 +166,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         describe('tokensOfOwnerIn', async function () {
           const expectCorrect = async function (addr, start, stop) {
             if (BigNumber.from(start).gte(BigNumber.from(stop))) {
-              await expect(this.erc721aQueries.tokensOfOwnerIn(addr, start, stop)).to.be.revertedWith(
+              await expect(this.erc721aQueryable.tokensOfOwnerIn(addr, start, stop)).to.be.revertedWith(
                 'InvalidQueryRange'
               );
             } else {
@@ -199,9 +199,11 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                   // Start and end truncated. This also tests for start + o >= stop - o.
                   await expectCorrect.call(this, this.owner.address, start + o, stop - o);
                 }
-                for (let o = 0, n = parseInt(this.currentIndex) + 1; o <= n; ++o) {
-                  // Sliding window.
-                  await expectCorrect.call(this, this.owner.address, o, o + ownerTokens.length);
+                for (let l = 0; l < ownerTokens.length; ++l) {
+                  for (let o = 0, n = parseInt(this.currentIndex) + 1; o <= n; ++o) {
+                    // Sliding window.
+                    await expectCorrect.call(this, this.owner.address, o, o + l);
+                  }
                 }
               });
             });

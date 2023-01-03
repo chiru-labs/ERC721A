@@ -37,16 +37,21 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      * - `burned = false`
      * - `extraData = <Extra data at start of ownership>`
      */
-    function explicitOwnershipOf(uint256 tokenId) public view virtual override returns (TokenOwnership memory) {
-        TokenOwnership memory ownership;
-        if (tokenId < _startTokenId() || tokenId >= _nextTokenId()) {
-            return ownership;
+    function explicitOwnershipOf(uint256 tokenId)
+        public
+        view
+        virtual
+        override
+        returns (TokenOwnership memory ownership)
+    {
+        if (tokenId >= _startTokenId()) {
+            if (tokenId < _nextTokenId()) {
+                ownership = _ownershipAt(tokenId);
+                if (!ownership.burned) {
+                    ownership = _ownershipOf(tokenId);
+                }
+            }
         }
-        ownership = _ownershipAt(tokenId);
-        if (ownership.burned) {
-            return ownership;
-        }
-        return _ownershipOf(tokenId);
     }
 
     /**
@@ -60,14 +65,31 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         override
         returns (TokenOwnership[] memory)
     {
-        unchecked {
-            uint256 tokenIdsLength = tokenIds.length;
-            TokenOwnership[] memory ownerships = new TokenOwnership[](tokenIdsLength);
-            for (uint256 i; i != tokenIdsLength; ++i) {
-                ownerships[i] = explicitOwnershipOf(tokenIds[i]);
-            }
-            return ownerships;
+        TokenOwnership[] memory ownerships;
+        uint256 i = tokenIds.length;
+        assembly {
+            // Grab the free memory pointer.
+            ownerships := mload(0x40)
+            // Store the length.
+            mstore(ownerships, i)
+            // Allocate one word for the length,
+            // `tokenIds.length` words for the pointers.
+            i := shl(5, i) // Multiply `i` by 32.
+            mstore(0x40, add(add(ownerships, 0x20), i))
         }
+        while (i != 0) {
+            uint256 tokenId;
+            assembly {
+                i := sub(i, 0x20)
+                tokenId := calldataload(add(tokenIds.offset, i))
+            }
+            TokenOwnership memory ownership = explicitOwnershipOf(tokenId);
+            assembly {
+                // Store the pointer of `ownership` in the `ownerships` array.
+                mstore(add(add(ownerships, 0x20), i), ownership)
+            }
+        }
+        return ownerships;
     }
 
     /**
@@ -89,55 +111,75 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
     ) external view virtual override returns (uint256[] memory) {
         unchecked {
             if (start >= stop) _revert(InvalidQueryRange.selector);
-            uint256 tokenIdsIdx;
-            uint256 stopLimit = _nextTokenId();
             // Set `start = max(start, _startTokenId())`.
             if (start < _startTokenId()) {
                 start = _startTokenId();
             }
+            uint256 stopLimit = _nextTokenId();
             // Set `stop = min(stop, stopLimit)`.
-            if (stop > stopLimit) {
+            if (stop >= stopLimit) {
                 stop = stopLimit;
             }
+            uint256[] memory tokenIds;
             uint256 tokenIdsMaxLength = balanceOf(owner);
-            // Set `tokenIdsMaxLength = min(balanceOf(owner), stop - start)`,
-            // to cater for cases where `balanceOf(owner)` is too big.
-            if (start < stop) {
-                uint256 rangeLength = stop - start;
-                if (rangeLength < tokenIdsMaxLength) {
-                    tokenIdsMaxLength = rangeLength;
+            bool startLtStop = start < stop;
+            assembly {
+                // Set `tokenIdsMaxLength` to zero if `start` is less than `stop`.
+                tokenIdsMaxLength := mul(tokenIdsMaxLength, startLtStop)
+            }
+            if (tokenIdsMaxLength != 0) {
+                // Set `tokenIdsMaxLength = min(balanceOf(owner), stop - start)`,
+                // to cater for cases where `balanceOf(owner)` is too big.
+                if (stop - start <= tokenIdsMaxLength) {
+                    tokenIdsMaxLength = stop - start;
                 }
-            } else {
-                tokenIdsMaxLength = 0;
-            }
-            uint256[] memory tokenIds = new uint256[](tokenIdsMaxLength);
-            if (tokenIdsMaxLength == 0) {
-                return tokenIds;
-            }
-            // We need to call `explicitOwnershipOf(start)`,
-            // because the slot at `start` may not be initialized.
-            TokenOwnership memory ownership = explicitOwnershipOf(start);
-            address currOwnershipAddr;
-            // If the starting slot exists (i.e. not burned), initialize `currOwnershipAddr`.
-            // `ownership.address` will not be zero, as `start` is clamped to the valid token ID range.
-            if (!ownership.burned) {
-                currOwnershipAddr = ownership.addr;
-            }
-            for (uint256 i = start; i != stop && tokenIdsIdx != tokenIdsMaxLength; ++i) {
-                ownership = _ownershipAt(i);
-                if (ownership.burned) {
-                    continue;
+                assembly {
+                    // Grab the free memory pointer.
+                    tokenIds := mload(0x40)
+                    // Allocate one word for the length, and `tokenIdsMaxLength` words
+                    // for the data. `shl(5, x)` is equivalent to `mul(32, x)`.
+                    mstore(0x40, add(tokenIds, shl(5, add(tokenIdsMaxLength, 1))))
                 }
-                if (ownership.addr != address(0)) {
+                // We need to call `explicitOwnershipOf(start)`,
+                // because the slot at `start` may not be initialized.
+                TokenOwnership memory ownership = explicitOwnershipOf(start);
+                address currOwnershipAddr;
+                // If the starting slot exists (i.e. not burned),
+                // initialize `currOwnershipAddr`.
+                // `ownership.address` will not be zero,
+                // as `start` is clamped to the valid token ID range.
+                if (!ownership.burned) {
                     currOwnershipAddr = ownership.addr;
                 }
-                if (currOwnershipAddr == owner) {
-                    tokenIds[tokenIdsIdx++] = i;
+                uint256 tokenIdsIdx;
+                // Use a do-while, which is slightly more efficient for this case,
+                // as the array will at least contain one element.
+                do {
+                    ownership = _ownershipAt(start);
+                    assembly {
+                        // if `ownership.burned == false`.
+                        if iszero(mload(add(ownership, 0x40))) {
+                            // if `ownership.addr != address(0)`.
+                            // The `addr` already has it's upper 96 bits clearned,
+                            // since it is written to memory with regular Solidity.
+                            if mload(ownership) {
+                                currOwnershipAddr := mload(ownership)
+                            }
+                            // if `currOwnershipAddr == owner`.
+                            // The `shl(96, x)` is to make the comparison agnostic to any
+                            // dirty upper 96 bits in `owner`.
+                            if iszero(shl(96, xor(currOwnershipAddr, owner))) {
+                                tokenIdsIdx := add(tokenIdsIdx, 1)
+                                mstore(add(tokenIds, shl(5, tokenIdsIdx)), start)
+                            }
+                        }
+                        start := add(start, 1)
+                    }
+                } while (!(start == stop || tokenIdsIdx == tokenIdsMaxLength));
+                // Store the length of the array.
+                assembly {
+                    mstore(tokenIds, tokenIdsIdx)
                 }
-            }
-            // Downsize the array to fit.
-            assembly {
-                mstore(tokenIds, tokenIdsIdx)
             }
             return tokenIds;
         }
@@ -154,25 +196,41 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      * an out-of-gas error (10K collections should be fine).
      */
     function tokensOfOwner(address owner) external view virtual override returns (uint256[] memory) {
-        unchecked {
-            uint256 tokenIdsIdx;
-            address currOwnershipAddr;
-            uint256 tokenIdsLength = balanceOf(owner);
-            uint256[] memory tokenIds = new uint256[](tokenIdsLength);
-            TokenOwnership memory ownership;
-            for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
-                ownership = _ownershipAt(i);
-                if (ownership.burned) {
-                    continue;
-                }
-                if (ownership.addr != address(0)) {
-                    currOwnershipAddr = ownership.addr;
-                }
-                if (currOwnershipAddr == owner) {
-                    tokenIds[tokenIdsIdx++] = i;
-                }
-            }
-            return tokenIds;
+        uint256 tokenIdsLength = balanceOf(owner);
+        uint256[] memory tokenIds;
+        assembly {
+            // Grab the free memory pointer.
+            tokenIds := mload(0x40)
+            // Allocate one word for the length, and `tokenIdsMaxLength` words
+            // for the data. `shl(5, x)` is equivalent to `mul(32, x)`.
+            mstore(0x40, add(tokenIds, shl(5, add(tokenIdsLength, 1))))
+            // Store the length of `tokenIds`.
+            mstore(tokenIds, tokenIdsLength)
         }
+        address currOwnershipAddr;
+        uint256 tokenIdsIdx;
+        for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ) {
+            TokenOwnership memory ownership = _ownershipAt(i);
+            assembly {
+                // if `ownership.burned == false`.
+                if iszero(mload(add(ownership, 0x40))) {
+                    // if `ownership.addr != address(0)`.
+                    // The `addr` already has it's upper 96 bits clearned,
+                    // since it is written to memory with regular Solidity.
+                    if mload(ownership) {
+                        currOwnershipAddr := mload(ownership)
+                    }
+                    // if `currOwnershipAddr == owner`.
+                    // The `shl(96, x)` is to make the comparison agnostic to any
+                    // dirty upper 96 bits in `owner`.
+                    if iszero(shl(96, xor(currOwnershipAddr, owner))) {
+                        tokenIdsIdx := add(tokenIdsIdx, 1)
+                        mstore(add(tokenIds, shl(5, tokenIdsIdx)), i)
+                    }
+                }
+                i := add(i, 1)
+            }
+        }
+        return tokenIds;
     }
 }
