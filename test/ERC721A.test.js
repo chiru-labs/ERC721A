@@ -226,6 +226,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
           it('reverts for an invalid token', async function () {
             await expect(this.erc721a.ownerOf(10)).to.be.revertedWith('OwnerQueryForNonexistentToken');
+
+            if (this.startTokenId > 0) {
+              await expect(this.erc721a.ownerOf(0)).to.be.revertedWith('OwnerQueryForNonexistentToken');
+            }
           });
         });
 
