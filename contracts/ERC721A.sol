@@ -694,6 +694,40 @@ contract ERC721A is IERC721A {
     ) internal virtual {}
 
     /**
+     * @dev Hook that is called before a set of token IDs ordered in ascending order
+     * are about to be transferred. Only called on batch transfers.
+     *
+     * `tokenIds` - the array of tokenIds to be transferred, ordered in ascending order.
+     *
+     * Calling conditions:
+     *
+     * - `from`'s `tokenIds` will be transferred to `to`.
+     * - Neither `from` and `to` can be zero.
+     */
+    function _beforeTokenBatchTransfers(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {}
+
+    /**
+     * @dev Hook that is called after a set of token IDs ordered in ascending order
+     * have been transferred. Only called on batch transfers.
+     *
+     * `tokenIds` - the array of tokenIds transferred, ordered in ascending order.
+     *
+     * Calling conditions:
+     *
+     * - `from`'s `tokenIds` have been transferred to `to`.
+     * - Neither `from` and `to` can be zero.
+     */
+    function _afterTokenBatchTransfers(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {}
+
+    /**
      * @dev Private function to invoke {IERC721Receiver-onERC721Received} on a target contract.
      *
      * `from` - Previous owner of the given token ID.
