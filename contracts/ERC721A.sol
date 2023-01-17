@@ -699,7 +699,7 @@ contract ERC721A is IERC721A {
                 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
                 if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
 
-                // Updates:
+                // Updates startTokenId:
                 // - `address` to the next owner.
                 // - `startTimestamp` to the timestamp of transfering.
                 // - `burned` to `false`.
@@ -720,6 +720,7 @@ contract ERC721A is IERC721A {
                     // If `nextTokenId` is not consecutive, update `nextOwnershipPacked` and break from the loop.
                     if (tokenIds[i + quantity] != nextTokenId) {
                         // If `quantity` is 1, we can directly use `prevOwnershipPacked`.
+                        // Otherwise we cannot assume _packedOwnershipOf(nextTokenId - 1) == prevOwnershipPacked.
                         uint256 lastOwnershipPacked = quantity == 1
                             ? prevOwnershipPacked
                             : _packedOwnershipOf(nextTokenId - 1);
@@ -729,7 +730,7 @@ contract ERC721A is IERC721A {
                             if (_packedOwnerships[nextTokenId] == 0) {
                                 // If the next slot is within bounds.
                                 if (nextTokenId != _currentIndex) {
-                                    // Initialize the next slot to maintain correctness for `ownerOf(startTokenId + 1)`.
+                                    // Initialize the next slot to maintain correctness for `ownerOf(nextTokenId)`.
                                     _packedOwnerships[nextTokenId] = lastOwnershipPacked;
                                 }
                             }
@@ -738,7 +739,8 @@ contract ERC721A is IERC721A {
                     }
 
                     nextOwnershipPacked = _packedOwnerships[nextTokenId];
-                    // If the next slot's address is zero.
+                    
+                    // If the next slot's address is uninitialized.
                     if (nextOwnershipPacked == 0) {
                         // Revert if the next slot is out of bounds. Cannot be higher than `_currentIndex` since we're
                         // incrementing in steps of one
@@ -750,7 +752,7 @@ contract ERC721A is IERC721A {
                         // Revert if `nextTokenId` has been burned.
                         if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
 
-                        // Updates:
+                        // Updates nextTokenId:
                         // - `address` to the next owner.
                         // - `startTimestamp` to the timestamp of transfering.
                         // - `burned` to `false`.
