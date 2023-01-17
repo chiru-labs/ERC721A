@@ -723,6 +723,49 @@ contract ERC721A is IERC721A {
         }
     }
 
+    /**
+     * @dev Private function to handle clearing approvals and emitting transfer Event for a given `tokenId`.
+     * Used in `_batchTransferFrom`.
+     *
+     * `from` - Previous owner of the given token ID.
+     * `toMasked` - Target address that will receive the token.
+     * `tokenId` - Token ID to be transferred.
+     * `isApprovedForAll_` - Whether the caller is approved for all token IDs.
+     */
+    function _clearApprovalsAndEmitTransferEvent(
+        address from,
+        uint256 toMasked,
+        uint256 tokenId,
+        bool isApprovedForAll_
+    ) private {
+        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
+
+        // The nested ifs save around 20+ gas over a compound boolean condition.
+        if (!isApprovedForAll_)
+            if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
+                _revert(TransferCallerNotOwnerNorApproved.selector);
+
+        // Clear approvals from the previous owner.
+        assembly {
+            if approvedAddress {
+                // This is equivalent to `delete _tokenApprovals[tokenId]`.
+                sstore(approvedAddressSlot, 0)
+            }
+        }
+
+        assembly {
+            // Emit the `Transfer` event.
+            log4(
+                0, // Start of data (0, since no data).
+                0, // End of data (0, since no data).
+                _TRANSFER_EVENT_SIGNATURE, // Signature.
+                from, // `from`.
+                toMasked, // `to`.
+                tokenId // `tokenId`.
+            )
+        }
+    }
+
     // =============================================================
     //                        MINT OPERATIONS
     // =============================================================
