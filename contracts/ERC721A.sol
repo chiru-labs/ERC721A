@@ -649,6 +649,7 @@ contract ERC721A is IERC721A {
      * @dev Hook that is called before a set of serially-ordered token IDs
      * are about to be transferred. This includes minting.
      * And also called before burning one token.
+     * But not called on batch transfers.
      *
      * `startTokenId` - the first token ID to be transferred.
      * `quantity` - the amount to be transferred.
@@ -672,6 +673,7 @@ contract ERC721A is IERC721A {
      * @dev Hook that is called after a set of serially-ordered token IDs
      * have been transferred. This includes minting.
      * And also called after one token has been burned.
+     * But not called on batch transfers.
      *
      * `startTokenId` - the first token ID to be transferred.
      * `quantity` - the amount to be transferred.
