@@ -646,6 +646,181 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Transfers `tokenIds` in batch from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenIds` tokens must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move these tokens
+     * by either {approve} or {setApprovalForAll}.
+     *
+     * Emits a {Transfer} event for each transfer.
+     */
+    function _batchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {
+        // Sort `tokenIds` to allow batching consecutive ids into single operations.
+        _sort(tokenIds);
+
+        // Mask `from` and `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
+        from = address(uint160(uint256(uint160(from)) & _BITMASK_ADDRESS));
+        uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
+        if (toMasked == 0) _revert(TransferToZeroAddress.selector);
+
+        bool isApprovedForAll_ = isApprovedForAll(from, _msgSenderERC721A());
+        uint256 totalTokens = tokenIds.length;
+        uint256 totalTokensLeft;
+        uint256 startTokenId;
+        uint256 nextTokenId;
+        uint256 prevOwnershipPacked;
+        uint256 nextOwnershipPacked;
+        uint256 quantity;
+
+        _beforeTokenBatchTransfers(from, to, tokenIds);
+
+        // Underflow of the sender's balance is temporarily possible if the wrong set of token Ids is passed,
+        // but reverts afterwards when ownership is checked.
+        // The recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as `startTokenId` would have to be 2**256.
+        unchecked {
+            // We can directly increment and decrement the balances.
+            _packedAddressData[from] -= totalTokens;
+            _packedAddressData[to] += totalTokens;
+
+            for (uint256 i; i < totalTokens; ) {
+                startTokenId = tokenIds[i];
+                totalTokensLeft = totalTokens - i;
+
+                // Check ownership of `startTokenId`.
+                prevOwnershipPacked = _packedOwnershipOf(startTokenId);
+                if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
+
+                // Updates:
+                // - `address` to the next owner.
+                // - `startTimestamp` to the timestamp of transfering.
+                // - `burned` to `false`.
+                // - `nextInitialized` to `true`.
+                _packedOwnerships[startTokenId] = _packOwnershipData(
+                    to,
+                    _BITMASK_NEXT_INITIALIZED | _nextExtraData(from, to, prevOwnershipPacked)
+                );
+
+                // Clear approvals and emit transfer event for `startTokenId`.
+                _clearApprovalsAndEmitTransferEvent(from, toMasked, startTokenId, isApprovedForAll_);
+
+                // Derive quantity by looping over the next consecutive `totalTokensLeft`.
+                for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
+                    nextTokenId = startTokenId + quantity;
+                    nextOwnershipPacked = _packedOwnerships[nextTokenId];
+
+                    // If `nextTokenId` is not consecutive, update `nextOwnershipPacked` and break from the loop.
+                    if (tokenIds[i + quantity] != nextTokenId) {
+                        // If `quantity` is 1, we can directly use `prevOwnershipPacked`.
+                        uint256 lastOwnershipPacked = quantity == 1
+                            ? prevOwnershipPacked
+                            : _packedOwnershipOf(nextTokenId - 1);
+                        // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
+                        if (lastOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
+                            // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                            if (_packedOwnerships[nextTokenId] == 0) {
+                                // If the next slot is within bounds.
+                                if (nextTokenId != _currentIndex) {
+                                    // Initialize the next slot to maintain correctness for `ownerOf(startTokenId + 1)`.
+                                    _packedOwnerships[nextTokenId] = lastOwnershipPacked;
+                                }
+                            }
+                        }
+                        break;
+                    }
+
+                    nextOwnershipPacked = _packedOwnerships[nextTokenId];
+                    // If the next slot's address is zero.
+                    if (nextOwnershipPacked == 0) {
+                        // Revert if the next slot is out of bounds. Cannot be higher than `_currentIndex` since we're
+                        // incrementing in steps of one
+                        if (nextTokenId == _currentIndex) _revert(OwnerQueryForNonexistentToken.selector);
+                        // Otherwise we assume `from` owns `nextTokenId` and move on.
+                    } else {
+                        // Revert if `nextTokenId` is not owned by `from`.
+                        if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
+                        // Revert if `nextTokenId` has been burned.
+                        if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
+
+                        // Updates:
+                        // - `address` to the next owner.
+                        // - `startTimestamp` to the timestamp of transfering.
+                        // - `burned` to `false`.
+                        // - `nextInitialized` to `true`.
+                        _packedOwnerships[nextTokenId] = _packOwnershipData(
+                            to,
+                            _BITMASK_NEXT_INITIALIZED | _nextExtraData(from, to, nextOwnershipPacked)
+                        );
+                    }
+
+                    // Clear approvals and emit transfer event for `nextTokenId`.
+                    _clearApprovalsAndEmitTransferEvent(from, toMasked, nextTokenId, isApprovedForAll_);
+                }
+
+                // Skip the next `quantity` tokens.
+                i += quantity;
+            }
+        }
+
+        _afterTokenBatchTransfers(from, to, tokenIds);
+    }
+
+    /**
+     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, '')`.
+     */
+    function _safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {
+        _safeBatchTransferFrom(from, to, tokenIds, '');
+    }
+
+    /**
+     * @dev Safely transfers `tokenIds` in batch from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenIds` tokens must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move these tokens
+     * by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement
+     * {IERC721Receiver-onERC721Received}, which is called for each transferred token.
+     *
+     * Emits a {Transfer} event for each transfer.
+     */
+    function _safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds,
+        bytes memory _data
+    ) internal virtual {
+        _batchTransferFrom(from, to, tokenIds);
+
+        uint256 tokenId;
+        uint256 totalTokens = tokenIds.length;
+        unchecked {
+            for (uint256 i; i < totalTokens; ++i) {
+                tokenId = tokenIds[i];
+                if (to.code.length != 0)
+                    if (!_checkContractOnERC721Received(from, to, tokenId, _data)) {
+                        _revert(TransferToNonERC721ReceiverImplementer.selector);
+                    }
+            }
+        }
+    }
+
+    /**
      * @dev Hook that is called before a set of serially-ordered token IDs
      * are about to be transferred. This includes minting.
      * And also called before burning one token.
