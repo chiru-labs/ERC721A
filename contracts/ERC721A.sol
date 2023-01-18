@@ -646,6 +646,17 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Equivalent to `_batchTransferFrom(from, to, tokenIds, false)`.
+     */
+    function _batchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {
+        _batchTransferFrom(from, to, tokenIds, false);
+    }
+
+    /**
      * @dev Transfers `tokenIds` in batch from `from` to `to`.
      *
      * Requirements:
@@ -661,7 +672,8 @@ contract ERC721A is IERC721A {
     function _batchTransferFrom(
         address from,
         address to,
-        uint256[] memory tokenIds
+        uint256[] memory tokenIds,
+        bool approvalCheck
     ) internal virtual {
         // Sort `tokenIds` to allow batching consecutive ids into single operations.
         _sort(tokenIds);
@@ -671,7 +683,6 @@ contract ERC721A is IERC721A {
         uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
         if (toMasked == 0) _revert(TransferToZeroAddress.selector);
 
-        bool isApprovedForAll_ = isApprovedForAll(from, _msgSenderERC721A());
         uint256 totalTokens = tokenIds.length;
         uint256 totalTokensLeft;
         uint256 startTokenId;
@@ -679,6 +690,12 @@ contract ERC721A is IERC721A {
         uint256 prevOwnershipPacked;
         uint256 nextOwnershipPacked;
         uint256 quantity;
+
+        // If `approvalCheck` is true, check if the caller is approved for all token Ids.
+        // If approved for all, disable next approval checks. Otherwise keep them enabled
+        if (approvalCheck)
+            if (isApprovedForAll(from, _msgSenderERC721A()))
+                approvalCheck = false;
 
         _beforeTokenBatchTransfers(from, to, tokenIds);
 
@@ -710,7 +727,7 @@ contract ERC721A is IERC721A {
                 );
 
                 // Clear approvals and emit transfer event for `startTokenId`.
-                _clearApprovalsAndEmitTransferEvent(from, toMasked, startTokenId, isApprovedForAll_);
+                _clearApprovalsAndEmitTransferEvent(from, toMasked, startTokenId, approvalCheck);
 
                 // Derive quantity by looping over the next consecutive `totalTokensLeft`.
                 for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
@@ -739,7 +756,7 @@ contract ERC721A is IERC721A {
                     }
 
                     nextOwnershipPacked = _packedOwnerships[nextTokenId];
-                    
+
                     // If the next slot's address is uninitialized.
                     if (nextOwnershipPacked == 0) {
                         // Revert if the next slot is out of bounds. Cannot be higher than `_currentIndex` since we're
@@ -764,7 +781,7 @@ contract ERC721A is IERC721A {
                     }
 
                     // Clear approvals and emit transfer event for `nextTokenId`.
-                    _clearApprovalsAndEmitTransferEvent(from, toMasked, nextTokenId, isApprovedForAll_);
+                    _clearApprovalsAndEmitTransferEvent(from, toMasked, nextTokenId, approvalCheck);
                 }
 
                 // Skip the next `quantity` tokens.
@@ -776,14 +793,38 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, '')`.
+     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, false)`.
      */
     function _safeBatchTransferFrom(
         address from,
         address to,
         uint256[] memory tokenIds
     ) internal virtual {
-        _safeBatchTransferFrom(from, to, tokenIds, '');
+        _safeBatchTransferFrom(from, to, tokenIds, false);
+    }
+
+    /**
+     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, '', approvalCheck)`.
+     */
+    function _safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds,
+        bool approvalCheck
+    ) internal virtual {
+        _safeBatchTransferFrom(from, to, tokenIds, '', approvalCheck);
+    }
+
+    /**
+     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, _data, false)`.
+     */
+    function _safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds,
+        bytes memory _data
+    ) internal virtual {
+        _safeBatchTransferFrom(from, to, tokenIds, _data, false);
     }
 
     /**
@@ -805,9 +846,10 @@ contract ERC721A is IERC721A {
         address from,
         address to,
         uint256[] memory tokenIds,
-        bytes memory _data
+        bytes memory _data,
+        bool approvalCheck
     ) internal virtual {
-        _batchTransferFrom(from, to, tokenIds);
+        _batchTransferFrom(from, to, tokenIds, approvalCheck);
 
         uint256 tokenId;
         uint256 totalTokens = tokenIds.length;
@@ -947,15 +989,14 @@ contract ERC721A is IERC721A {
         address from,
         uint256 toMasked,
         uint256 tokenId,
-        bool isApprovedForAll_
+        bool approvalCheck
     ) private {
         (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
 
-        // The nested ifs save around 20+ gas over a compound boolean condition.
-        if (!isApprovedForAll_)
+        if (approvalCheck) {
             if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
                 _revert(TransferCallerNotOwnerNorApproved.selector);
-
+        }
         // Clear approvals from the previous owner.
         assembly {
             if approvedAddress {
