@@ -763,9 +763,8 @@ contract ERC721A is IERC721A {
                         if (nextTokenId == _currentIndex) _revert(OwnerQueryForNonexistentToken.selector);
                         // Otherwise we assume `from` owns `nextTokenId` and move on.
                     } else {
-                        // Revert if `nextTokenId` is not owned by `from`.
+                        // Revert if `nextTokenId` is not owned by `from` or has been burned.
                         if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
-                        // Revert if `nextTokenId` has been burned.
                         if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
 
                         // Updates nextTokenId:
