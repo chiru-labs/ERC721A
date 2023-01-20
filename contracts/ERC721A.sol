@@ -732,7 +732,6 @@ contract ERC721A is IERC721A {
                 // Derive quantity by looping over the next consecutive `totalTokensLeft`.
                 for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
                     nextTokenId = startTokenId + quantity;
-                    nextOwnershipPacked = _packedOwnerships[nextTokenId];
 
                     // If `nextTokenId` is not consecutive, update `nextOwnershipPacked` and break from the loop.
                     if (tokenIds[i + quantity] != nextTokenId) {
