@@ -722,19 +722,20 @@ contract ERC721A is IERC721A {
                 // - `nextInitialized` is left unchanged.
                 _packedOwnerships[startTokenId] = _packOwnershipData(
                     to,
-                    // TODO: Add (quantity == 1 ? _BITMASK_NEXT_INITIALIZED : prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
+                    // TODO: Change to this? Costs +115 gas per [i] loop but ensures correctness of NEXT_INITIALIZED in startTokenId.
+                    // If not consecutive set `nextInitialized` to true, otherwise keep it as is.
+                    // (tokenIds[i + 1] != startTokenId + 1 ? _BITMASK_NEXT_INITIALIZED : prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
                     (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED) | _nextExtraData(from, to, prevOwnershipPacked)
                 );
 
                 // Clear approvals and emit transfer event for `startTokenId`.
-                // Call here to maintain correct event emission order in case consecutive tokens are transferred.
                 _clearApprovalsAndEmitTransferEvent(from, toMasked, startTokenId, approvalCheck);
 
                 // Derive quantity by looping over the next consecutive `totalTokensLeft`.
                 for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
                     nextTokenId = startTokenId + quantity;
 
-                    // If `nextTokenId` is not consecutive, update `nextOwnershipPacked` and break from the loop.
+                    // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
                     if (tokenIds[i + quantity] != nextTokenId) {
                         // If the next slot may not have been initialized (i.e. `nextInitialized == false`).
                         // If `quantity` is 1 we can use `prevOwnershipPacked`, otherwise `nextOwnershipPacked` from last loop.
@@ -748,7 +749,6 @@ contract ERC721A is IERC721A {
                                     // Initialize the next slot to maintain correctness for `ownerOf(nextTokenId)`.
                                     _packedOwnerships[nextTokenId] = prevOwnershipPacked;
                                 }
-                                // Otherwise `nextTokenId - 1` is the last token ID, so there is no nextTokenId.
                             }
                         }
                         break;
@@ -767,6 +767,7 @@ contract ERC721A is IERC721A {
                         if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
                         if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
 
+                        // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
                         prevOwnershipPacked = nextOwnershipPacked;
 
                         // Updates nextTokenId:
@@ -776,6 +777,9 @@ contract ERC721A is IERC721A {
                         // - `nextInitialized` is left unchanged.
                         _packedOwnerships[nextTokenId] = _packOwnershipData(
                             to,
+                            // TODO: Change to this? Costs +??? gas per [quantity] loop but ensures correctness of NEXT_INITIALIZED in nextTokenId.
+                            // If nextTokenId + 1 is not consecutive set `nextInitialized` to true, otherwise keep it as is.
+                            // (tokenIds[i + quantity + 1] != nextTokenId + 1 ? _BITMASK_NEXT_INITIALIZED : nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
                             (nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
                                 _nextExtraData(from, to, nextOwnershipPacked)
                         );
@@ -998,6 +1002,7 @@ contract ERC721A is IERC721A {
             if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
                 _revert(TransferCallerNotOwnerNorApproved.selector);
         }
+
         // Clear approvals from the previous owner.
         assembly {
             if approvedAddress {
