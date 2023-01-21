@@ -684,10 +684,10 @@ contract ERC721A is IERC721A {
         if (toMasked == 0) _revert(TransferToZeroAddress.selector);
 
         uint256 totalTokens = tokenIds.length;
-        uint256 totalTokensLeft;
         uint256 startTokenId;
         uint256 nextTokenId;
         uint256 prevOwnershipPacked;
+        uint256 lastOwnershipPacked;
         uint256 nextOwnershipPacked;
         uint256 quantity;
 
@@ -709,45 +709,36 @@ contract ERC721A is IERC721A {
 
             for (uint256 i; i < totalTokens; ) {
                 startTokenId = tokenIds[i];
-                totalTokensLeft = totalTokens - i;
 
                 // Check ownership of `startTokenId`.
                 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
                 if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
 
-                // Updates startTokenId:
-                // - `address` to the next owner.
-                // - `startTimestamp` to the timestamp of transfering.
-                // - `burned` to `false`.
-                // - `nextInitialized` is left unchanged.
-                _packedOwnerships[startTokenId] = _packOwnershipData(
-                    to,
-                    // TODO: Change to this? Costs +115 gas per [i] loop but ensures correctness of NEXT_INITIALIZED in startTokenId.
-                    // If not consecutive set `nextInitialized` to true, otherwise keep it as is.
-                    // (tokenIds[i + 1] != startTokenId + 1 ? _BITMASK_NEXT_INITIALIZED : prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
-                    (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED) | _nextExtraData(from, to, prevOwnershipPacked)
-                );
+                lastOwnershipPacked = prevOwnershipPacked;
 
                 // Clear approvals and emit transfer event for `startTokenId`.
                 _clearApprovalsAndEmitTransferEvent(from, toMasked, startTokenId, approvalCheck);
 
                 // Derive quantity by looping over the next consecutive `totalTokensLeft`.
-                for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
+                for (quantity = 1; quantity < totalTokens - i; ++quantity) {
                     nextTokenId = startTokenId + quantity;
 
                     // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
                     if (tokenIds[i + quantity] != nextTokenId) {
+                        // `lastOwnershipPacked` = last initialized slot before `nextTokenId`
+                        // `nextOwnershipPacked` = slot of `nextTokenId - 1`
+
                         // If the next slot may not have been initialized (i.e. `nextInitialized == false`).
-                        // If `quantity` is 1 we can use `prevOwnershipPacked`, otherwise `nextOwnershipPacked` from last loop.
+                        // If `quantity` is 1 we use `lastOwnershipPacked`, otherwise `nextOwnershipPacked` from previous loop.
                         if (
-                            (quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked) & _BITMASK_NEXT_INITIALIZED == 0
+                            (quantity == 1 ? lastOwnershipPacked : nextOwnershipPacked) & _BITMASK_NEXT_INITIALIZED == 0
                         ) {
                             // If the next slot's address is zero and not burned (i.e. packed value is zero).
                             if (_packedOwnerships[nextTokenId] == 0) {
                                 // If the next slot is within bounds.
                                 if (nextTokenId != _currentIndex) {
                                     // Initialize the next slot to maintain correctness for `ownerOf(nextTokenId)`.
-                                    _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                                    _packedOwnerships[nextTokenId] = lastOwnershipPacked;
                                 }
                             }
                         }
@@ -767,27 +758,38 @@ contract ERC721A is IERC721A {
                         if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
                         if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
 
-                        // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
-                        prevOwnershipPacked = nextOwnershipPacked;
+                        // Update `lastOwnershipPacked` with last initialized `nextOwnershipPacked`.
+                        lastOwnershipPacked = nextOwnershipPacked;
 
                         // Updates nextTokenId:
                         // - `address` to the next owner.
                         // - `startTimestamp` to the timestamp of transfering.
                         // - `burned` to `false`.
-                        // - `nextInitialized` is left unchanged.
+                        // - `nextInitialized` to `true` when `nextTokenId + 1` is not consecutive, otherwise leave unchanged.
                         _packedOwnerships[nextTokenId] = _packOwnershipData(
                             to,
-                            // TODO: Change to this? Costs +??? gas per [quantity] loop but ensures correctness of NEXT_INITIALIZED in nextTokenId.
-                            // If nextTokenId + 1 is not consecutive set `nextInitialized` to true, otherwise keep it as is.
-                            // (tokenIds[i + quantity + 1] != nextTokenId + 1 ? _BITMASK_NEXT_INITIALIZED : nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
-                            (nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
-                                _nextExtraData(from, to, nextOwnershipPacked)
+                            (
+                                tokenIds[i + quantity + 1] != nextTokenId + 1
+                                    ? _BITMASK_NEXT_INITIALIZED
+                                    : nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED
+                            ) | _nextExtraData(from, to, nextOwnershipPacked)
                         );
                     }
 
                     // Clear approvals and emit transfer event for `nextTokenId`.
                     _clearApprovalsAndEmitTransferEvent(from, toMasked, nextTokenId, approvalCheck);
                 }
+
+                // Updates startTokenId:
+                // - `address` to the next owner.
+                // - `startTimestamp` to the timestamp of transfering.
+                // - `burned` to `false`.
+                // - `nextInitialized` to `true` when `quantity == 1`, otherwise leave unchanged.
+                _packedOwnerships[startTokenId] = _packOwnershipData(
+                    to,
+                    (quantity == 1 ? _BITMASK_NEXT_INITIALIZED : prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
+                        _nextExtraData(from, to, prevOwnershipPacked)
+                );
 
                 // Skip the next `quantity` tokens.
                 i += quantity;
