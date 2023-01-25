@@ -33,11 +33,7 @@ abstract contract ERC4907A is ERC721A, IERC4907A {
      *
      * - The caller must own `tokenId` or be an approved operator.
      */
-    function setUser(
-        uint256 tokenId,
-        address user,
-        uint64 expires
-    ) public virtual override {
+    function setUser(uint256 tokenId, address user, uint64 expires) public virtual override {
         // Require the caller to be either the token owner or an approved operator.
         address owner = ownerOf(tokenId);
         if (_msgSenderERC721A() != owner)

@@ -13,11 +13,7 @@ import './IERC721ABatchTransferable.sol';
  * @dev ERC721A token optimized for batch transfers.
  */
 abstract contract ERC721ABatchTransferable is ERC721A, IERC721ABatchTransferable {
-    function batchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds
-    ) public payable virtual override {
+    function batchTransferFrom(address from, address to, uint256[] memory tokenIds) public payable virtual override {
         _batchTransferFrom(from, to, tokenIds);
     }
 

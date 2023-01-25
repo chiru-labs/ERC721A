@@ -37,11 +37,7 @@ contract ERC721ABatchTransferableMock is ERC721ABatchTransferable {
         _burn(tokenId, true);
     }
 
-    function batchTransferFromUnoptimized(
-        address from,
-        address to,
-        uint256[] memory tokenIds
-    ) public {
+    function batchTransferFromUnoptimized(address from, address to, uint256[] memory tokenIds) public {
         unchecked {
             uint256 tokenId;
             for (uint256 i; i < tokenIds.length; ++i) {

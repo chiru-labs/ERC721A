@@ -165,21 +165,12 @@ interface IERC721A {
      *
      * Emits a {Transfer} event.
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId,
-        bytes calldata data
-    ) external payable;
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external payable;
 
     /**
      * @dev Equivalent to `safeTransferFrom(from, to, tokenId, '')`.
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) external payable;
+    function safeTransferFrom(address from, address to, uint256 tokenId) external payable;
 
     /**
      * @dev Transfers `tokenId` from `from` to `to`.
@@ -197,11 +188,7 @@ interface IERC721A {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) external payable;
+    function transferFrom(address from, address to, uint256 tokenId) external payable;
 
     /**
      * @dev Gives permission to `to` to transfer `tokenId` token to another account.
