@@ -1391,32 +1391,23 @@ contract ERC721A is IERC721A {
             let h := add(a, shl(5, n)) // High slot.
             let s := 0x20
             let w := not(31)
-            for {
-                let i := add(a, s)
-            } 1 {
-
-            } {
+            // prettier-ignore
+            for { let i := add(a, s) } 1 {} {
                 i := add(i, s)
-                if gt(i, h) {
-                    break
-                }
+                // prettier-ignore
+                if gt(i, h) { break }
                 let k := mload(i) // Key.
                 let j := add(i, w) // The slot before the current slot.
                 let v := mload(j) // The value of `j`.
-                if iszero(gt(v, k)) {
-                    continue
-                }
-                for {
-
-                } 1 {
-
-                } {
+                // prettier-ignore
+                if iszero(gt(v, k)) { continue }
+                // prettier-ignore
+                for {} 1 {} {
                     mstore(add(j, s), v)
                     j := add(j, w) // `sub(j, 0x20)`.
                     v := mload(j)
-                    if iszero(gt(v, k)) {
-                        break
-                    }
+                    // prettier-ignore
+                    if iszero(gt(v, k)) { break }
                 }
                 mstore(add(j, s), k)
             }
