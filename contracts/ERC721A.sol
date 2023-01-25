@@ -658,6 +658,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Transfers `tokenIds` in batch from `from` to `to`.
+     * `tokenIds` should be provided sorted in ascending order to maximize efficiency.
      *
      * Requirements:
      *
