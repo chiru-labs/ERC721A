@@ -378,11 +378,11 @@ contract ERC721A is IERC721A {
                     _revert(OwnerQueryForNonexistentToken.selector);
                 }
             }
-            // Otherwise, the data exists and is not burned. We can skip the scan.
+            // Otherwise, the data exists and we can skip the scan.
             // This is possible because we have already achieved the target condition.
             // This saves 2143 gas on transfers of initialized tokens.
+            // If the token is not burned, return `packed`. Otherwise, revert.
             if (packed & _BITMASK_BURNED == 0) return packed;
-            // Otherwise, the token is burned, and we must revert.
         }
         _revert(OwnerQueryForNonexistentToken.selector);
     }
