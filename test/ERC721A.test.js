@@ -703,6 +703,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
       context('with direct set burn bit', async function () {
         it('ownerOf reverts for an uninitialized burnt token', async function () {
+          // This test is only for the non-upgradeable variant.
+          if (this.erc721a.isUpgradeable) return;
           const [owner] = await ethers.getSigners();
           await this.erc721a['safeMint(address,uint256)'](owner.address, 3);
           await this.erc721a['safeMint(address,uint256)'](owner.address, 2);

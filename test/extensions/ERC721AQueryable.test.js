@@ -163,6 +163,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('with direct set burn bit', async function () {
+            // This test is only for the non-upgradeable variant.
             if (this.erc721aQueryable.isUpgradeable) return;
             await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 3);
             await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 2);

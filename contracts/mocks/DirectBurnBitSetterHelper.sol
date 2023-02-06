@@ -8,8 +8,8 @@ contract DirectBurnBitSetterHelper {
     function directSetBurnBit(uint256 index) public virtual {
         uint256 bitmaskBurned = 1 << 224;
         // We use assembly to directly access the private mapping.
-        // Note that we cannot use this method to test the Upgradeable variant
-        // as it uses Diamond storage layout.
+        // Note that we cannot use this method to test the upgradeable variant
+        // as it uses EIP-2535 diamond storage layout.
         assembly {
             // The `_packedOwnerships` mapping is at slot 4.
             mstore(0x20, 4)
