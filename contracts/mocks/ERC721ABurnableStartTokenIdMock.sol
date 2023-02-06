@@ -15,6 +15,6 @@ contract ERC721ABurnableStartTokenIdMock is StartTokenIdHelper, ERC721ABurnableM
     ) StartTokenIdHelper(startTokenId_) ERC721ABurnableMock(name_, symbol_) {}
 
     function _startTokenId() internal view override returns (uint256) {
-        return startTokenId;
+        return startTokenId();
     }
 }

@@ -701,6 +701,27 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
       });
 
+      context('with direct set burn bit', async function () {
+        it('ownerOf reverts for an uninitialized burnt token', async function () {
+          const [owner] = await ethers.getSigners();
+          await this.erc721a['safeMint(address,uint256)'](owner.address, 3);
+          await this.erc721a['safeMint(address,uint256)'](owner.address, 2);
+          await this.erc721a['safeMint(address,uint256)'](owner.address, 1);
+          for (let i = 0; i < 3 + 2 + 1; ++i) {
+            expect(await this.erc721a.ownerOf(this.startTokenId + i)).to.eq(owner.address);
+          }
+          await this.erc721a.directSetBurnBit(this.startTokenId + 3);
+          for (let i = 0; i < 3 + 2 + 1; ++i) {
+            if (3 <= i && i < 3 + 2) {
+              await expect(this.erc721a.ownerOf(this.startTokenId + i))
+                .to.be.revertedWith('OwnerQueryForNonexistentToken');
+            } else {
+              expect(await this.erc721a.ownerOf(this.startTokenId + i)).to.eq(owner.address);  
+            }
+          }
+        });
+      });
+
       context('_toString', async function () {
         it('returns correct value', async function () {
           expect(await this.erc721a['toString(uint256)']('0')).to.eq('0');
