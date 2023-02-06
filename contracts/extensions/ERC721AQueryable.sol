@@ -47,9 +47,10 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         unchecked {
             if (tokenId >= _startTokenId()) {
                 if (tokenId < _nextTokenId()) {
-                    do {
-                        ownership = _ownershipAt(tokenId--);
-                    } while (ownership.addr == address(0));
+                    // If the `tokenId` is within bounds,
+                    // scan backwards for the initialized ownership slot.
+                    while (!_ownershipIsInitialized(tokenId)) --tokenId;
+                    return _ownershipAt(tokenId);
                 }
             }
         }

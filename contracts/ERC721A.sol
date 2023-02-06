@@ -332,6 +332,14 @@ contract ERC721A is IERC721A {
     }
 
     /**
+     * @dev Returns whether the ownership slot at `index` is initialized.
+     * An uninitialized slot does not necessarily mean that the slot has no owner.
+     */
+    function _ownershipIsInitialized(uint256 index) internal view virtual returns (bool) {
+        return _packedOwnerships[index] != 0;
+    }
+
+    /**
      * @dev Initializes the ownership slot minted at `index` for efficiency purposes.
      */
     function _initializeOwnershipAt(uint256 index) internal virtual {
