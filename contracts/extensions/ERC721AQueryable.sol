@@ -44,11 +44,15 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         override
         returns (TokenOwnership memory ownership)
     {
-        if (tokenId >= _startTokenId()) {
-            if (tokenId < _nextTokenId()) {
-                ownership = _ownershipAt(tokenId);
-                if (!ownership.burned) {
-                    ownership = _ownershipOf(tokenId);
+        unchecked {
+            if (tokenId >= _startTokenId()) {
+                if (tokenId < _nextTokenId()) {
+                    // Simply scan all the way backwards until a non-zero slot.
+                    for (;;) {
+                        ownership = _ownershipAt(tokenId--);
+                        if (ownership.addr != address(0)) 
+                            return ownership;
+                    }
                 }
             }
         }
@@ -157,8 +161,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 do {
                     ownership = _ownershipAt(start);
                     assembly {
+                        switch mload(add(ownership, 0x40))
                         // if `ownership.burned == false`.
-                        if iszero(mload(add(ownership, 0x40))) {
+                        case 0 {
                             // if `ownership.addr != address(0)`.
                             // The `addr` already has it's upper 96 bits clearned,
                             // since it is written to memory with regular Solidity.
@@ -172,6 +177,10 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                                 tokenIdsIdx := add(tokenIdsIdx, 1)
                                 mstore(add(tokenIds, shl(5, tokenIdsIdx)), start)
                             }
+                        }
+                        // Otherwise, reset `currOwnershipAddr`.
+                        default {
+                            currOwnershipAddr := 0
                         }
                         start := add(start, 1)
                     }
@@ -212,8 +221,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ) {
             TokenOwnership memory ownership = _ownershipAt(i);
             assembly {
+                switch mload(add(ownership, 0x40))
                 // if `ownership.burned == false`.
-                if iszero(mload(add(ownership, 0x40))) {
+                case 0 {
                     // if `ownership.addr != address(0)`.
                     // The `addr` already has it's upper 96 bits clearned,
                     // since it is written to memory with regular Solidity.
@@ -227,6 +237,10 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                         tokenIdsIdx := add(tokenIdsIdx, 1)
                         mstore(add(tokenIds, shl(5, tokenIdsIdx)), i)
                     }
+                }
+                // Otherwise, reset `currOwnershipAddr`.
+                default {
+                    currOwnershipAddr := 0
                 }
                 i := add(i, 1)
             }
