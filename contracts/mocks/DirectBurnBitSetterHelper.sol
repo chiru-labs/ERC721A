@@ -6,6 +6,7 @@ pragma solidity ^0.8.4;
 
 contract DirectBurnBitSetterHelper {
     function directSetBurnBit(uint256 index) public virtual {
+        // This is `_BITMASK_BURNED` from ERC721A.
         uint256 bitmaskBurned = 1 << 224;
         // We use assembly to directly access the private mapping.
         // Note that we cannot use this method to test the upgradeable variant

@@ -373,6 +373,8 @@ contract ERC721A is IERC721A {
                     if (packed == 0) continue;
                     if (packed & _BITMASK_BURNED == 0) return packed;
                     // Otherwise, the token is burned, and we must revert.
+                    // This handles the case of batch burned tokens, where only the burned bit
+                    // of the starting slot is set, and remaining slots are left uninitialized.
                     _revert(OwnerQueryForNonexistentToken.selector);
                 }
             }

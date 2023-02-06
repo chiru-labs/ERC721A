@@ -209,6 +209,8 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                             }
                         }
                         // Otherwise, reset `currOwnershipAddr`.
+                        // This handles the case of batch burned tokens
+                        // (burned bit of first slot set, remaining slots left uninitialized).
                         default {
                             currOwnershipAddr := 0
                         }
