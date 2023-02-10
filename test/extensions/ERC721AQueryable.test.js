@@ -163,8 +163,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('with direct set burn bit', async function () {
-            // This test is only for the non-upgradeable variant.
-            if (this.erc721aQueryable.isUpgradeable) return;
             await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 3);
             await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 2);
             const nextTokenId = this.owner.expected.tokens[this.owner.expected.tokens.length - 1].add(1);
@@ -233,7 +231,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('with direct set burn bit', async function () {
-            if (this.erc721aQueryable.isUpgradeable) return;
             await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 3);
             await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 2);
             const nextTokenId = this.owner.expected.tokens[this.owner.expected.tokens.length - 1].add(1);
@@ -272,7 +269,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
 
           it('with direct set burn bit', async function () {
-            if (this.erc721aQueryable.isUpgradeable) return;
             await this.erc721aQueryable.directSetBurnBit(this.addr3.expected.tokens[0]);
             for (let i = 0; i < this.addr3.expected.tokens.length; ++i) {
               const explicitOwnership = await this.erc721aQueryable.explicitOwnershipOf(this.addr3.expected.tokens[i]);

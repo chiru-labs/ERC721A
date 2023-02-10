@@ -14,16 +14,20 @@ contract StartTokenIdHelper {
     uint256 private constant _START_TOKEN_ID_STORAGE_SLOT = 0x28f75032;
 
     constructor(uint256 startTokenId_) {
-        // We use assembly to directly set the `startTokenId` in storage so that
-        // inheriting this class won't affect the layout of other storage slots.
-        assembly {
-            sstore(_START_TOKEN_ID_STORAGE_SLOT, startTokenId_)
-        }
+        _initializeStartTokenId(startTokenId_);
     }
 
     function startTokenId() public view returns (uint256 result) {
         assembly {
             result := sload(_START_TOKEN_ID_STORAGE_SLOT)
+        }
+    }
+
+    function _initializeStartTokenId(uint256 value) private {
+        // We use assembly to directly set the `startTokenId` in storage so that
+        // inheriting this class won't affect the layout of other storage slots.
+        assembly {
+            sstore(_START_TOKEN_ID_STORAGE_SLOT, value)
         }
     }
 }
