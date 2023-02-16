@@ -480,11 +480,14 @@ contract ERC721A is IERC721A {
      *
      * Tokens start existing when they are minted. See {_mint}.
      */
-    function _exists(uint256 tokenId) internal view virtual returns (bool) {
-        return
-            _startTokenId() <= tokenId &&
-            tokenId < _currentIndex && // If within bounds,
-            _packedOwnerships[tokenId] & _BITMASK_BURNED == 0; // and not burned.
+    function _exists(uint256 tokenId) internal view virtual returns (bool result) {
+        if (_startTokenId() <= tokenId) {
+            if (tokenId < _currentIndex) {
+                uint256 packed;
+                while ((packed = _packedOwnerships[tokenId]) == 0) --tokenId;
+                result = packed & _BITMASK_BURNED == 0;
+            }
+        }
     }
 
     /**

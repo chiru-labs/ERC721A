@@ -715,6 +715,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             if (3 <= i && i < 3 + 2) {
               await expect(this.erc721a.ownerOf(this.startTokenId + i))
                 .to.be.revertedWith('OwnerQueryForNonexistentToken');
+              await expect(this.erc721a.getApproved(this.startTokenId + i))
+                .to.be.revertedWith('ApprovalQueryForNonexistentToken');
+              await expect(this.erc721a.tokenURI(this.startTokenId + i))
+                .to.be.revertedWith('URIQueryForNonexistentToken');
             } else {
               expect(await this.erc721a.ownerOf(this.startTokenId + i)).to.eq(owner.address);  
             }
