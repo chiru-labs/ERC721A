@@ -25,9 +25,15 @@ jobs:
         run: npm ci
       - name: Install halmos
         run: python3 -m pip install --upgrade halmos
-      - name: Run halmos
+      - name: Prepare for halmos
         run: |
           sed -i 's/\bprivate\b/internal/g' contracts/ERC721A.sol
           cp halmos/ERC721A.t.sol contracts/
-          halmos --function prove
-          halmos
+      - name: Run halmos - mint
+        run: halmos --function testMint
+      - name: Run halmos - burn
+        run: halmos --function testBurn
+      - name: Run halmos - transfer
+        run: halmos --function testTransfer
+      - name: Run halmos - invariant
+        run: halmos --function prove
