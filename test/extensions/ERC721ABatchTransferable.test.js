@@ -76,6 +76,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             await mineBlockTimestamp(this.timestampToMine);
             this.timestampMined = await getBlockTimestamp();
 
+            // Manually initialize some tokens of addr2
+            await this.erc721aBatchTransferable.initializeOwnershipAt(3);
+            await this.erc721aBatchTransferable.initializeOwnershipAt(8);
+
             // prettier-ignore
             this.transferTx = await this.erc721aBatchTransferable
               .connect(sender)[transferFn](this.from, this.to.address, this.tokenIds);
@@ -96,11 +100,26 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               const tokenId = this.tokenIds[i];
               expect(await this.erc721aBatchTransferable.ownerOf(tokenId)).to.be.equal(this.to.address);
             }
+
+            // Initialized tokens were updated
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(3))[0]).to.be.equal(this.to.address);
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(8))[0]).to.be.equal(this.to.address);
+
+            // Uninitialized tokens are left uninitialized
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(7))[0]).to.be.equal(
+              transferFn !== 'batchTransferFromUnoptimized' ? ZERO_ADDRESS : this.to.address
+            );
+
+            // Other tokens in between are left unchanged
+            for (let i = 0; i < this.addr1.expected.tokens.length; i++) {
+              const tokenId = this.addr1.expected.tokens[i];
+              expect(await this.erc721aBatchTransferable.ownerOf(tokenId)).to.be.equal(this.addr1.address);
+            }
           });
 
           it('transfers the ownership of uninitialized token IDs to the given address', async function () {
             const allTokensInitiallyOwned = this.addr3.expected.tokens;
-            allTokensInitiallyOwned.splice(2, 3);
+            allTokensInitiallyOwned.splice(2, this.tokensToTransferAlt.length);
 
             for (let i = 0; i < this.tokensToTransferAlt.length; i++) {
               const tokenId = this.tokensToTransferAlt[i];
@@ -112,11 +131,26 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               expect(await this.erc721aBatchTransferable.ownerOf(tokenId)).to.be.equal(this.addr3.address);
             }
 
-            expect(await this.erc721aBatchTransferable.balanceOf(this.addr5.address)).to.be.equal(
-              this.tokensToTransferAlt.length
+            // Ownership of tokens was updated
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(this.tokensToTransferAlt[0]))[0]).to.be.equal(
+              this.addr5.address
             );
-            expect(await this.erc721aBatchTransferable.balanceOf(this.addr3.address)).to.be.equal(
-              allTokensInitiallyOwned.length
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(allTokensInitiallyOwned[2]))[0]).to.be.equal(
+              this.addr3.address
+            );
+
+            // Uninitialized tokens are left uninitialized
+            expect(
+              (await this.erc721aBatchTransferable.getOwnershipAt(this.tokensToTransferAlt[0] - 1))[0]
+            ).to.be.equal(ZERO_ADDRESS);
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(allTokensInitiallyOwned[3]))[0]).to.be.equal(
+              ZERO_ADDRESS
+            );
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(this.tokensToTransferAlt[1]))[0]).to.be.equal(
+              transferFn !== 'batchTransferFromUnoptimized' ? ZERO_ADDRESS : this.addr5.address
+            );
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(this.tokensToTransferAlt[2]))[0]).to.be.equal(
+              transferFn !== 'batchTransferFromUnoptimized' ? ZERO_ADDRESS : this.addr5.address
             );
           });
 
@@ -140,6 +174,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(await this.erc721aBatchTransferable.balanceOf(this.to.address)).to.be.equal(
               this.addr2.expected.mintCount
             );
+            expect(await this.erc721aBatchTransferable.balanceOf(this.addr3.address)).to.be.equal(
+              this.addr3.expected.tokens.length - this.tokensToTransferAlt.length
+            );
+            expect(await this.erc721aBatchTransferable.balanceOf(this.addr5.address)).to.be.equal(
+              this.tokensToTransferAlt.length
+            );
           });
 
           it('startTimestamp updated correctly', async function () {
@@ -147,6 +187,45 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             expect(this.timestampAfter).to.be.gte(this.timestampToMine);
             expect(this.timestampAfter).to.be.lt(this.timestampToMine + 10);
             expect(this.timestampToMine).to.be.eq(this.timestampMined);
+          });
+        };
+
+        const testUnsuccessfulBatchTransfer = function (transferFn) {
+          beforeEach(function () {
+            this.tokenIds = this.addr2.expected.tokens.slice(0, 2);
+            this.sender = this.addr1;
+          });
+
+          it('rejects unapproved transfer', async function () {
+            // prettier-ignore
+            await expect(
+              this.erc721aBatchTransferable
+                .connect(this.sender)[transferFn](
+                  this.addr2.address, this.sender.address, this.tokenIds
+                )
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+          });
+
+          it('rejects transfer from incorrect owner', async function () {
+            await this.erc721aBatchTransferable.connect(this.addr2).setApprovalForAll(this.sender.address, true);
+            // prettier-ignore
+            await expect(
+              this.erc721aBatchTransferable
+                .connect(this.sender)[transferFn](
+                  this.addr3.address, this.sender.address, this.tokenIds
+                )
+            ).to.be.revertedWith('TransferFromIncorrectOwner');
+          });
+
+          it('rejects transfer to zero address', async function () {
+            await this.erc721aBatchTransferable.connect(this.addr2).setApprovalForAll(this.sender.address, true);
+            // prettier-ignore
+            await expect(
+              this.erc721aBatchTransferable
+                .connect(this.sender)[transferFn](
+                  this.addr2.address, ZERO_ADDRESS, this.tokenIds
+                )
+            ).to.be.revertedWith('TransferToZeroAddress');
           });
         };
 
@@ -178,6 +257,38 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             describe('to EOA', function () {
               testSuccessfulBatchTransfer('batchTransferFromUnoptimized', false);
+            });
+          });
+        });
+
+        context('unsuccessful transfers', function () {
+          context('batchTransferFrom', function () {
+            describe('to contract', function () {
+              testUnsuccessfulBatchTransfer('batchTransferFrom');
+            });
+
+            describe('to EOA', function () {
+              testUnsuccessfulBatchTransfer('batchTransferFrom', false);
+            });
+          });
+          context('safeBatchTransferFrom', function () {
+            describe('to contract', function () {
+              testUnsuccessfulBatchTransfer('safeBatchTransferFrom(address,address,uint256[])');
+            });
+
+            describe('to EOA', function () {
+              testUnsuccessfulBatchTransfer('safeBatchTransferFrom(address,address,uint256[])', false);
+            });
+          });
+
+          // TEMPORARY: to use as comparison for gas usage
+          context('batchTransferFromUnoptimized', function () {
+            describe('to contract', function () {
+              testUnsuccessfulBatchTransfer('batchTransferFromUnoptimized');
+            });
+
+            describe('to EOA', function () {
+              testUnsuccessfulBatchTransfer('batchTransferFromUnoptimized', false);
             });
           });
         });
