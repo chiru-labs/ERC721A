@@ -5,8 +5,9 @@
 pragma solidity ^0.8.4;
 
 import '../ERC721A.sol';
+import './DirectBurnBitSetterHelper.sol';
 
-contract ERC721AMock is ERC721A {
+contract ERC721AMock is ERC721A, DirectBurnBitSetterHelper {
     constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
 
     function numberMinted(address owner) public view returns (uint256) {

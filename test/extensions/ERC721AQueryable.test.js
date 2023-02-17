@@ -161,6 +161,17 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             // Verify the function can still read the correct token ids
             expect(ownerTokens).to.eql(offsetted(6, 8));
           });
+
+          it('with direct set burn bit', async function () {
+            await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 3);
+            await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 2);
+            const nextTokenId = this.owner.expected.tokens[this.owner.expected.tokens.length - 1].add(1);
+            expect(await this.erc721aQueryable.tokensOfOwner(this.addr3.address))
+              .to.eql(this.addr3.expected.tokens.concat(Array.from({length: 5}, (_, i) => nextTokenId.add(i))));
+            await this.erc721aQueryable.directSetBurnBit(nextTokenId);
+            expect(await this.erc721aQueryable.tokensOfOwner(this.addr3.address))
+              .to.eql(this.addr3.expected.tokens.concat(Array.from({length: 2}, (_, i) => nextTokenId.add(3 + i))));
+          });
         });
 
         describe('tokensOfOwnerIn', async function () {
@@ -218,6 +229,17 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           subTests('after a token burn', async function () {
             await this.erc721aQueryable.burn(offsetted(7));
           });
+
+          it('with direct set burn bit', async function () {
+            await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 3);
+            await this.erc721aQueryable['safeMint(address,uint256)'](this.addr3.address, 2);
+            const nextTokenId = this.owner.expected.tokens[this.owner.expected.tokens.length - 1].add(1);
+            expect(await this.erc721aQueryable.tokensOfOwnerIn(this.addr3.address, 0, 99))
+              .to.eql(this.addr3.expected.tokens.concat(Array.from({length: 5}, (_, i) => nextTokenId.add(i))));
+            await this.erc721aQueryable.directSetBurnBit(nextTokenId);
+            expect(await this.erc721aQueryable.tokensOfOwnerIn(this.addr3.address, 0, 99))
+              .to.eql(this.addr3.expected.tokens.concat(Array.from({length: 2}, (_, i) => nextTokenId.add(3 + i))));
+          })
         });
 
         describe('explicitOwnershipOf', async function () {
@@ -244,6 +266,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           it('out of bounds', async function () {
             const explicitOwnership = await this.erc721aQueryable.explicitOwnershipOf(this.currentIndex);
             expectExplicitOwnershipNotExists(explicitOwnership);
+          });
+
+          it('with direct set burn bit', async function () {
+            await this.erc721aQueryable.directSetBurnBit(this.addr3.expected.tokens[0]);
+            for (let i = 0; i < this.addr3.expected.tokens.length; ++i) {
+              const explicitOwnership = await this.erc721aQueryable.explicitOwnershipOf(this.addr3.expected.tokens[i]);
+              expectExplicitOwnershipBurned(explicitOwnership, this.addr3.address);
+            }
           });
         });
 
