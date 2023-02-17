@@ -37,16 +37,17 @@ contract ERC721ATest is ERC721A {
             || _packedOwnerships[tokenId + 1] != 0;
     }
 
+    /* this is no longer required since https://github.com/chiru-labs/ERC721A/pull/447
     // inv5: the uninitialized token is not burned.
     function inv5(uint tokenId) public view returns (bool) {
         return !(_packedOwnerships[tokenId] == 0) || !isBurned(tokenId);
     }
+    */
 
     function testInvariant1(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv1(tokenId), addr1, addr2, num, rand); }
     function testInvariant2(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv2(tokenId), addr1, addr2, num, rand); }
     function testInvariant3(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv3(tokenId), addr1, addr2, num, rand); }
     function testInvariant4(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv4(tokenId), addr1, addr2, num, rand); }
-    function testInvariant5(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv5(tokenId), addr1, addr2, num, rand); }
 
     function _testInvariant(
         bool inv,
@@ -171,7 +172,6 @@ contract ERC721ATest is ERC721A {
 
     function testBurnRequirements(uint tokenId) public {
         require(inv2(tokenId));
-        require(inv5(tokenId));
 
         bool exist = _exists(tokenId);
         bool burned = isBurned(tokenId);
@@ -268,7 +268,6 @@ contract ERC721ATest is ERC721A {
 
     function testTransferRequirements(address from, address to, uint tokenId) public {
         require(inv2(tokenId));
-        require(inv5(tokenId));
 
         bool exist = _exists(tokenId);
         bool burned = isBurned(tokenId);
