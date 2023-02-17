@@ -44,11 +44,13 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         override
         returns (TokenOwnership memory ownership)
     {
-        if (tokenId >= _startTokenId()) {
-            if (tokenId < _nextTokenId()) {
-                ownership = _ownershipAt(tokenId);
-                if (!ownership.burned) {
-                    ownership = _ownershipOf(tokenId);
+        unchecked {
+            if (tokenId >= _startTokenId()) {
+                if (tokenId < _nextTokenId()) {
+                    // If the `tokenId` is within bounds,
+                    // scan backwards for the initialized ownership slot.
+                    while (!_ownershipIsInitialized(tokenId)) --tokenId;
+                    return _ownershipAt(tokenId);
                 }
             }
         }
@@ -109,6 +111,38 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         uint256 start,
         uint256 stop
     ) external view virtual override returns (uint256[] memory) {
+        return _tokensOfOwnerIn(owner, start, stop);
+    }
+
+    /**
+     * @dev Returns an array of token IDs owned by `owner`.
+     *
+     * This function scans the ownership mapping and is O(`totalSupply`) in complexity.
+     * It is meant to be called off-chain.
+     *
+     * See {ERC721AQueryable-tokensOfOwnerIn} for splitting the scan into
+     * multiple smaller scans if the collection is large enough to cause
+     * an out-of-gas error (10K collections should be fine).
+     */
+    function tokensOfOwner(address owner) external view virtual override returns (uint256[] memory) {
+        uint256 start = _startTokenId();
+        uint256 stop = _nextTokenId();
+        uint256[] memory tokenIds;
+        if (start != stop) tokenIds = _tokensOfOwnerIn(owner, start, stop);
+        return tokenIds;
+    }
+
+    /**
+     * @dev Helper function for returning an array of token IDs owned by `owner`.
+     *
+     * Note that this function is optimized for smaller bytecode size over runtime gas,
+     * since it is meant to be called off-chain.
+     */
+    function _tokensOfOwnerIn(
+        address owner,
+        uint256 start,
+        uint256 stop
+    ) private view returns (uint256[] memory) {
         unchecked {
             if (start >= stop) _revert(InvalidQueryRange.selector);
             // Set `start = max(start, _startTokenId())`.
@@ -157,8 +191,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 do {
                     ownership = _ownershipAt(start);
                     assembly {
+                        switch mload(add(ownership, 0x40))
                         // if `ownership.burned == false`.
-                        if iszero(mload(add(ownership, 0x40))) {
+                        case 0 {
                             // if `ownership.addr != address(0)`.
                             // The `addr` already has it's upper 96 bits clearned,
                             // since it is written to memory with regular Solidity.
@@ -173,6 +208,12 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                                 mstore(add(tokenIds, shl(5, tokenIdsIdx)), start)
                             }
                         }
+                        // Otherwise, reset `currOwnershipAddr`.
+                        // This handles the case of batch burned tokens
+                        // (burned bit of first slot set, remaining slots left uninitialized).
+                        default {
+                            currOwnershipAddr := 0
+                        }
                         start := add(start, 1)
                     }
                 } while (!(start == stop || tokenIdsIdx == tokenIdsMaxLength));
@@ -183,54 +224,5 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
             }
             return tokenIds;
         }
-    }
-
-    /**
-     * @dev Returns an array of token IDs owned by `owner`.
-     *
-     * This function scans the ownership mapping and is O(`totalSupply`) in complexity.
-     * It is meant to be called off-chain.
-     *
-     * See {ERC721AQueryable-tokensOfOwnerIn} for splitting the scan into
-     * multiple smaller scans if the collection is large enough to cause
-     * an out-of-gas error (10K collections should be fine).
-     */
-    function tokensOfOwner(address owner) external view virtual override returns (uint256[] memory) {
-        uint256 tokenIdsLength = balanceOf(owner);
-        uint256[] memory tokenIds;
-        assembly {
-            // Grab the free memory pointer.
-            tokenIds := mload(0x40)
-            // Allocate one word for the length, and `tokenIdsMaxLength` words
-            // for the data. `shl(5, x)` is equivalent to `mul(32, x)`.
-            mstore(0x40, add(tokenIds, shl(5, add(tokenIdsLength, 1))))
-            // Store the length of `tokenIds`.
-            mstore(tokenIds, tokenIdsLength)
-        }
-        address currOwnershipAddr;
-        uint256 tokenIdsIdx;
-        for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ) {
-            TokenOwnership memory ownership = _ownershipAt(i);
-            assembly {
-                // if `ownership.burned == false`.
-                if iszero(mload(add(ownership, 0x40))) {
-                    // if `ownership.addr != address(0)`.
-                    // The `addr` already has it's upper 96 bits clearned,
-                    // since it is written to memory with regular Solidity.
-                    if mload(ownership) {
-                        currOwnershipAddr := mload(ownership)
-                    }
-                    // if `currOwnershipAddr == owner`.
-                    // The `shl(96, x)` is to make the comparison agnostic to any
-                    // dirty upper 96 bits in `owner`.
-                    if iszero(shl(96, xor(currOwnershipAddr, owner))) {
-                        tokenIdsIdx := add(tokenIdsIdx, 1)
-                        mstore(add(tokenIds, shl(5, tokenIdsIdx)), i)
-                    }
-                }
-                i := add(i, 1)
-            }
-        }
-        return tokenIds;
     }
 }

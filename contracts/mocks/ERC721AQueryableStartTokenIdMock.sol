@@ -15,6 +15,6 @@ contract ERC721AQueryableStartTokenIdMock is StartTokenIdHelper, ERC721AQueryabl
     ) StartTokenIdHelper(startTokenId_) ERC721AQueryableMock(name_, symbol_) {}
 
     function _startTokenId() internal view override returns (uint256) {
-        return startTokenId;
+        return startTokenId();
     }
 }
