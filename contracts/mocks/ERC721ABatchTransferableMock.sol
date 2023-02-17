@@ -37,6 +37,10 @@ contract ERC721ABatchTransferableMock is ERC721ABatchTransferable {
         _burn(tokenId, true);
     }
 
+    function initializeOwnershipAt(uint256 index) public {
+        _initializeOwnershipAt(index);
+    }
+
     function batchTransferFromUnoptimized(address from, address to, uint256[] memory tokenIds) public {
         unchecked {
             uint256 tokenId;

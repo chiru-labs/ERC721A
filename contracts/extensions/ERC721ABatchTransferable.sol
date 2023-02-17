@@ -14,7 +14,7 @@ import './IERC721ABatchTransferable.sol';
  */
 abstract contract ERC721ABatchTransferable is ERC721A, IERC721ABatchTransferable {
     function batchTransferFrom(address from, address to, uint256[] memory tokenIds) public payable virtual override {
-        _batchTransferFrom(from, to, tokenIds);
+        _batchTransferFrom(from, to, tokenIds, true);
     }
 
     function safeBatchTransferFrom(
@@ -22,7 +22,7 @@ abstract contract ERC721ABatchTransferable is ERC721A, IERC721ABatchTransferable
         address to,
         uint256[] memory tokenIds
     ) public payable virtual override {
-        _safeBatchTransferFrom(from, to, tokenIds);
+        _safeBatchTransferFrom(from, to, tokenIds, true);
     }
 
     function safeBatchTransferFrom(
@@ -31,6 +31,6 @@ abstract contract ERC721ABatchTransferable is ERC721A, IERC721ABatchTransferable
         uint256[] memory tokenIds,
         bytes memory _data
     ) public payable virtual override {
-        _safeBatchTransferFrom(from, to, tokenIds, _data);
+        _safeBatchTransferFrom(from, to, tokenIds, _data, true);
     }
 }
