@@ -229,6 +229,68 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           });
         };
 
+        const testApproveBatchTransfer = function (transferFn) {
+          beforeEach(function () {
+            this.tokenIds = this.addr1.expected.tokens.slice(0, 2);
+          });
+
+          it('approval allows batch transfers', async function () {
+            // prettier-ignore
+            await expect(
+              this.erc721aBatchTransferable
+                .connect(this.addr3)[transferFn](
+                  this.addr1.address, this.addr3.address, this.tokenIds
+                )
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+
+            for (let i = 0; i < this.tokenIds.length; i++) {
+              const tokenId = this.tokenIds[i];
+              await this.erc721aBatchTransferable.connect(this.addr1).approve(this.addr3.address, tokenId);
+            }
+
+            // prettier-ignore
+            await this.erc721aBatchTransferable
+              .connect(this.addr3)[transferFn](
+                this.addr1.address, this.addr3.address, this.tokenIds
+              );
+            // prettier-ignore
+            await expect(
+              this.erc721aBatchTransferable
+                .connect(this.addr1)[transferFn](
+                  this.addr3.address, this.addr1.address, this.tokenIds
+                )
+            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+          });
+
+          it('self-approval is cleared on batch transfers', async function () {
+            for (let i = 0; i < this.tokenIds.length; i++) {
+              const tokenId = this.tokenIds[i];
+              await this.erc721aBatchTransferable.connect(this.addr1).approve(this.addr1.address, tokenId);
+              expect(await this.erc721aBatchTransferable.getApproved(tokenId)).to.equal(this.addr1.address);
+            }
+
+            // prettier-ignore
+            await this.erc721aBatchTransferable
+            .connect(this.addr1)[transferFn](
+              this.addr1.address, this.addr2.address, this.tokenIds
+              );
+            for (let i = 0; i < this.tokenIds.length; i++) {
+              const tokenId = this.tokenIds[i];
+              expect(await this.erc721aBatchTransferable.getApproved(tokenId)).to.not.equal(this.addr1.address);
+            }
+          });
+
+          it('approval for all allows batch transfers', async function () {
+            await this.erc721aBatchTransferable.connect(this.addr1).setApprovalForAll(this.addr3.address, true);
+
+            // prettier-ignore
+            await this.erc721aBatchTransferable
+              .connect(this.addr3)[transferFn](
+                this.addr1.address, this.addr3.address, this.tokenIds
+              );
+          });
+        };
+
         context('successful transfers', function () {
           context('batchTransferFrom', function () {
             describe('to contract', function () {
@@ -289,6 +351,38 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             describe('to EOA', function () {
               testUnsuccessfulBatchTransfer('batchTransferFromUnoptimized', false);
+            });
+          });
+        });
+
+        context('approvals', function () {
+          context('batchTransferFrom', function () {
+            describe('to contract', function () {
+              testApproveBatchTransfer('batchTransferFrom');
+            });
+
+            describe('to EOA', function () {
+              testApproveBatchTransfer('batchTransferFrom', false);
+            });
+          });
+          context('safeBatchTransferFrom', function () {
+            describe('to contract', function () {
+              testApproveBatchTransfer('safeBatchTransferFrom(address,address,uint256[])');
+            });
+
+            describe('to EOA', function () {
+              testApproveBatchTransfer('safeBatchTransferFrom(address,address,uint256[])', false);
+            });
+          });
+
+          // TEMPORARY: to use as comparison for gas usage
+          context('batchTransferFromUnoptimized', function () {
+            describe('to contract', function () {
+              testApproveBatchTransfer('batchTransferFromUnoptimized');
+            });
+
+            describe('to EOA', function () {
+              testApproveBatchTransfer('batchTransferFromUnoptimized', false);
             });
           });
         });
