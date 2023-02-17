@@ -44,12 +44,12 @@ contract ERC721ATest is ERC721A {
     }
     */
 
-    function testInvariant1(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv1(tokenId), addr1, addr2, num, rand); }
-    function testInvariant2(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv2(tokenId), addr1, addr2, num, rand); }
-    function testInvariant3(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv3(tokenId), addr1, addr2, num, rand); }
-    function testInvariant4(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _testInvariant(inv4(tokenId), addr1, addr2, num, rand); }
+    function proveInvariant1(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _proveInvariant(inv1(tokenId), addr1, addr2, num, rand); }
+    function proveInvariant2(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _proveInvariant(inv2(tokenId), addr1, addr2, num, rand); }
+    function proveInvariant3(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _proveInvariant(inv3(tokenId), addr1, addr2, num, rand); }
+    function proveInvariant4(uint tokenId, address addr1, address addr2, uint num, uint rand) public { _proveInvariant(inv4(tokenId), addr1, addr2, num, rand); }
 
-    function _testInvariant(
+    function _proveInvariant(
         bool inv,
         address addr1, address addr2, uint num,
         uint rand
