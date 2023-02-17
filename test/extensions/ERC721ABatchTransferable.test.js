@@ -3,6 +3,8 @@ const { expect } = require('chai');
 const { constants } = require('@openzeppelin/test-helpers');
 const { ZERO_ADDRESS } = constants;
 
+const RECEIVER_MAGIC_VALUE = '0x150b7a02';
+
 const createTestSuite = ({ contract, constructorArgs }) =>
   function () {
     let offsetted;
@@ -10,7 +12,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
     context(`${contract}`, function () {
       beforeEach(async function () {
         this.erc721aBatchTransferable = await deployContract(contract, constructorArgs);
-
+        this.receiver = await deployContract('ERC721ReceiverMock', [
+          RECEIVER_MAGIC_VALUE,
+          this.erc721aBatchTransferable.address,
+        ]);
         this.startTokenId = this.erc721aBatchTransferable.startTokenId
           ? (await this.erc721aBatchTransferable.startTokenId()).toNumber()
           : 0;
@@ -20,18 +25,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
       });
 
       beforeEach(async function () {
-        const [owner, addr1, addr2, addr3, addr4] = await ethers.getSigners();
+        const [owner, addr1, addr2, addr3, addr4, addr5] = await ethers.getSigners();
         this.owner = owner;
         this.addr1 = addr1;
         this.addr2 = addr2;
         this.addr3 = addr3;
         this.addr4 = addr4;
-        this.numTotalTokens = 20;
-        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr2.address, 2);
-        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr1.address, 1);
-        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr2.address, 1);
-        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr1.address, 2);
-        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr2.address, 14);
+        this.addr5 = addr5;
+        this.numTotalTokens = 30;
 
         this.addr1.expected = {
           mintCount: 3,
@@ -39,9 +40,21 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         };
 
         this.addr2.expected = {
-          mintCount: 17,
-          tokens: offsetted(0, 17, 1, 6, 7, 13, 19, 10, 12, 11, 8, 14, 15, 16, 3, 18, 9),
+          mintCount: 20,
+          tokens: offsetted(0, 17, 1, 6, 7, 21, 13, 19, 10, 12, 11, 8, 20, 14, 15, 16, 3, 18, 22, 9),
         };
+
+        this.addr3.expected = {
+          mintCount: 7,
+          tokens: offsetted(23, 24, 25, 26, 27, 28, 29),
+        };
+
+        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr2.address, 2);
+        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr1.address, 1);
+        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr2.address, 1);
+        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr1.address, 2);
+        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr2.address, 17);
+        await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr3.address, 7);
       });
 
       context('test batch transfer functionality', function () {
@@ -50,8 +63,12 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             const sender = this.addr2;
             this.tokenIds = this.addr2.expected.tokens;
             this.from = sender.address;
-            this.to = transferToContract ? this.addr3 : this.addr4;
-            await this.erc721aBatchTransferable.connect(sender).approve(this.to.address, this.tokenIds[0]);
+            this.to = transferToContract ? this.receiver : this.addr4;
+            this.approvedIds = [this.tokenIds[0], this.tokenIds[2], this.tokenIds[3]];
+
+            this.approvedIds.forEach(async (tokenId) => {
+              await this.erc721aBatchTransferable.connect(sender).approve(this.to.address, tokenId);
+            });
 
             const ownershipBefore = await this.erc721aBatchTransferable.getOwnershipAt(this.tokenIds[0]);
             this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
@@ -61,7 +78,14 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             // prettier-ignore
             this.transferTx = await this.erc721aBatchTransferable
-            .connect(sender)[transferFn](this.from, this.to.address, this.tokenIds);
+              .connect(sender)[transferFn](this.from, this.to.address, this.tokenIds);
+
+            // Transfer part of uninitialized tokens
+            this.tokensToTransferAlt = [25, 26, 27];
+            // prettier-ignore
+            this.transferTxAlt = await this.erc721aBatchTransferable.connect(this.addr3)[transferFn](
+              this.addr3.address, this.addr5.address, this.tokensToTransferAlt
+            );
 
             const ownershipAfter = await this.erc721aBatchTransferable.getOwnershipAt(this.tokenIds[0]);
             this.timestampAfter = parseInt(ownershipAfter.startTimestamp);
@@ -74,6 +98,28 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             }
           });
 
+          it('transfers the ownership of uninitialized token IDs to the given address', async function () {
+            const allTokensInitiallyOwned = this.addr3.expected.tokens;
+            allTokensInitiallyOwned.splice(2, 3);
+
+            for (let i = 0; i < this.tokensToTransferAlt.length; i++) {
+              const tokenId = this.tokensToTransferAlt[i];
+              expect(await this.erc721aBatchTransferable.ownerOf(tokenId)).to.be.equal(this.addr5.address);
+            }
+
+            for (let i = 0; i < allTokensInitiallyOwned.length; i++) {
+              const tokenId = allTokensInitiallyOwned[i];
+              expect(await this.erc721aBatchTransferable.ownerOf(tokenId)).to.be.equal(this.addr3.address);
+            }
+
+            expect(await this.erc721aBatchTransferable.balanceOf(this.addr5.address)).to.be.equal(
+              this.tokensToTransferAlt.length
+            );
+            expect(await this.erc721aBatchTransferable.balanceOf(this.addr3.address)).to.be.equal(
+              allTokensInitiallyOwned.length
+            );
+          });
+
           it('emits Transfers event', async function () {
             for (let i = 0; i < this.tokenIds.length; i++) {
               const tokenId = this.tokenIds[i];
@@ -83,8 +129,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             }
           });
 
-          it('clears the approval for the token ID', async function () {
-            expect(await this.erc721aBatchTransferable.getApproved(this.tokenIds[0])).to.be.equal(ZERO_ADDRESS);
+          it('clears the approval for the token IDs', async function () {
+            this.approvedIds.forEach(async (tokenId) => {
+              expect(await this.erc721aBatchTransferable.getApproved(tokenId)).to.be.equal(ZERO_ADDRESS);
+            });
           });
 
           it('adjusts owners balances', async function () {
