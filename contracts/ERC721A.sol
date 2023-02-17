@@ -734,7 +734,11 @@ contract ERC721A is IERC721A {
 
                     // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
                     if (tokenIds[i + quantity] != nextTokenId) {
-                        _updateNextTokenId(nextTokenId, quantity, prevOwnershipPacked, nextOwnershipPacked);
+                        _updateNextTokenId(
+                            nextTokenId,
+                            quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
+                            prevOwnershipPacked
+                        );
                         break;
                     }
 
@@ -770,14 +774,16 @@ contract ERC721A is IERC721A {
                     _clearApprovalsAndEmitTransferEvent(from, toMasked, nextTokenId, approvalCheck);
                 }
 
-                // If the loop is over, update `nextTokenId + 1`.
-                if (totalTokensLeft == quantity) {
-                    _updateNextTokenId(nextTokenId + 1, quantity, prevOwnershipPacked, nextOwnershipPacked);
-                }
-
                 // Skip the next `quantity` tokens.
                 i += quantity;
             }
+
+            // Update `nextTokenId + 1`, the tokenId subsequent to the last element in `tokenIds`
+            _updateNextTokenId(
+                nextTokenId + 1,
+                quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
+                prevOwnershipPacked
+            );
         }
 
         _afterTokenBatchTransfers(from, to, tokenIds);
@@ -948,19 +954,13 @@ contract ERC721A is IERC721A {
     /**
      * @dev Private function to handle updating ownership of `nextTokenId`. Used in `_batchTransferFrom`.
      *
-     * `nextTokenId` - Token ID to update ownership of.
-     * `quantity` - Quantity of tokens transferred.
+     * `nextTokenId` - Token ID to initialize.
+     * `lastOwnershipPacked` - Slot of `nextTokenId - 1`
      * `prevOwnershipPacked` - Last initialized slot before `nextTokenId`
-     * `nextOwnershipPacked` - Slot of `nextTokenId - 1`
      */
-    function _updateNextTokenId(
-        uint256 nextTokenId,
-        uint256 quantity,
-        uint256 prevOwnershipPacked,
-        uint256 nextOwnershipPacked
-    ) private {
+    function _updateNextTokenId(uint256 nextTokenId, uint256 lastOwnershipPacked, uint256 prevOwnershipPacked) private {
         // If the next slot may not have been initialized (i.e. `nextInitialized == false`).
-        if ((quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked) & _BITMASK_NEXT_INITIALIZED == 0) {
+        if (lastOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
             // If the next slot's address is zero and not burned (i.e. packed value is zero).
             if (_packedOwnerships[nextTokenId] == 0) {
                 // If the next slot is within bounds.
