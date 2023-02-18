@@ -23,12 +23,20 @@ interface IERC721ABatchTransferable is IERC721A {
      *
      * Emits a {Transfer} event for each transfer.
      */
-    function batchTransferFrom(address from, address to, uint256[] memory tokenIds) external payable;
+    function batchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) external payable;
 
     /**
      * @dev Equivalent to `safeBatchTransferFrom(from, to, tokenIds, '')`.
      */
-    function safeBatchTransferFrom(address from, address to, uint256[] memory tokenIds) external payable;
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) external payable;
 
     /**
      * @dev Safely transfers `tokenIds` in batch from `from` to `to`. See {ERC721A-_safeBatchTransferFrom}.

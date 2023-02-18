@@ -511,9 +511,11 @@ contract ERC721A is IERC721A {
     /**
      * @dev Returns the storage slot and value for the approved address of `tokenId`.
      */
-    function _getApprovedSlotAndAddress(
-        uint256 tokenId
-    ) private view returns (uint256 approvedAddressSlot, address approvedAddress) {
+    function _getApprovedSlotAndAddress(uint256 tokenId)
+        private
+        view
+        returns (uint256 approvedAddressSlot, address approvedAddress)
+    {
         TokenApprovalRef storage tokenApproval = _tokenApprovals[tokenId];
         // The following is equivalent to `approvedAddress = _tokenApprovals[tokenId].value`.
         assembly {
@@ -539,7 +541,11 @@ contract ERC721A is IERC721A {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(address from, address to, uint256 tokenId) public payable virtual override {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public payable virtual override {
         uint256 prevOwnershipPacked = _packedOwnershipOf(tokenId);
 
         // Mask `from` to the lower 160 bits, in case the upper bits somehow aren't clean.
@@ -616,7 +622,11 @@ contract ERC721A is IERC721A {
     /**
      * @dev Equivalent to `safeTransferFrom(from, to, tokenId, '')`.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId) public payable virtual override {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public payable virtual override {
         safeTransferFrom(from, to, tokenId, '');
     }
 
@@ -651,7 +661,11 @@ contract ERC721A is IERC721A {
     /**
      * @dev Equivalent to `_batchTransferFrom(from, to, tokenIds, false)`.
      */
-    function _batchTransferFrom(address from, address to, uint256[] memory tokenIds) internal virtual {
+    function _batchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {
         _batchTransferFrom(from, to, tokenIds, false);
     }
 
@@ -792,7 +806,11 @@ contract ERC721A is IERC721A {
     /**
      * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, false)`.
      */
-    function _safeBatchTransferFrom(address from, address to, uint256[] memory tokenIds) internal virtual {
+    function _safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {
         _safeBatchTransferFrom(from, to, tokenIds, false);
     }
 
@@ -874,7 +892,12 @@ contract ERC721A is IERC721A {
      * - When `to` is zero, `tokenId` will be burned by `from`.
      * - `from` and `to` are never both zero.
      */
-    function _beforeTokenTransfers(address from, address to, uint256 startTokenId, uint256 quantity) internal virtual {}
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual {}
 
     /**
      * @dev Hook that is called after a set of serially-ordered token IDs
@@ -893,7 +916,12 @@ contract ERC721A is IERC721A {
      * - When `to` is zero, `tokenId` has been burned by `from`.
      * - `from` and `to` are never both zero.
      */
-    function _afterTokenTransfers(address from, address to, uint256 startTokenId, uint256 quantity) internal virtual {}
+    function _afterTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual {}
 
     /**
      * @dev Hook that is called before a set of token IDs ordered in ascending order
@@ -906,7 +934,11 @@ contract ERC721A is IERC721A {
      * - `from`'s `tokenIds` will be transferred to `to`.
      * - Neither `from` and `to` can be zero.
      */
-    function _beforeTokenBatchTransfers(address from, address to, uint256[] memory tokenIds) internal virtual {}
+    function _beforeTokenBatchTransfers(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {}
 
     /**
      * @dev Hook that is called after a set of token IDs ordered in ascending order
@@ -919,7 +951,11 @@ contract ERC721A is IERC721A {
      * - `from`'s `tokenIds` have been transferred to `to`.
      * - Neither `from` and `to` can be zero.
      */
-    function _afterTokenBatchTransfers(address from, address to, uint256[] memory tokenIds) internal virtual {}
+    function _afterTokenBatchTransfers(
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) internal virtual {}
 
     /**
      * @dev Private function to invoke {IERC721Receiver-onERC721Received} on a target contract.
@@ -958,7 +994,11 @@ contract ERC721A is IERC721A {
      * `lastOwnershipPacked` - Slot of `nextTokenId - 1`
      * `prevOwnershipPacked` - Last initialized slot before `nextTokenId`
      */
-    function _updateNextTokenId(uint256 nextTokenId, uint256 lastOwnershipPacked, uint256 prevOwnershipPacked) private {
+    function _updateNextTokenId(
+        uint256 nextTokenId,
+        uint256 lastOwnershipPacked,
+        uint256 prevOwnershipPacked
+    ) private {
         // If the next slot may not have been initialized (i.e. `nextInitialized == false`).
         if (lastOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
             // If the next slot's address is zero and not burned (i.e. packed value is zero).
@@ -1153,7 +1193,11 @@ contract ERC721A is IERC721A {
      *
      * Emits a {Transfer} event for each mint.
      */
-    function _safeMint(address to, uint256 quantity, bytes memory _data) internal virtual {
+    function _safeMint(
+        address to,
+        uint256 quantity,
+        bytes memory _data
+    ) internal virtual {
         _mint(to, quantity);
 
         unchecked {
@@ -1202,7 +1246,11 @@ contract ERC721A is IERC721A {
      *
      * Emits an {Approval} event.
      */
-    function _approve(address to, uint256 tokenId, bool approvalCheck) internal virtual {
+    function _approve(
+        address to,
+        uint256 tokenId,
+        bool approvalCheck
+    ) internal virtual {
         address owner = ownerOf(tokenId);
 
         if (approvalCheck && _msgSenderERC721A() != owner)
@@ -1336,13 +1384,21 @@ contract ERC721A is IERC721A {
      * - When `to` is zero, `tokenId` will be burned by `from`.
      * - `from` and `to` are never both zero.
      */
-    function _extraData(address from, address to, uint24 previousExtraData) internal view virtual returns (uint24) {}
+    function _extraData(
+        address from,
+        address to,
+        uint24 previousExtraData
+    ) internal view virtual returns (uint24) {}
 
     /**
      * @dev Returns the next extra data for the packed ownership data.
      * The returned result is shifted into position.
      */
-    function _nextExtraData(address from, address to, uint256 prevOwnershipPacked) private view returns (uint256) {
+    function _nextExtraData(
+        address from,
+        address to,
+        uint256 prevOwnershipPacked
+    ) private view returns (uint256) {
         uint24 extraData = uint24(prevOwnershipPacked >> _BITPOS_EXTRA_DATA);
         return uint256(_extraData(from, to, extraData)) << _BITPOS_EXTRA_DATA;
     }
