@@ -1351,6 +1351,138 @@ contract ERC721A is IERC721A {
         }
     }
 
+    /**
+     * @dev Equivalent to `_batchBurn(tokenIds, false)`.
+     */
+    function _batchBurn(uint256[] memory tokenIds) internal virtual {
+        _batchBurn(tokenIds, false);
+    }
+
+    /**
+     * @dev Destroys `tokenIds` in batch.
+     * The approval is cleared when the tokens are burned.
+     * `tokenIds` should be provided sorted in ascending order to maximize efficiency.
+     *
+     * Requirements:
+     *
+     * - `tokenIds` must exist.
+     *
+     * Emits a {Transfer} event for each burn.
+     */
+    function _batchBurn(uint256[] memory tokenIds, bool approvalCheck) internal virtual {
+        // Sort `tokenIds` to allow batching consecutive ids.
+        _sort(tokenIds);
+
+        uint256 totalTokens = tokenIds.length;
+        uint256 totalTokensLeft;
+        uint256 startTokenId = tokenIds[0];
+        uint256 nextTokenId;
+        uint256 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
+        uint256 nextOwnershipPacked;
+        uint256 quantity;
+
+        address from = address(uint160(prevOwnershipPacked));
+
+        // If `approvalCheck` is true, check if the caller is approved for all token Ids.
+        // If approved for all, disable next approval checks. Otherwise keep them enabled
+        if (approvalCheck)
+            if (isApprovedForAll(from, _msgSenderERC721A())) approvalCheck = false;
+
+        _beforeTokenBatchTransfers(from, address(0), tokenIds);
+
+        // Underflow of the sender's balance is temporarily possible if the wrong set of token Ids is passed,
+        // but reverts afterwards when ownership is checked.
+        // The recipient's balance can't realistically overflow.
+        // Counter overflow is incredibly unrealistic as `startTokenId` would have to be 2**256.
+        unchecked {
+            // Updates:
+            // - `balance -= totalTokens`.
+            // - `numberBurned += totalTokens`.
+            //
+            // We can directly decrement the balance, and increment the number burned.
+            // This is equivalent to `packed -= totalTokens; packed += totalTokens << _BITPOS_NUMBER_BURNED;`.
+            _packedAddressData[from] += (totalTokens << _BITPOS_NUMBER_BURNED) - totalTokens;
+
+            for (uint256 i; i < totalTokens; ) {
+                // Except during first loop, where this logic has already been executed.
+                if (i != 0) {
+                    startTokenId = tokenIds[i];
+                    totalTokensLeft = totalTokens - i;
+
+                    // Check ownership of `startTokenId`.
+                    prevOwnershipPacked = _packedOwnershipOf(startTokenId);
+                }
+
+                // Updates startTokenId:
+                // - `address` to the last owner.
+                // - `startTimestamp` to the timestamp of burning.
+                // - `burned` to `true`.
+                // - `nextInitialized` is left unchanged.
+                _packedOwnerships[startTokenId] = _packOwnershipData(
+                    from,
+                    (_BITMASK_BURNED | (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED)) |
+                        _nextExtraData(from, address(0), prevOwnershipPacked)
+                );
+
+                // Clear approvals and emit transfer event for `startTokenId`.
+                _clearApprovalsAndEmitTransferEvent(from, 0, startTokenId, approvalCheck);
+
+                // Derive quantity by looping over the next consecutive `totalTokensLeft`.
+                for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
+                    nextTokenId = startTokenId + quantity;
+
+                    // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
+                    if (tokenIds[i + quantity] != nextTokenId) {
+                        _updateNextTokenId(
+                            nextTokenId,
+                            quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
+                            prevOwnershipPacked
+                        );
+                        break;
+                    }
+
+                    nextOwnershipPacked = _packedOwnerships[nextTokenId];
+
+                    // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                    if (nextOwnershipPacked == 0) {
+                        // Revert if the next slot is out of bounds. Cannot be higher than `_currentIndex` since we're
+                        // incrementing in steps of one
+                        if (nextTokenId == _currentIndex) _revert(OwnerQueryForNonexistentToken.selector);
+                        // Otherwise we assume `from` owns `nextTokenId` and move on.
+                    } else {
+                        // Revert if `nextTokenId` is not owned by `from` or has been burned.
+                        if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
+                        if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
+
+                        // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
+                        prevOwnershipPacked = nextOwnershipPacked;
+
+                        // Clear the slot to leverage consecutive burns optimization.
+                        delete _packedOwnerships[nextTokenId];
+                    }
+
+                    // Clear approvals and emit transfer event for `nextTokenId`.
+                    _clearApprovalsAndEmitTransferEvent(from, 0, nextTokenId, approvalCheck);
+                }
+
+                // Skip the next `quantity` tokens.
+                i += quantity;
+            }
+
+            // Update `nextTokenId + 1`, the tokenId subsequent to the last element in `tokenIds`
+            _updateNextTokenId(
+                nextTokenId + 1,
+                quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
+                prevOwnershipPacked
+            );
+
+            // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
+            _burnCounter += totalTokens;
+        }
+
+        _afterTokenBatchTransfers(from, address(0), tokenIds);
+    }
+
     // =============================================================
     //                     EXTRA DATA OPERATIONS
     // =============================================================
