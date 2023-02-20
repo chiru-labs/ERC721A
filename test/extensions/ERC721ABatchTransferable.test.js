@@ -64,10 +64,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           describe('successful transfers', async function () {
             beforeEach(async function () {
               const sender = this.addr2;
-              this.tokenIds = this.addr2.expected.tokens.slice(2);
+              this.tokenIds = this.addr2.expected.tokens;
               this.from = sender.address;
               this.to = transferToContract ? this.receiver : this.addr4;
-              this.approvedIds = [this.tokenIds[0], this.tokenIds[1]];
+              this.approvedIds = [this.tokenIds[2], this.tokenIds[3]];
               this.initializedToken = 8;
               this.uninitializedToken = 10;
 
@@ -109,10 +109,9 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             });
 
             it('adjusts owners balances', async function () {
-              const tokensNotTransferred = 2;
-              expect(await this.erc721aBatchTransferable.balanceOf(this.from)).to.be.equal(tokensNotTransferred);
+              expect(await this.erc721aBatchTransferable.balanceOf(this.from)).to.be.equal(0);
               expect(await this.erc721aBatchTransferable.balanceOf(this.to.address)).to.be.equal(
-                this.addr2.expected.mintCount - tokensNotTransferred
+                this.addr2.expected.mintCount
               );
               expect(await this.erc721aBatchTransferable.balanceOf(this.addr3.address)).to.be.equal(
                 this.addr3.expected.tokens.length - this.tokensToTransferAlt.length
