@@ -41,7 +41,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
         this.addr2.expected = {
           mintCount: 20,
-          tokens: offsetted(0, 17, 1, 6, 7, 21, 13, 19, 10, 12, 11, 8, 20, 14, 15, 16, 3, 18, 22, 9),
+          tokens: offsetted(0, 1, 17, 6, 7, 21, 13, 19, 10, 12, 11, 8, 20, 14, 15, 16, 3, 18, 22, 9),
         };
 
         this.addr3.expected = {
@@ -62,28 +62,30 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           describe('successful transfers', async function () {
             beforeEach(async function () {
               const sender = this.addr2;
-              this.tokenIds = this.addr2.expected.tokens;
+              this.tokenIds = this.addr2.expected.tokens.slice(2);
               this.from = sender.address;
               this.to = transferToContract ? this.receiver : this.addr4;
-              this.approvedIds = [this.tokenIds[0], this.tokenIds[2], this.tokenIds[3]];
+              this.approvedIds = [this.tokenIds[0], this.tokenIds[1]];
 
               this.approvedIds.forEach(async (tokenId) => {
                 await this.erc721aBatchTransferable.connect(sender).approve(this.to.address, tokenId);
               });
 
-              const ownershipBefore = await this.erc721aBatchTransferable.getOwnershipAt(this.tokenIds[0]);
+              // Manually initialize some tokens of addr2
+              await this.erc721aBatchTransferable.initializeOwnershipAt(8);
+
+              const ownershipBefore = await this.erc721aBatchTransferable.getOwnershipAt(3);
               this.timestampBefore = parseInt(ownershipBefore.startTimestamp);
               this.timestampToMine = (await getBlockTimestamp()) + 12345;
               await mineBlockTimestamp(this.timestampToMine);
               this.timestampMined = await getBlockTimestamp();
 
-              // Manually initialize some tokens of addr2
-              await this.erc721aBatchTransferable.initializeOwnershipAt(3);
-              await this.erc721aBatchTransferable.initializeOwnershipAt(8);
-
               // prettier-ignore
               this.transferTx = await this.erc721aBatchTransferable
               .connect(sender)[transferFn](this.from, this.to.address, this.tokenIds);
+
+              const ownershipAfter = await this.erc721aBatchTransferable.getOwnershipAt(3);
+              this.timestampAfter = parseInt(ownershipAfter.startTimestamp);
 
               // Transfer part of uninitialized tokens
               this.tokensToTransferAlt = [25, 26, 27];
@@ -91,9 +93,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               this.transferTxAlt = await this.erc721aBatchTransferable.connect(this.addr3)[transferFn](
               this.addr3.address, this.addr5.address, this.tokensToTransferAlt
             );
-
-              const ownershipAfter = await this.erc721aBatchTransferable.getOwnershipAt(this.tokenIds[0]);
-              this.timestampAfter = parseInt(ownershipAfter.startTimestamp);
             });
 
             it('emits Transfers event', async function () {
@@ -106,9 +105,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             });
 
             it('adjusts owners balances', async function () {
-              expect(await this.erc721aBatchTransferable.balanceOf(this.from)).to.be.equal(0);
+              const tokensNotTransferred = 2;
+              expect(await this.erc721aBatchTransferable.balanceOf(this.from)).to.be.equal(tokensNotTransferred);
               expect(await this.erc721aBatchTransferable.balanceOf(this.to.address)).to.be.equal(
-                this.addr2.expected.mintCount
+                this.addr2.expected.mintCount - tokensNotTransferred
               );
               expect(await this.erc721aBatchTransferable.balanceOf(this.addr3.address)).to.be.equal(
                 this.addr3.expected.tokens.length - this.tokensToTransferAlt.length
@@ -193,6 +193,41 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 expect(
                   (await this.erc721aBatchTransferable.getOwnershipAt(this.tokensToTransferAlt[2]))[0]
                 ).to.be.equal(transferFn !== 'batchTransferFromUnoptimized' ? ZERO_ADDRESS : this.addr5.address);
+              });
+
+              it('with first token transferred', async function () {
+                expect(await this.erc721aBatchTransferable.ownerOf(0)).to.be.equal(this.addr2.address);
+                expect(await this.erc721aBatchTransferable.ownerOf(1)).to.be.equal(this.addr2.address);
+                expect((await this.erc721aBatchTransferable.getOwnershipAt(0))[0]).to.be.equal(this.addr2.address);
+                expect((await this.erc721aBatchTransferable.getOwnershipAt(1))[0]).to.be.equal(ZERO_ADDRESS);
+
+                // prettier-ignore
+                await this.erc721aBatchTransferable
+                  .connect(this.addr2)[transferFn](this.addr2.address, this.to.address, [0]);
+
+                expect(await this.erc721aBatchTransferable.ownerOf(0)).to.be.equal(this.to.address);
+                expect(await this.erc721aBatchTransferable.ownerOf(1)).to.be.equal(this.addr2.address);
+                expect((await this.erc721aBatchTransferable.getOwnershipAt(0))[0]).to.be.equal(this.to.address);
+                expect((await this.erc721aBatchTransferable.getOwnershipAt(1))[0]).to.be.equal(this.addr2.address);
+              });
+
+              it('with last token transferred', async function () {
+                await expect(this.erc721aBatchTransferable.ownerOf(this.numTotalTokens)).to.be.revertedWith(
+                  'OwnerQueryForNonexistentToken'
+                );
+
+                // prettier-ignore
+                await this.erc721aBatchTransferable
+                .connect(this.addr3)[transferFn](
+                  this.addr3.address, this.to.address, [offsetted(this.numTotalTokens - 1
+                    )]);
+
+                expect(await this.erc721aBatchTransferable.ownerOf(offsetted(this.numTotalTokens - 1))).to.be.equal(
+                  this.to.address
+                );
+                await expect(this.erc721aBatchTransferable.ownerOf(this.numTotalTokens)).to.be.revertedWith(
+                  'OwnerQueryForNonexistentToken'
+                );
               });
             });
           });
