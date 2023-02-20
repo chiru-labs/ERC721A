@@ -103,7 +103,11 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
             // Initialized tokens were updated
             expect((await this.erc721aBatchTransferable.getOwnershipAt(3))[0]).to.be.equal(this.to.address);
-            expect((await this.erc721aBatchTransferable.getOwnershipAt(8))[0]).to.be.equal(this.to.address);
+
+            // Initialized tokens in a consecutive transfer are cleared
+            expect((await this.erc721aBatchTransferable.getOwnershipAt(8))[0]).to.be.equal(
+              transferFn !== 'batchTransferFromUnoptimized' ? ZERO_ADDRESS : this.to.address
+            );
 
             // Uninitialized tokens are left uninitialized
             expect((await this.erc721aBatchTransferable.getOwnershipAt(7))[0]).to.be.equal(

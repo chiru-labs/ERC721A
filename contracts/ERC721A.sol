@@ -729,15 +729,12 @@ contract ERC721A is IERC721A {
                 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
                 if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
 
-                // Updates startTokenId:
+                // Update startTokenId:
                 // - `address` to the next owner.
                 // - `startTimestamp` to the timestamp of transfering.
                 // - `burned` to `false`.
-                // - `nextInitialized` is left unchanged.
-                _packedOwnerships[startTokenId] = _packOwnershipData(
-                    to,
-                    (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED) | _nextExtraData(from, to, prevOwnershipPacked)
-                );
+                // - `nextInitialized` to `false`, to account for potential clearing of `startTokenId + 1`.
+                _packedOwnerships[startTokenId] = _packOwnershipData(to, _nextExtraData(from, to, prevOwnershipPacked));
 
                 // Clear approvals and emit transfer event for `startTokenId`.
                 _clearApprovalsAndEmitTransferEvent(from, toMasked, startTokenId, approvalCheck);
@@ -769,19 +766,25 @@ contract ERC721A is IERC721A {
                         if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
                         if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
 
-                        // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
-                        prevOwnershipPacked = nextOwnershipPacked;
+                        // If there is extra data to preserve
+                        if (nextOwnershipPacked >> _BITPOS_EXTRA_DATA != 0) {
+                            // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
+                            prevOwnershipPacked = nextOwnershipPacked;
 
-                        // Updates nextTokenId:
-                        // - `address` to the next owner.
-                        // - `startTimestamp` to the timestamp of transfering.
-                        // - `burned` to `false`.
-                        // - `nextInitialized` is left unchanged.
-                        _packedOwnerships[nextTokenId] = _packOwnershipData(
-                            to,
-                            (nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
-                                _nextExtraData(from, to, nextOwnershipPacked)
-                        );
+                            // Update `nextTokenId`
+                            // - `address` to the next owner.
+                            // - `startTimestamp` to the timestamp of transfering.
+                            // - `burned` to `false`.
+                            // - `nextInitialized` to `false`, to account for potential clearing of `nextTokenId + 1`.
+                            _packedOwnerships[nextTokenId] = _packOwnershipData(
+                                to,
+                                (nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
+                                    _nextExtraData(from, to, nextOwnershipPacked)
+                            );
+                        } else {
+                            // Otherwise clear slot of `nextTokenId` to leverage gas optimization of consecutive ids
+                            delete _packedOwnerships[nextTokenId];
+                        }
                     }
 
                     // Clear approvals and emit transfer event for `nextTokenId`.
@@ -1419,11 +1422,10 @@ contract ERC721A is IERC721A {
                 // - `address` to the last owner.
                 // - `startTimestamp` to the timestamp of burning.
                 // - `burned` to `true`.
-                // - `nextInitialized` is left unchanged.
+                // - `nextInitialized` to `false`, to account for potential clearing of `startTokenId + 1`.
                 _packedOwnerships[startTokenId] = _packOwnershipData(
                     from,
-                    (_BITMASK_BURNED | (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED)) |
-                        _nextExtraData(from, address(0), prevOwnershipPacked)
+                    _BITMASK_BURNED | _nextExtraData(from, address(0), prevOwnershipPacked)
                 );
 
                 // Clear approvals and emit transfer event for `startTokenId`.
@@ -1456,19 +1458,24 @@ contract ERC721A is IERC721A {
                         if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
                         if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
 
-                        // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
-                        prevOwnershipPacked = nextOwnershipPacked;
+                        // If there is extra data to preserve
+                        if (nextOwnershipPacked >> _BITPOS_EXTRA_DATA != 0) {
+                            // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
+                            prevOwnershipPacked = nextOwnershipPacked;
 
-                        // Updates nextTokenId:
-                        // - `address` to the last owner.
-                        // - `startTimestamp` to the timestamp of burning.
-                        // - `burned` to `true`.
-                        // - `nextInitialized` is left unchanged.
-                        _packedOwnerships[nextTokenId] = _packOwnershipData(
-                            from,
-                            (_BITMASK_BURNED | (nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED)) |
-                                _nextExtraData(from, address(0), nextOwnershipPacked)
-                        );
+                            // Update `nextTokenId`
+                            // - `address` to the last owner.
+                            // - `startTimestamp` to the timestamp of burning.
+                            // - `burned` to `true`.
+                            // - `nextInitialized` to `false`, to account for potential clearing of `nextTokenId + 1`.
+                            _packedOwnerships[nextTokenId] = _packOwnershipData(
+                                from,
+                                _BITMASK_BURNED | _nextExtraData(from, address(0), nextOwnershipPacked)
+                            );
+                        } else {
+                            // Otherwise clear slot of `nextTokenId` to leverage gas optimization of consecutive ids
+                            delete _packedOwnerships[nextTokenId];
+                        }
                     }
 
                     // Clear approvals and emit transfer event for `nextTokenId`.
