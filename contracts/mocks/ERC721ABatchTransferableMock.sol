@@ -41,6 +41,18 @@ contract ERC721ABatchTransferableMock is ERC721ABatchTransferable {
         _initializeOwnershipAt(index);
     }
 
+    function _extraData(
+        address,
+        address,
+        uint24 previousExtraData
+    ) internal view virtual override returns (uint24) {
+        return previousExtraData;
+    }
+
+    function setExtraDataAt(uint256 index, uint24 extraData) public {
+        _setExtraDataAt(index, extraData);
+    }
+
     function batchTransferFromUnoptimized(
         address from,
         address to,

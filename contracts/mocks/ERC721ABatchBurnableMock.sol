@@ -37,6 +37,18 @@ contract ERC721ABatchBurnableMock is ERC721ABatchBurnable {
         _initializeOwnershipAt(index);
     }
 
+    function _extraData(
+        address,
+        address,
+        uint24 previousExtraData
+    ) internal view virtual override returns (uint24) {
+        return previousExtraData;
+    }
+
+    function setExtraDataAt(uint256 index, uint24 extraData) public {
+        _setExtraDataAt(index, extraData);
+    }
+
     function batchBurnUnoptimized(uint256[] memory tokenIds) public {
         unchecked {
             uint256 tokenId;
