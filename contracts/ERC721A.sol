@@ -587,18 +587,8 @@ contract ERC721A is IERC721A {
                 _BITMASK_NEXT_INITIALIZED | _nextExtraData(from, to, prevOwnershipPacked)
             );
 
-            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
-            if (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
-                uint256 nextTokenId = tokenId + 1;
-                // If the next slot's address is zero and not burned (i.e. packed value is zero).
-                if (_packedOwnerships[nextTokenId] == 0) {
-                    // If the next slot is within bounds.
-                    if (nextTokenId != _currentIndex) {
-                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
-                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
-                    }
-                }
-            }
+            // Updates next slot if necessary.
+            _updateTokenId(tokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
         }
 
         // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
@@ -745,7 +735,7 @@ contract ERC721A is IERC721A {
 
                     // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
                     if (tokenIds[i + quantity] != nextTokenId) {
-                        _updateNextTokenId(
+                        _updateTokenId(
                             nextTokenId,
                             quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
                             prevOwnershipPacked
@@ -797,9 +787,9 @@ contract ERC721A is IERC721A {
 
             // Update the tokenId subsequent to the last element in `tokenIds`
             if (quantity == 1) {
-                _updateNextTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
+                _updateTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
             } else {
-                _updateNextTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
+                _updateTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
             }
         }
 
@@ -991,25 +981,25 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Private function to handle updating ownership of `nextTokenId`. Used in `_batchTransferFrom`.
+     * @dev Private function to handle updating ownership of `tokenId`. Used in `_batchTransferFrom`.
      *
-     * `nextTokenId` - Token ID to initialize.
-     * `lastOwnershipPacked` - Slot of `nextTokenId - 1`
-     * `prevOwnershipPacked` - Last initialized slot before `nextTokenId`
+     * `tokenId` - Token ID to initialize.
+     * `lastOwnershipPacked` - Slot of `tokenId - 1`
+     * `prevOwnershipPacked` - Last initialized slot before `tokenId`
      */
-    function _updateNextTokenId(
-        uint256 nextTokenId,
+    function _updateTokenId(
+        uint256 tokenId,
         uint256 lastOwnershipPacked,
         uint256 prevOwnershipPacked
     ) private {
         // If the next slot may not have been initialized (i.e. `nextInitialized == false`).
         if (lastOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
             // If the next slot's address is zero and not burned (i.e. packed value is zero).
-            if (_packedOwnerships[nextTokenId] == 0) {
+            if (_packedOwnerships[tokenId] == 0) {
                 // If the next slot is within bounds.
-                if (nextTokenId != _currentIndex) {
-                    // Initialize the next slot to maintain correctness for `ownerOf(nextTokenId)`.
-                    _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                if (tokenId != _currentIndex) {
+                    // Initialize the next slot to maintain correctness for `ownerOf(tokenId)`.
+                    _packedOwnerships[tokenId] = prevOwnershipPacked;
                 }
             }
         }
@@ -1331,18 +1321,8 @@ contract ERC721A is IERC721A {
                 (_BITMASK_BURNED | _BITMASK_NEXT_INITIALIZED) | _nextExtraData(from, address(0), prevOwnershipPacked)
             );
 
-            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
-            if (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
-                uint256 nextTokenId = tokenId + 1;
-                // If the next slot's address is zero and not burned (i.e. packed value is zero).
-                if (_packedOwnerships[nextTokenId] == 0) {
-                    // If the next slot is within bounds.
-                    if (nextTokenId != _currentIndex) {
-                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
-                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
-                    }
-                }
-            }
+            // Updates next slot if necessary.
+            _updateTokenId(tokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
         }
 
         emit Transfer(from, address(0), tokenId);
@@ -1437,7 +1417,7 @@ contract ERC721A is IERC721A {
 
                     // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
                     if (tokenIds[i + quantity] != nextTokenId) {
-                        _updateNextTokenId(
+                        _updateTokenId(
                             nextTokenId,
                             quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
                             prevOwnershipPacked
@@ -1488,9 +1468,9 @@ contract ERC721A is IERC721A {
 
             // Update the tokenId subsequent to the last element in `tokenIds`
             if (quantity == 1) {
-                _updateNextTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
+                _updateTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
             } else {
-                _updateNextTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
+                _updateTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
             }
 
             // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
