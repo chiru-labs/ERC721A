@@ -725,11 +725,11 @@ contract ERC721A is IERC721A {
                 startTokenId = tokenIds[i];
                 totalTokensLeft = totalTokens - i;
 
-                // Update `prevOwnershipPacked` and check ownership of `startTokenId`.
+                // Updates `prevOwnershipPacked` and check ownership of `startTokenId`.
                 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
                 if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
 
-                // Update startTokenId:
+                // Updates startTokenId:
                 // - `address` to the next owner.
                 // - `startTimestamp` to the timestamp of transfering.
                 // - `burned` to `false`.
@@ -768,10 +768,10 @@ contract ERC721A is IERC721A {
 
                         // If there is extra data to preserve
                         if (nextOwnershipPacked >> _BITPOS_EXTRA_DATA != 0) {
-                            // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
+                            // Updates `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
                             prevOwnershipPacked = nextOwnershipPacked;
 
-                            // Update `nextTokenId`
+                            // Updates `nextTokenId`
                             // - `address` to the next owner.
                             // - `startTimestamp` to the timestamp of transfering.
                             // - `burned` to `false`.
@@ -1408,7 +1408,7 @@ contract ERC721A is IERC721A {
             _packedAddressData[from] += (totalTokens << _BITPOS_NUMBER_BURNED) - totalTokens;
 
             for (uint256 i; i < totalTokens; ) {
-                // Except during first loop, where this logic has already been executed.
+                // Skip during first loop, where this logic has already been executed.
                 if (i != 0) {
                     startTokenId = tokenIds[i];
                     totalTokensLeft = totalTokens - i;
@@ -1463,7 +1463,7 @@ contract ERC721A is IERC721A {
                             // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
                             prevOwnershipPacked = nextOwnershipPacked;
 
-                            // Update `nextTokenId`
+                            // Updates `nextTokenId`
                             // - `address` to the last owner.
                             // - `startTimestamp` to the timestamp of burning.
                             // - `burned` to `true`.
