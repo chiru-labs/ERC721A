@@ -689,7 +689,7 @@ contract ERC721A is IERC721A {
         uint256[] memory tokenIds,
         bool approvalCheck
     ) internal virtual {
-        // Sort `tokenIds` to allow batching consecutive ids into single operations.
+        // Sort `tokenIds` to allow batching consecutive ids.
         _sort(tokenIds);
 
         // Mask `from` and `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
@@ -925,7 +925,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Hook that is called before a set of token IDs ordered in ascending order
-     * are about to be transferred. Only called on batch transfers.
+     * are about to be transferred. Only called on batch transfers and burns.
      *
      * `tokenIds` - the array of tokenIds to be transferred, ordered in ascending order.
      *
@@ -942,7 +942,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Hook that is called after a set of token IDs ordered in ascending order
-     * have been transferred. Only called on batch transfers.
+     * have been transferred. Only called on batch transfers and burns.
      *
      * `tokenIds` - the array of tokenIds transferred, ordered in ascending order.
      *
@@ -1009,49 +1009,6 @@ contract ERC721A is IERC721A {
                     _packedOwnerships[nextTokenId] = prevOwnershipPacked;
                 }
             }
-        }
-    }
-
-    /**
-     * @dev Private function to handle clearing approvals and emitting transfer Event for a given `tokenId`.
-     * Used in `_batchTransferFrom`.
-     *
-     * `from` - Previous owner of the given token ID.
-     * `toMasked` - Target address that will receive the token.
-     * `tokenId` - Token ID to be transferred.
-     * `isApprovedForAll_` - Whether the caller is approved for all token IDs.
-     */
-    function _clearApprovalsAndEmitTransferEvent(
-        address from,
-        uint256 toMasked,
-        uint256 tokenId,
-        bool approvalCheck
-    ) private {
-        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
-
-        if (approvalCheck) {
-            if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
-                _revert(TransferCallerNotOwnerNorApproved.selector);
-        }
-
-        // Clear approvals from the previous owner.
-        assembly {
-            if approvedAddress {
-                // This is equivalent to `delete _tokenApprovals[tokenId]`.
-                sstore(approvedAddressSlot, 0)
-            }
-        }
-
-        assembly {
-            // Emit the `Transfer` event.
-            log4(
-                0, // Start of data (0, since no data).
-                0, // End of data (0, since no data).
-                _TRANSFER_EVENT_SIGNATURE, // Signature.
-                from, // `from`.
-                toMasked, // `to`.
-                tokenId // `tokenId`.
-            )
         }
     }
 
@@ -1260,6 +1217,49 @@ contract ERC721A is IERC721A {
 
         _tokenApprovals[tokenId].value = to;
         emit Approval(owner, to, tokenId);
+    }
+
+    /**
+     * @dev Private function to handle clearing approvals and emitting transfer Event for a given `tokenId`.
+     * Used in `_batchTransferFrom`.
+     *
+     * `from` - Previous owner of the given token ID.
+     * `toMasked` - Target address that will receive the token.
+     * `tokenId` - Token ID to be transferred.
+     * `isApprovedForAll_` - Whether the caller is approved for all token IDs.
+     */
+    function _clearApprovalsAndEmitTransferEvent(
+        address from,
+        uint256 toMasked,
+        uint256 tokenId,
+        bool approvalCheck
+    ) private {
+        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
+
+        if (approvalCheck) {
+            if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
+                _revert(TransferCallerNotOwnerNorApproved.selector);
+        }
+
+        // Clear approvals from the previous owner.
+        assembly {
+            if approvedAddress {
+                // This is equivalent to `delete _tokenApprovals[tokenId]`.
+                sstore(approvedAddressSlot, 0)
+            }
+        }
+
+        assembly {
+            // Emit the `Transfer` event.
+            log4(
+                0, // Start of data (0, since no data).
+                0, // End of data (0, since no data).
+                _TRANSFER_EVENT_SIGNATURE, // Signature.
+                from, // `from`.
+                toMasked, // `to`.
+                tokenId // `tokenId`.
+            )
+        }
     }
 
     // =============================================================
