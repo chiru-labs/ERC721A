@@ -793,11 +793,11 @@ contract ERC721A is IERC721A {
             }
 
             // Update the tokenId subsequent to the last element in `tokenIds`
-            _updateNextTokenId(
-                quantity == 1 ? startTokenId + 1 : nextTokenId + 1,
-                quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
-                prevOwnershipPacked
-            );
+            if (quantity == 1) {
+                _updateNextTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
+            } else {
+                _updateNextTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
+            }
         }
 
         _afterTokenBatchTransfers(from, to, tokenIds);
@@ -1470,11 +1470,11 @@ contract ERC721A is IERC721A {
             }
 
             // Update the tokenId subsequent to the last element in `tokenIds`
-            _updateNextTokenId(
-                quantity == 1 ? startTokenId + 1 : nextTokenId + 1,
-                quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
-                prevOwnershipPacked
-            );
+            if (quantity == 1) {
+                _updateNextTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
+            } else {
+                _updateNextTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
+            }
 
             // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
             _burnCounter += totalTokens;
