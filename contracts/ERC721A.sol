@@ -792,9 +792,9 @@ contract ERC721A is IERC721A {
                 i += quantity;
             }
 
-            // Update `nextTokenId + 1`, the tokenId subsequent to the last element in `tokenIds`
+            // Update the tokenId subsequent to the last element in `tokenIds`
             _updateNextTokenId(
-                nextTokenId + 1,
+                quantity == 1 ? startTokenId + 1 : nextTokenId + 1,
                 quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
                 prevOwnershipPacked
             );
@@ -1469,9 +1469,9 @@ contract ERC721A is IERC721A {
                 i += quantity;
             }
 
-            // Update `nextTokenId + 1`, the tokenId subsequent to the last element in `tokenIds`
+            // Update the tokenId subsequent to the last element in `tokenIds`
             _updateNextTokenId(
-                nextTokenId + 1,
+                quantity == 1 ? startTokenId + 1 : nextTokenId + 1,
                 quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
                 prevOwnershipPacked
             );
