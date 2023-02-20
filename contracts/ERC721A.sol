@@ -725,7 +725,7 @@ contract ERC721A is IERC721A {
                 startTokenId = tokenIds[i];
                 totalTokensLeft = totalTokens - i;
 
-                // Check ownership of `startTokenId`.
+                // Update `prevOwnershipPacked` and check ownership of `startTokenId`.
                 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
                 if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
 
@@ -1366,6 +1366,7 @@ contract ERC721A is IERC721A {
      * Requirements:
      *
      * - `tokenIds` must exist.
+     * - `tokenIds` must be owned by the same address.
      *
      * Emits a {Transfer} event for each burn.
      */
@@ -1409,8 +1410,9 @@ contract ERC721A is IERC721A {
                     startTokenId = tokenIds[i];
                     totalTokensLeft = totalTokens - i;
 
-                    // Check ownership of `startTokenId`.
+                    // Update `prevOwnershipPacked` and check ownership of `startTokenId`.
                     prevOwnershipPacked = _packedOwnershipOf(startTokenId);
+                    if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
                 }
 
                 // Updates startTokenId:
@@ -1457,8 +1459,16 @@ contract ERC721A is IERC721A {
                         // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
                         prevOwnershipPacked = nextOwnershipPacked;
 
-                        // Clear the slot to leverage consecutive burns optimization.
-                        delete _packedOwnerships[nextTokenId];
+                        // Updates nextTokenId:
+                        // - `address` to the last owner.
+                        // - `startTimestamp` to the timestamp of burning.
+                        // - `burned` to `true`.
+                        // - `nextInitialized` is left unchanged.
+                        _packedOwnerships[nextTokenId] = _packOwnershipData(
+                            from,
+                            (_BITMASK_BURNED | (nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED)) |
+                                _nextExtraData(from, address(0), nextOwnershipPacked)
+                        );
                     }
 
                     // Clear approvals and emit transfer event for `nextTokenId`.
