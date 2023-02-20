@@ -1374,7 +1374,7 @@ contract ERC721A is IERC721A {
         _sort(tokenIds);
 
         uint256 totalTokens = tokenIds.length;
-        uint256 totalTokensLeft;
+        uint256 totalTokensLeft = totalTokens;
         uint256 startTokenId = tokenIds[0];
         uint256 nextTokenId;
         uint256 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
