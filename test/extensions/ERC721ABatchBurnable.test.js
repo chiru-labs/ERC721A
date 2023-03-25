@@ -146,7 +146,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         await expect(query).to.be.revertedWith('OwnerQueryForNonexistentToken');
       });
 
-      it('cannot burn tokens with different owners', async function () {
+      it('can burn tokens with different owners', async function () {
         const tokenIdsToBurn = [this.notBurnedTokenId1, this.notBurnedTokenId2, this.notBurnedTokenId3];
 
         await this.erc721aBatchBurnable.connect(this.addr1).setApprovalForAll(this.spender.address, true);
@@ -154,20 +154,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
           .connect(this.addr1)
           .transferFrom(this.addr1.address, this.spender.address, this.notBurnedTokenId2);
 
-        await expect(
-          this.erc721aBatchBurnable.connect(this.spender).batchBurn(tokenIdsToBurn.slice(0, 2))
-        ).to.be.revertedWith('TransferFromIncorrectOwner');
-        // Expect also consecutive ids to revert
-        await expect(
-          this.erc721aBatchBurnable.connect(this.spender).batchBurn(tokenIdsToBurn.slice(1))
-        ).to.be.revertedWith('TransferFromIncorrectOwner');
+        const totalBurnedBefore = (await this.erc721aBatchBurnable.totalBurned()).toNumber();
+        await this.erc721aBatchBurnable.connect(this.spender).batchBurn(tokenIdsToBurn);
 
-        await expect(
-          this.erc721aBatchBurnable.connect(this.spender).batchBurn([this.notBurnedTokenId1])
-        ).to.not.be.reverted;
-        await expect(
-          this.erc721aBatchBurnable.connect(this.spender).batchBurn([this.notBurnedTokenId2])
-        ).to.not.be.reverted;
+        expect(await this.erc721aBatchBurnable.exists(this.notBurnedTokenId1)).to.be.false;
+        expect(await this.erc721aBatchBurnable.exists(this.notBurnedTokenId2)).to.be.false;
+        expect(await this.erc721aBatchBurnable.exists(this.notBurnedTokenId3)).to.be.false;
+        expect((await this.erc721aBatchBurnable.totalBurned()).toNumber() - totalBurnedBefore).to.equal(3);
       });
 
       it('does not affect _totalMinted', async function () {
@@ -211,54 +204,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               initializedTokens.includes(i) ? this.addr1.address : ZERO_ADDRESS
             );
           }
-        });
-
-        it('with tokens burned and cleared', async function () {
-          const initializedToken = 15;
-
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(ZERO_ADDRESS);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(ZERO_ADDRESS);
-
-          // Initialize token
-          await this.erc721aBatchBurnable.initializeOwnershipAt(initializedToken);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(ZERO_ADDRESS);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(this.addr1.address);
-
-          // Burn tokens
-          await this.erc721aBatchBurnable.connect(this.addr1).batchBurn([initializedToken - 1, initializedToken]);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(
-            this.addr1.address
-          );
-
-          // Initialized tokens in a consecutive burn are cleared
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(ZERO_ADDRESS);
-        });
-
-        it('with tokens burned and updated', async function () {
-          const initializedToken = 15;
-          const extraData = 123;
-
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(ZERO_ADDRESS);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(ZERO_ADDRESS);
-
-          // Initialize token
-          await this.erc721aBatchBurnable.initializeOwnershipAt(initializedToken);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(ZERO_ADDRESS);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(this.addr1.address);
-
-          // Set extra data
-          await this.erc721aBatchBurnable.setExtraDataAt(initializedToken, extraData);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[3]).to.be.equal(extraData);
-
-          // Burn tokens
-          await this.erc721aBatchBurnable.connect(this.addr1).batchBurn([initializedToken - 1, initializedToken]);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(
-            this.addr1.address
-          );
-
-          // Initialized tokens in a consecutive burn are updated when nextData is not 0
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(this.addr1.address);
-          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[3]).to.be.equal(extraData);
         });
 
         it('with token before previously burnt token transferred and burned', async function () {

@@ -14,6 +14,6 @@ import './IERC721ABatchBurnable.sol';
  */
 abstract contract ERC721ABatchBurnable is ERC721ABurnable, IERC721ABatchBurnable {
     function batchBurn(uint256[] memory tokenIds) public virtual override {
-        _batchBurn(tokenIds, true);
+        _batchBurn(msg.sender, tokenIds, true);
     }
 }

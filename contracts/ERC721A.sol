@@ -587,8 +587,18 @@ contract ERC721A is IERC721A {
                 _BITMASK_NEXT_INITIALIZED | _nextExtraData(from, to, prevOwnershipPacked)
             );
 
-            // Updates next slot if necessary.
-            _updateTokenId(tokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
+            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
+            if (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
+                uint256 nextTokenId = tokenId + 1;
+                // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                if (_packedOwnerships[nextTokenId] == 0) {
+                    // If the next slot is within bounds.
+                    if (nextTokenId != _currentIndex) {
+                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
+                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                    }
+                }
+            }
         }
 
         // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
@@ -649,230 +659,9 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_batchTransferFrom(from, to, tokenIds, false)`.
-     */
-    function _batchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds
-    ) internal virtual {
-        _batchTransferFrom(from, to, tokenIds, false);
-    }
-
-    /**
-     * @dev Transfers `tokenIds` in batch from `from` to `to`.
-     * `tokenIds` should be provided sorted in ascending order to maximize efficiency.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenIds` tokens must be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move these tokens
-     * by either {approve} or {setApprovalForAll}.
-     *
-     * Emits a {Transfer} event for each transfer.
-     */
-    function _batchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds,
-        bool approvalCheck
-    ) internal virtual {
-        // Sort `tokenIds` to allow batching consecutive ids.
-        _sort(tokenIds);
-
-        // Mask `from` and `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
-        from = address(uint160(uint256(uint160(from)) & _BITMASK_ADDRESS));
-        uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
-        if (toMasked == 0) _revert(TransferToZeroAddress.selector);
-
-        uint256 totalTokens = tokenIds.length;
-        uint256 totalTokensLeft;
-        uint256 startTokenId;
-        uint256 nextTokenId;
-        uint256 prevOwnershipPacked;
-        uint256 nextOwnershipPacked;
-        uint256 quantity;
-
-        // If `approvalCheck` is true, check if the caller is approved for all token Ids.
-        // If approved for all, disable next approval checks. Otherwise keep them enabled
-        if (approvalCheck)
-            if (isApprovedForAll(from, _msgSenderERC721A())) approvalCheck = false;
-
-        _beforeTokenBatchTransfers(from, to, tokenIds);
-
-        // Underflow of the sender's balance is temporarily possible if the wrong set of token Ids is passed,
-        // but reverts afterwards when ownership is checked.
-        // The recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as `startTokenId` would have to be 2**256.
-        unchecked {
-            // We can directly increment and decrement the balances.
-            _packedAddressData[from] -= totalTokens;
-            _packedAddressData[to] += totalTokens;
-
-            for (uint256 i; i < totalTokens; ) {
-                startTokenId = tokenIds[i];
-                totalTokensLeft = totalTokens - i;
-
-                // Updates `prevOwnershipPacked` and check ownership of `startTokenId`.
-                prevOwnershipPacked = _packedOwnershipOf(startTokenId);
-                if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
-
-                // Updates startTokenId:
-                // - `address` to the next owner.
-                // - `startTimestamp` to the timestamp of transfering.
-                // - `burned` to `false`.
-                // - `nextInitialized` to `false`, to account for potential clearing of `startTokenId + 1`.
-                _packedOwnerships[startTokenId] = _packOwnershipData(to, _nextExtraData(from, to, prevOwnershipPacked));
-
-                // Clear approvals and emit transfer event for `startTokenId`.
-                _clearApprovalsAndEmitTransferEvent(from, toMasked, startTokenId, approvalCheck);
-
-                // Derive quantity by looping over the next consecutive `totalTokensLeft`.
-                for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
-                    nextTokenId = startTokenId + quantity;
-
-                    // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
-                    if (tokenIds[i + quantity] != nextTokenId) {
-                        _updateTokenId(
-                            nextTokenId,
-                            quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
-                            prevOwnershipPacked
-                        );
-                        break;
-                    }
-
-                    nextOwnershipPacked = _packedOwnerships[nextTokenId];
-
-                    // If the next slot's address is zero and not burned (i.e. packed value is zero).
-                    if (nextOwnershipPacked == 0) {
-                        // Revert if the next slot is out of bounds. Cannot be higher than `_currentIndex` since we're
-                        // incrementing in steps of one
-                        if (nextTokenId == _currentIndex) _revert(OwnerQueryForNonexistentToken.selector);
-                        // Otherwise we assume `from` owns `nextTokenId` and move on.
-                    } else {
-                        // Revert if `nextTokenId` is not owned by `from` or has been burned.
-                        if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
-                        if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
-
-                        // If there is extra data to preserve
-                        if (nextOwnershipPacked >> _BITPOS_EXTRA_DATA != 0) {
-                            // Updates `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
-                            prevOwnershipPacked = nextOwnershipPacked;
-
-                            // Updates `nextTokenId`
-                            // - `address` to the next owner.
-                            // - `startTimestamp` to the timestamp of transfering.
-                            // - `burned` to `false`.
-                            // - `nextInitialized` to `false`, to account for potential clearing of `nextTokenId + 1`.
-                            _packedOwnerships[nextTokenId] = _packOwnershipData(
-                                to,
-                                (nextOwnershipPacked & _BITMASK_NEXT_INITIALIZED) |
-                                    _nextExtraData(from, to, nextOwnershipPacked)
-                            );
-                        } else {
-                            // Otherwise clear slot of `nextTokenId` to leverage gas optimization of consecutive ids
-                            delete _packedOwnerships[nextTokenId];
-                        }
-                    }
-
-                    // Clear approvals and emit transfer event for `nextTokenId`.
-                    _clearApprovalsAndEmitTransferEvent(from, toMasked, nextTokenId, approvalCheck);
-                }
-
-                // Skip the next `quantity` tokens.
-                i += quantity;
-            }
-
-            // Update the tokenId subsequent to the last element in `tokenIds`
-            if (quantity == 1) {
-                _updateTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
-            } else {
-                _updateTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
-            }
-        }
-
-        _afterTokenBatchTransfers(from, to, tokenIds);
-    }
-
-    /**
-     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, false)`.
-     */
-    function _safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds
-    ) internal virtual {
-        _safeBatchTransferFrom(from, to, tokenIds, false);
-    }
-
-    /**
-     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, '', approvalCheck)`.
-     */
-    function _safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds,
-        bool approvalCheck
-    ) internal virtual {
-        _safeBatchTransferFrom(from, to, tokenIds, '', approvalCheck);
-    }
-
-    /**
-     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds, _data, false)`.
-     */
-    function _safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds,
-        bytes memory _data
-    ) internal virtual {
-        _safeBatchTransferFrom(from, to, tokenIds, _data, false);
-    }
-
-    /**
-     * @dev Safely transfers `tokenIds` in batch from `from` to `to`.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenIds` tokens must be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move these tokens
-     * by either {approve} or {setApprovalForAll}.
-     * - If `to` refers to a smart contract, it must implement
-     * {IERC721Receiver-onERC721Received}, which is called for each transferred token.
-     *
-     * Emits a {Transfer} event for each transfer.
-     */
-    function _safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds,
-        bytes memory _data,
-        bool approvalCheck
-    ) internal virtual {
-        _batchTransferFrom(from, to, tokenIds, approvalCheck);
-
-        uint256 tokenId;
-        uint256 totalTokens = tokenIds.length;
-        unchecked {
-            for (uint256 i; i < totalTokens; ++i) {
-                tokenId = tokenIds[i];
-                if (to.code.length != 0)
-                    if (!_checkContractOnERC721Received(from, to, tokenId, _data)) {
-                        _revert(TransferToNonERC721ReceiverImplementer.selector);
-                    }
-            }
-        }
-    }
-
-    /**
      * @dev Hook that is called before a set of serially-ordered token IDs
      * are about to be transferred. This includes minting.
      * And also called before burning one token.
-     * But not called on batch transfers and burns (see `_beforeTokenBatchTransfers`).
      *
      * `startTokenId` - the first token ID to be transferred.
      * `quantity` - the amount to be transferred.
@@ -896,7 +685,6 @@ contract ERC721A is IERC721A {
      * @dev Hook that is called after a set of serially-ordered token IDs
      * have been transferred. This includes minting.
      * And also called after one token has been burned.
-     * But not called on batch transfers and burns (see `_afterTokenBatchTransfers`).
      *
      * `startTokenId` - the first token ID to be transferred.
      * `quantity` - the amount to be transferred.
@@ -914,40 +702,6 @@ contract ERC721A is IERC721A {
         address to,
         uint256 startTokenId,
         uint256 quantity
-    ) internal virtual {}
-
-    /**
-     * @dev Hook that is called before a set of token IDs ordered in ascending order
-     * are about to be transferred. Only called on batch transfers and burns.
-     *
-     * `tokenIds` - the array of tokenIds to be transferred, ordered in ascending order.
-     *
-     * Calling conditions:
-     *
-     * - `from`'s `tokenIds` will be transferred to `to`.
-     * - Neither `from` and `to` can be zero.
-     */
-    function _beforeTokenBatchTransfers(
-        address from,
-        address to,
-        uint256[] memory tokenIds
-    ) internal virtual {}
-
-    /**
-     * @dev Hook that is called after a set of token IDs ordered in ascending order
-     * have been transferred. Only called on batch transfers and burns.
-     *
-     * `tokenIds` - the array of tokenIds transferred, ordered in ascending order.
-     *
-     * Calling conditions:
-     *
-     * - `from`'s `tokenIds` have been transferred to `to`.
-     * - Neither `from` and `to` can be zero.
-     */
-    function _afterTokenBatchTransfers(
-        address from,
-        address to,
-        uint256[] memory tokenIds
     ) internal virtual {}
 
     /**
@@ -976,31 +730,6 @@ contract ERC721A is IERC721A {
             }
             assembly {
                 revert(add(32, reason), mload(reason))
-            }
-        }
-    }
-
-    /**
-     * @dev Private function to handle updating ownership of `tokenId`. Used in `_batchTransferFrom`.
-     *
-     * `tokenId` - Token ID to initialize.
-     * `lastOwnershipPacked` - Slot of `tokenId - 1`
-     * `prevOwnershipPacked` - Last initialized slot before `tokenId`
-     */
-    function _updateTokenId(
-        uint256 tokenId,
-        uint256 lastOwnershipPacked,
-        uint256 prevOwnershipPacked
-    ) private {
-        // If the next slot may not have been initialized (i.e. `nextInitialized == false`).
-        if (lastOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
-            // If the next slot's address is zero and not burned (i.e. packed value is zero).
-            if (_packedOwnerships[tokenId] == 0) {
-                // If the next slot is within bounds.
-                if (tokenId != _currentIndex) {
-                    // Initialize the next slot to maintain correctness for `ownerOf(tokenId)`.
-                    _packedOwnerships[tokenId] = prevOwnershipPacked;
-                }
             }
         }
     }
@@ -1278,8 +1007,18 @@ contract ERC721A is IERC721A {
                 (_BITMASK_BURNED | _BITMASK_NEXT_INITIALIZED) | _nextExtraData(from, address(0), prevOwnershipPacked)
             );
 
-            // Updates next slot if necessary.
-            _updateTokenId(tokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
+            // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
+            if (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
+                uint256 nextTokenId = tokenId + 1;
+                // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                if (_packedOwnerships[nextTokenId] == 0) {
+                    // If the next slot is within bounds.
+                    if (nextTokenId != _currentIndex) {
+                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
+                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                    }
+                }
+            }
         }
 
         emit Transfer(from, address(0), tokenId);
@@ -1292,10 +1031,10 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_batchBurn(tokenIds, false)`.
+     * @dev Equivalent to `_batchBurn(msg.sender, tokenIds, false)`.
      */
     function _batchBurn(uint256[] memory tokenIds) internal virtual {
-        _batchBurn(tokenIds, false);
+        _batchBurn(_msgSenderERC721A(), tokenIds, false);
     }
 
     /**
@@ -1326,8 +1065,13 @@ contract ERC721A is IERC721A {
             // For checking if the `tokenIds` are strictly ascending.
             uint256 prevTokenId;
 
+            uint256 tokenId;
+            uint256 currTokenId;
+            uint256 prevOwnershipPacked;
+            address tokenOwner;
+            bool mayBurn;
             for (uint256 i; i != n; ) {
-                uint256 tokenId = tokenIds[i];
+                tokenId = tokenIds[i];
 
                 // Revert `tokenId` is out of bounds.
                 if (_or(tokenId < _startTokenId(), stop <= tokenId)) revert OwnerQueryForNonexistentToken();
@@ -1336,8 +1080,6 @@ contract ERC721A is IERC721A {
                 if (i != 0)
                     if (tokenId <= prevTokenId) revert TokenIdsNotStrictlyAscending();
 
-                // The initialized packed ownership slot's value.
-                uint256 prevOwnershipPacked;
                 // Scan backwards for an initialized packed ownership slot.
                 // ERC721A's invariant guarantees that there will always be an initialized slot as long as
                 // the start of the backwards scan falls within `[_startTokenId() .. _nextTokenId())`.
@@ -1347,13 +1089,14 @@ contract ERC721A is IERC721A {
                 if (prevOwnershipPacked & _BITMASK_BURNED != 0) revert OwnerQueryForNonexistentToken();
 
                 // Unpack the `tokenOwner` from bits [0..159] of `prevOwnershipPacked`.
-                address tokenOwner = address(uint160(prevOwnershipPacked));
+                tokenOwner = address(uint160(prevOwnershipPacked));
 
-                // Check if the burner is either the owner or an approved operator for all the
-                bool mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+                // Check if the burner is either the owner or an approved operator for all tokens
+                mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
 
+                currTokenId = tokenId;
                 uint256 offset;
-                uint256 currTokenId = tokenId;
+                uint256 lastPackedOwnedship;
                 do {
                     // Revert if the burner is not authorized to burn the token.
                     if (!mayBurn)
@@ -1372,7 +1115,7 @@ contract ERC721A is IERC721A {
                         // Token ID is sequential.
                         tokenIds[i + offset] == currTokenId &&
                         // The packed ownership slot is not initialized.
-                        _packedOwnerships[currTokenId] == 0
+                        (lastPackedOwnedship = _packedOwnerships[currTokenId]) == 0
                 );
 
                 // Update the packed ownership for `tokenId` in ERC721A's storage.
@@ -1383,7 +1126,8 @@ contract ERC721A is IERC721A {
 
                 // If the slot after the mini batch is neither out of bounds, nor initialized.
                 if (currTokenId != stop)
-                    if (_packedOwnerships[currTokenId] == 0) _packedOwnerships[currTokenId] = prevOwnershipPacked;
+                    if (lastPackedOwnedship != 0 || _packedOwnerships[currTokenId] == 0)
+                        _packedOwnerships[currTokenId] = prevOwnershipPacked;
 
                 // Update the address data in ERC721A's storage.
                 //
