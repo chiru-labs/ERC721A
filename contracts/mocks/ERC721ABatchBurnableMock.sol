@@ -34,33 +34,37 @@ contract ERC721ABatchBurnableMock is ERC721A, DirectBurnBitSetterHelper {
         return _numberBurned(owner);
     }
 
-    function bulkBurn(address burner, uint256[] memory tokenIds, bool approvalCheck) public {
+    function bulkBurn(
+        address burner,
+        uint256[] memory tokenIds,
+        bool approvalCheck
+    ) public {
         _batchBurn(burner, tokenIds, approvalCheck);
     }
-}
 
-    }
-        }
-            }
-    function batchBurnUnoptimized(uint256[] memory tokenIds) public {
-                tokenId = tokenIds[i];
-                burn(tokenId);
-            for (uint256 i; i < tokenIds.length; ++i) {
-            uint256 tokenId;
-        unchecked {
-
-    }
-        _setExtraDataAt(index, extraData);
-    function setExtraDataAt(uint256 index, uint24 extraData) public {
-
-    }
-        return previousExtraData;
-    ) internal view virtual override returns (uint24) {
-        uint24 previousExtraData
-        address,
-        address,
-    function _extraData(
-
-    }
     function initializeOwnershipAt(uint256 index) public {
         _initializeOwnershipAt(index);
+    }
+
+    function _extraData(
+        address,
+        address,
+        uint24 previousExtraData
+    ) internal view virtual override returns (uint24) {
+        return previousExtraData;
+    }
+
+    function setExtraDataAt(uint256 index, uint24 extraData) public {
+        _setExtraDataAt(index, extraData);
+    }
+
+    function batchBurnUnoptimized(uint256[] memory tokenIds) public {
+        unchecked {
+            uint256 tokenId;
+            for (uint256 i; i < tokenIds.length; ++i) {
+                tokenId = tokenIds[i];
+                _burn(tokenId);
+            }
+        }
+    }
+}
