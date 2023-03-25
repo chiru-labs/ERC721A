@@ -1031,7 +1031,7 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_batchBurn(tokenIds, false)`.
+     * @dev Equivalent to `_batchBurn(msg.sender, tokenIds, false)`.
      */
     function _batchBurn(uint256[] memory tokenIds) internal virtual {
         _batchBurn(_msgSenderERC721A(), tokenIds, false);
