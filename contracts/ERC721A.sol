@@ -589,8 +589,15 @@ contract ERC721A is IERC721A {
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
-                // Updates next slot if necessary.
-                _updateTokenId(tokenId + 1, prevOwnershipPacked, _currentIndex);
+                uint256 nextTokenId = tokenId + 1;
+                // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                if (_packedOwnerships[nextTokenId] == 0) {
+                    // If the next slot is within bounds.
+                    if (nextTokenId != _currentIndex) {
+                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
+                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                    }
+                }
             }
         }
 
@@ -723,28 +730,6 @@ contract ERC721A is IERC721A {
             }
             assembly {
                 revert(add(32, reason), mload(reason))
-            }
-        }
-    }
-
-    /**
-     * @dev Private function to handle updating ownership of `tokenId`. Used in `_batchTransferFrom`.
-     *
-     * `tokenId` - Token ID to initialize.
-     * `prevOwnershipPacked` - Last initialized slot before `tokenId`
-     * `currentIndex` - Value of `_currentIndex`, cached in batch operations
-     */
-    function _updateTokenId(
-        uint256 tokenId,
-        uint256 prevOwnershipPacked,
-        uint256 currentIndex
-    ) private {
-        // If the next slot's address is zero and not burned (i.e. packed value is zero).
-        if (_packedOwnerships[tokenId] == 0) {
-            // If the next slot is within bounds.
-            if (tokenId != currentIndex) {
-                // Initialize the next slot to maintain correctness for `ownerOf(tokenId)`.
-                _packedOwnerships[tokenId] = prevOwnershipPacked;
             }
         }
     }
@@ -1024,8 +1009,15 @@ contract ERC721A is IERC721A {
 
             // If the next slot may not have been initialized (i.e. `nextInitialized == false`) .
             if (prevOwnershipPacked & _BITMASK_NEXT_INITIALIZED == 0) {
-                // Updates next slot if necessary.
-                _updateTokenId(tokenId + 1, prevOwnershipPacked, _currentIndex);
+                uint256 nextTokenId = tokenId + 1;
+                // If the next slot's address is zero and not burned (i.e. packed value is zero).
+                if (_packedOwnerships[nextTokenId] == 0) {
+                    // If the next slot is within bounds.
+                    if (nextTokenId != _currentIndex) {
+                        // Initialize the next slot to maintain correctness for `ownerOf(tokenId + 1)`.
+                        _packedOwnerships[nextTokenId] = prevOwnershipPacked;
+                    }
+                }
             }
         }
 
@@ -1128,7 +1120,9 @@ contract ERC721A is IERC721A {
                     (block.timestamp << _BITPOS_START_TIMESTAMP) |
                     uint256(uint160(tokenOwner));
 
-                _updateTokenId(currTokenId, prevOwnershipPacked, stop);
+                // If the slot after the mini batch is neither out of bounds, nor initialized.
+                if (currTokenId != stop)
+                    if (_packedOwnerships[currTokenId] == 0) _packedOwnerships[currTokenId] = prevOwnershipPacked;
 
                 // Update the address data in ERC721A's storage.
                 //
