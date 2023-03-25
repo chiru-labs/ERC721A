@@ -25,7 +25,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         this.numTestTokens = 20;
         this.totalBurned = 6;
         this.burnedTokenIds1 = [2, 3, 4];
-        this.burnedTokenIds2 = [7, 10, 9];
+        this.burnedTokenIds2 = [7, 9, 10];
         this.notBurnedTokenId1 = 1;
         this.notBurnedTokenId2 = 5;
         this.notBurnedTokenId3 = 6;
@@ -36,7 +36,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         await this.erc721aBatchBurnable['safeMint(address,uint256)'](this.addr1.address, this.numTestTokens);
         await this.erc721aBatchBurnable
           .connect(this.addr1)
-          .batchBurn([...this.burnedTokenIds2, ...this.burnedTokenIds1]);
+          .batchBurn([...this.burnedTokenIds1, ...this.burnedTokenIds2]);
 
         // Manually initialize `this.initializedToken`
         await this.erc721aBatchBurnable.initializeOwnershipAt(this.initializedToken);
