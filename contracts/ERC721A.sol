@@ -1310,7 +1310,11 @@ contract ERC721A is IERC721A {
      *
      * Emits a {Transfer} event for each token burned.
      */
-    function _batchBurn(address burner, uint256[] memory tokenIds, bool approvalCheck) internal virtual {
+    function _batchBurn(
+        address burner,
+        uint256[] memory tokenIds,
+        bool approvalCheck
+    ) internal virtual {
         // We can use unchecked as the length of `tokenIds` is bounded
         // to a small number by the max block gas limit.
         unchecked {
@@ -1329,7 +1333,7 @@ contract ERC721A is IERC721A {
                 if (_or(tokenId < _startTokenId(), stop <= tokenId)) revert OwnerQueryForNonexistentToken();
 
                 // Revert if `tokenIds` is not strictly ascending.
-                if (i != 0) 
+                if (i != 0)
                     if (tokenId <= prevTokenId) revert TokenIdsNotStrictlyAscending();
 
                 // The initialized packed ownership slot's value.
@@ -1372,15 +1376,14 @@ contract ERC721A is IERC721A {
                 );
 
                 // Update the packed ownership for `tokenId` in ERC721A's storage.
-                _packedOwnerships[tokenId] = 
-                    _BITMASK_BURNED | 
-                    (block.timestamp << _BITPOS_START_TIMESTAMP) | 
+                _packedOwnerships[tokenId] =
+                    _BITMASK_BURNED |
+                    (block.timestamp << _BITPOS_START_TIMESTAMP) |
                     uint256(uint160(tokenOwner));
 
                 // If the slot after the mini batch is neither out of bounds, nor initialized.
                 if (currTokenId != stop)
-                    if (_packedOwnerships[currTokenId] == 0)
-                        _packedOwnerships[currTokenId] = prevOwnershipPacked;
+                    if (_packedOwnerships[currTokenId] == 0) _packedOwnerships[currTokenId] = prevOwnershipPacked;
 
                 // Update the address data in ERC721A's storage.
                 //
