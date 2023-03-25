@@ -1212,49 +1212,6 @@ contract ERC721A is IERC721A {
         emit Approval(owner, to, tokenId);
     }
 
-    /**
-     * @dev Private function to handle clearing approvals and emitting transfer Event for a given `tokenId`.
-     * Used in `_batchTransferFrom`.
-     *
-     * `from` - Previous owner of the given token ID.
-     * `toMasked` - Target address that will receive the token.
-     * `tokenId` - Token ID to be transferred.
-     * `isApprovedForAll_` - Whether the caller is approved for all token IDs.
-     */
-    function _clearApprovalsAndEmitTransferEvent(
-        address from,
-        uint256 toMasked,
-        uint256 tokenId,
-        bool approvalCheck
-    ) private {
-        (uint256 approvedAddressSlot, address approvedAddress) = _getApprovedSlotAndAddress(tokenId);
-
-        if (approvalCheck) {
-            if (!_isSenderApprovedOrOwner(approvedAddress, from, _msgSenderERC721A()))
-                _revert(TransferCallerNotOwnerNorApproved.selector);
-        }
-
-        // Clear approvals from the previous owner.
-        assembly {
-            if approvedAddress {
-                // This is equivalent to `delete _tokenApprovals[tokenId]`.
-                sstore(approvedAddressSlot, 0)
-            }
-        }
-
-        assembly {
-            // Emit the `Transfer` event.
-            log4(
-                0, // Start of data (0, since no data).
-                0, // End of data (0, since no data).
-                _TRANSFER_EVENT_SIGNATURE, // Signature.
-                from, // `from`.
-                toMasked, // `to`.
-                tokenId // `tokenId`.
-            )
-        }
-    }
-
     // =============================================================
     //                        BURN OPERATIONS
     // =============================================================
@@ -1332,6 +1289,13 @@ contract ERC721A is IERC721A {
         unchecked {
             _burnCounter++;
         }
+    }
+
+    /**
+     * @dev Equivalent to `_batchBurn(tokenIds, false)`.
+     */
+    function _batchBurn(uint256[] memory tokenIds) internal virtual {
+        _batchBurn(tokenIds, false);
     }
 
     /**
@@ -1433,13 +1397,6 @@ contract ERC721A is IERC721A {
             // Increase the `_burnCounter` in ERC721A's storage.
             _burnCounter += n;
         }
-    }
-
-    /**
-     * @dev Equivalent to `_batchBurn(tokenIds, false)`.
-     */
-    function _batchBurn(uint256[] memory tokenIds) internal virtual {
-        _batchBurn(tokenIds, false);
     }
 
     // =============================================================
