@@ -4,9 +4,10 @@
 
 pragma solidity ^0.8.4;
 
-import '../extensions/ERC721ABatchBurnable.sol';
+import '../ERC721A.sol';
+import './DirectBurnBitSetterHelper.sol';
 
-contract ERC721ABatchBurnableMock is ERC721ABatchBurnable {
+contract ERC721ABatchBurnableMock is ERC721A, DirectBurnBitSetterHelper {
     constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
 
     function exists(uint256 tokenId) public view returns (bool) {
@@ -33,29 +34,33 @@ contract ERC721ABatchBurnableMock is ERC721ABatchBurnable {
         return _numberBurned(owner);
     }
 
-    function initializeOwnershipAt(uint256 index) public {
-        _initializeOwnershipAt(index);
-    }
-
-    function _extraData(
-        address,
-        address,
-        uint24 previousExtraData
-    ) internal view virtual override returns (uint24) {
-        return previousExtraData;
-    }
-
-    function setExtraDataAt(uint256 index, uint24 extraData) public {
-        _setExtraDataAt(index, extraData);
-    }
-
-    function batchBurnUnoptimized(uint256[] memory tokenIds) public {
-        unchecked {
-            uint256 tokenId;
-            for (uint256 i; i < tokenIds.length; ++i) {
-                tokenId = tokenIds[i];
-                burn(tokenId);
-            }
-        }
+    function bulkBurn(address burner, uint256[] memory tokenIds, bool approvalCheck) public {
+        _batchBurn(burner, tokenIds, approvalCheck);
     }
 }
+
+    }
+        }
+            }
+    function batchBurnUnoptimized(uint256[] memory tokenIds) public {
+                tokenId = tokenIds[i];
+                burn(tokenId);
+            for (uint256 i; i < tokenIds.length; ++i) {
+            uint256 tokenId;
+        unchecked {
+
+    }
+        _setExtraDataAt(index, extraData);
+    function setExtraDataAt(uint256 index, uint24 extraData) public {
+
+    }
+        return previousExtraData;
+    ) internal view virtual override returns (uint24) {
+        uint24 previousExtraData
+        address,
+        address,
+    function _extraData(
+
+    }
+    function initializeOwnershipAt(uint256 index) public {
+        _initializeOwnershipAt(index);

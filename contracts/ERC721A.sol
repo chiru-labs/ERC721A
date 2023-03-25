@@ -1335,149 +1335,111 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_batchBurn(tokenIds, false)`.
-     */
-    function _batchBurn(uint256[] memory tokenIds) internal virtual {
-        _batchBurn(tokenIds, false);
-    }
-
-    /**
-     * @dev Destroys `tokenIds` in batch.
-     * The approval is cleared when the tokens are burned.
-     * `tokenIds` should be provided sorted in ascending order to maximize efficiency.
+     * @dev Destroys `tokenIds`.
+     * The approval is cleared when the token is burned.
      *
      * Requirements:
      *
      * - `tokenIds` must exist.
-     * - `tokenIds` must be owned by the same address.
+     * - `tokenIds` must be strictly ascending.
+     * - `burner` must be the owner or approved to burn each of the token.
      *
-     * Emits a {Transfer} event for each burn.
+     * Emits a {Transfer} event for each token burned.
      */
-    function _batchBurn(uint256[] memory tokenIds, bool approvalCheck) internal virtual {
-        // Sort `tokenIds` to allow batching consecutive ids.
-        _sort(tokenIds);
-
-        uint256 totalTokens = tokenIds.length;
-        uint256 totalTokensLeft = totalTokens;
-        uint256 startTokenId = tokenIds[0];
-        uint256 nextTokenId;
-        uint256 prevOwnershipPacked = _packedOwnershipOf(startTokenId);
-        uint256 nextOwnershipPacked;
-        uint256 quantity;
-
-        address from = address(uint160(prevOwnershipPacked));
-
-        // If `approvalCheck` is true, check if the caller is approved for all token Ids.
-        // If approved for all, disable next approval checks. Otherwise keep them enabled
-        if (approvalCheck)
-            if (isApprovedForAll(from, _msgSenderERC721A())) approvalCheck = false;
-
-        _beforeTokenBatchTransfers(from, address(0), tokenIds);
-
-        // Underflow of the sender's balance is temporarily possible if the wrong set of token Ids is passed,
-        // but reverts afterwards when ownership is checked.
-        // The recipient's balance can't realistically overflow.
-        // Counter overflow is incredibly unrealistic as `startTokenId` would have to be 2**256.
+    function _batchBurn(address burner, uint256[] memory tokenIds, bool approvalCheck) internal virtual {
+        // We can use unchecked as the length of `tokenIds` is bounded
+        // to a small number by the max block gas limit.
         unchecked {
-            // Updates:
-            // - `balance -= totalTokens`.
-            // - `numberBurned += totalTokens`.
-            //
-            // We can directly decrement the balance, and increment the number burned.
-            // This is equivalent to `packed -= totalTokens; packed += totalTokens << _BITPOS_NUMBER_BURNED;`.
-            _packedAddressData[from] += (totalTokens << _BITPOS_NUMBER_BURNED) - totalTokens;
+            // The next `tokenId` to be minted (i.e. `_nextTokenId()`).
+            uint256 stop = _currentIndex;
 
-            for (uint256 i; i < totalTokens; ) {
-                // Skip during first loop, where this logic has already been executed.
-                if (i != 0) {
-                    startTokenId = tokenIds[i];
-                    totalTokensLeft = totalTokens - i;
+            uint256 n = tokenIds.length;
 
-                    // Update `prevOwnershipPacked` and check ownership of `startTokenId`.
-                    prevOwnershipPacked = _packedOwnershipOf(startTokenId);
-                    if (address(uint160(prevOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
-                }
+            // For checking if the `tokenIds` are strictly ascending.
+            uint256 prevTokenId;
 
-                // Updates startTokenId:
-                // - `address` to the last owner.
-                // - `startTimestamp` to the timestamp of burning.
-                // - `burned` to `true`.
-                // - `nextInitialized` to `false`, to account for potential clearing of `startTokenId + 1`.
-                _packedOwnerships[startTokenId] = _packOwnershipData(
-                    from,
-                    _BITMASK_BURNED | _nextExtraData(from, address(0), prevOwnershipPacked)
+            for (uint256 i; i != n; ) {
+                uint256 tokenId = tokenIds[i];
+
+                // Revert `tokenId` is out of bounds.
+                if (_or(tokenId < _startTokenId(), stop <= tokenId)) revert OwnerQueryForNonexistentToken();
+
+                // Revert if `tokenIds` is not strictly ascending.
+                if (i != 0) 
+                    if (tokenId <= prevTokenId) revert TokenIdsNotStrictlyAscending();
+
+                // The initialized packed ownership slot's value.
+                uint256 prevOwnershipPacked;
+                // Scan backwards for an initialized packed ownership slot.
+                // ERC721A's invariant guarantees that there will always be an initialized slot as long as
+                // the start of the backwards scan falls within `[_startTokenId() .. _nextTokenId())`.
+                for (uint256 j = tokenId; (prevOwnershipPacked = _packedOwnerships[j]) == 0; ) --j;
+
+                // If the initialized slot is burned, revert.
+                if (prevOwnershipPacked & _BITMASK_BURNED != 0) revert OwnerQueryForNonexistentToken();
+
+                // Unpack the `tokenOwner` from bits [0..159] of `prevOwnershipPacked`.
+                address tokenOwner = address(uint160(prevOwnershipPacked));
+
+                // Check if the burner is either the owner or an approved operator for all the
+                bool mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+
+                uint256 offset;
+                uint256 currTokenId = tokenId;
+                do {
+                    // Revert if the burner is not authorized to burn the token.
+                    if (!mayBurn)
+                        if (getApproved(currTokenId) != burner) revert TransferCallerNotOwnerNorApproved();
+                    // Call the hook.
+                    _beforeTokenTransfers(tokenOwner, address(0), currTokenId, 1);
+                    // Emit the `Transfer` event for burn.
+                    emit Transfer(tokenOwner, address(0), currTokenId);
+                    // Call the hook.
+                    _afterTokenTransfers(tokenOwner, address(0), currTokenId, 1);
+                    // Increment `offset` and update `currTokenId`.
+                    currTokenId = tokenId + (++offset);
+                } while (
+                    // Neither out of bounds, nor at the end of `tokenIds`.
+                    !_or(currTokenId == stop, i + offset == n) &&
+                        // Token ID is sequential.
+                        tokenIds[i + offset] == currTokenId &&
+                        // The packed ownership slot is not initialized.
+                        _packedOwnerships[currTokenId] == 0
                 );
 
-                // Clear approvals and emit transfer event for `startTokenId`.
-                _clearApprovalsAndEmitTransferEvent(from, 0, startTokenId, approvalCheck);
+                // Update the packed ownership for `tokenId` in ERC721A's storage.
+                _packedOwnerships[tokenId] = 
+                    _BITMASK_BURNED | 
+                    (block.timestamp << _BITPOS_START_TIMESTAMP) | 
+                    uint256(uint160(tokenOwner));
 
-                // Derive quantity by looping over the next consecutive `totalTokensLeft`.
-                for (quantity = 1; quantity < totalTokensLeft; ++quantity) {
-                    nextTokenId = startTokenId + quantity;
+                // If the slot after the mini batch is neither out of bounds, nor initialized.
+                if (currTokenId != stop)
+                    if (_packedOwnerships[currTokenId] == 0)
+                        _packedOwnerships[currTokenId] = prevOwnershipPacked;
 
-                    // If `nextTokenId` is not consecutive, update `nextTokenId` and break from the loop.
-                    if (tokenIds[i + quantity] != nextTokenId) {
-                        _updateTokenId(
-                            nextTokenId,
-                            quantity == 1 ? prevOwnershipPacked : nextOwnershipPacked,
-                            prevOwnershipPacked
-                        );
-                        break;
-                    }
+                // Update the address data in ERC721A's storage.
+                //
+                // Note that this update has to be in the loop as tokens
+                // can be burned by an operator that is not the token owner.
+                _packedAddressData[tokenOwner] += (offset << _BITPOS_NUMBER_BURNED) - offset;
 
-                    nextOwnershipPacked = _packedOwnerships[nextTokenId];
+                // Advance `i` by `offset`, the number of tokens burned in the mini batch.
+                i += offset;
 
-                    // If the next slot's address is zero and not burned (i.e. packed value is zero).
-                    if (nextOwnershipPacked == 0) {
-                        // Revert if the next slot is out of bounds. Cannot be higher than `_currentIndex` since we're
-                        // incrementing in steps of one
-                        if (nextTokenId == _currentIndex) _revert(OwnerQueryForNonexistentToken.selector);
-                        // Otherwise we assume `from` owns `nextTokenId` and move on.
-                    } else {
-                        // Revert if `nextTokenId` is not owned by `from` or has been burned.
-                        if (address(uint160(nextOwnershipPacked)) != from) _revert(TransferFromIncorrectOwner.selector);
-                        if (nextOwnershipPacked & _BITMASK_BURNED != 0) _revert(OwnerQueryForNonexistentToken.selector);
-
-                        // If there is extra data to preserve
-                        if (nextOwnershipPacked >> _BITPOS_EXTRA_DATA != 0) {
-                            // Update `prevOwnershipPacked` with last initialized `nextOwnershipPacked`.
-                            prevOwnershipPacked = nextOwnershipPacked;
-
-                            // Updates `nextTokenId`
-                            // - `address` to the last owner.
-                            // - `startTimestamp` to the timestamp of burning.
-                            // - `burned` to `true`.
-                            // - `nextInitialized` to `false`, to account for potential clearing of `nextTokenId + 1`.
-                            _packedOwnerships[nextTokenId] = _packOwnershipData(
-                                from,
-                                _BITMASK_BURNED | _nextExtraData(from, address(0), nextOwnershipPacked)
-                            );
-                        } else {
-                            // Otherwise clear slot of `nextTokenId` to leverage gas optimization of consecutive ids
-                            delete _packedOwnerships[nextTokenId];
-                        }
-                    }
-
-                    // Clear approvals and emit transfer event for `nextTokenId`.
-                    _clearApprovalsAndEmitTransferEvent(from, 0, nextTokenId, approvalCheck);
-                }
-
-                // Skip the next `quantity` tokens.
-                i += quantity;
+                // Set the `prevTokenId` for checking that the `tokenIds` is strictly ascending.
+                prevTokenId = currTokenId - 1;
             }
-
-            // Update the tokenId subsequent to the last element in `tokenIds`
-            if (quantity == 1) {
-                _updateTokenId(startTokenId + 1, prevOwnershipPacked, prevOwnershipPacked);
-            } else {
-                _updateTokenId(nextTokenId + 1, nextOwnershipPacked, prevOwnershipPacked);
-            }
-
-            // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
-            _burnCounter += totalTokens;
+            // Increase the `_burnCounter` in ERC721A's storage.
+            _burnCounter += n;
         }
+    }
 
-        _afterTokenBatchTransfers(from, address(0), tokenIds);
+    /**
+     * @dev Equivalent to `_batchBurn(tokenIds, false)`.
+     */
+    function _batchBurn(uint256[] memory tokenIds) internal virtual {
+        _batchBurn(tokenIds, false);
     }
 
     // =============================================================
@@ -1597,36 +1559,12 @@ contract ERC721A is IERC721A {
         }
     }
 
-    /// @dev Sorts the array in-place with insertion sort.
-    function _sort(uint256[] memory a) internal pure {
-        /// @solidity memory-safe-assembly
+    /**
+     * @dev Branchless or.
+     */
+    function _or(bool a, bool b) private pure returns (bool c) {
         assembly {
-            let n := mload(a) // Length of `a`.
-            mstore(a, 0) // For insertion sort's inner loop to terminate.
-            let h := add(a, shl(5, n)) // High slot.
-            let s := 0x20
-            let w := not(31)
-            // prettier-ignore
-            for { let i := add(a, s) } 1 {} {
-                i := add(i, s)
-                // prettier-ignore
-                if gt(i, h) { break }
-                let k := mload(i) // Key.
-                let j := add(i, w) // The slot before the current slot.
-                let v := mload(j) // The value of `j`.
-                // prettier-ignore
-                if iszero(gt(v, k)) { continue }
-                // prettier-ignore
-                for {} 1 {} {
-                    mstore(add(j, s), v)
-                    j := add(j, w) // `sub(j, 0x20)`.
-                    v := mload(j)
-                    // prettier-ignore
-                    if iszero(gt(v, k)) { break }
-                }
-                mstore(add(j, s), k)
-            }
-            mstore(a, n) // Restore the length of `a`.
+            c := or(a, b)
         }
     }
 }
