@@ -1065,8 +1065,13 @@ contract ERC721A is IERC721A {
             // For checking if the `tokenIds` are strictly ascending.
             uint256 prevTokenId;
 
+            uint256 tokenId;
+            uint256 currTokenId;
+            uint256 prevOwnershipPacked;
+            address tokenOwner;
+            bool mayBurn;
             for (uint256 i; i != n; ) {
-                uint256 tokenId = tokenIds[i];
+                tokenId = tokenIds[i];
 
                 // Revert `tokenId` is out of bounds.
                 if (_or(tokenId < _startTokenId(), stop <= tokenId)) revert OwnerQueryForNonexistentToken();
@@ -1075,8 +1080,6 @@ contract ERC721A is IERC721A {
                 if (i != 0)
                     if (tokenId <= prevTokenId) revert TokenIdsNotStrictlyAscending();
 
-                // The initialized packed ownership slot's value.
-                uint256 prevOwnershipPacked;
                 // Scan backwards for an initialized packed ownership slot.
                 // ERC721A's invariant guarantees that there will always be an initialized slot as long as
                 // the start of the backwards scan falls within `[_startTokenId() .. _nextTokenId())`.
@@ -1086,13 +1089,13 @@ contract ERC721A is IERC721A {
                 if (prevOwnershipPacked & _BITMASK_BURNED != 0) revert OwnerQueryForNonexistentToken();
 
                 // Unpack the `tokenOwner` from bits [0..159] of `prevOwnershipPacked`.
-                address tokenOwner = address(uint160(prevOwnershipPacked));
+                tokenOwner = address(uint160(prevOwnershipPacked));
 
-                // Check if the burner is either the owner or an approved operator for all the
-                bool mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+                // Check if the burner is either the owner or an approved operator for all tokens
+                mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
 
+                currTokenId = tokenId;
                 uint256 offset;
-                uint256 currTokenId = tokenId;
                 do {
                     // Revert if the burner is not authorized to burn the token.
                     if (!mayBurn)
