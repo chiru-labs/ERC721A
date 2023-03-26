@@ -1106,7 +1106,7 @@ contract ERC721A is IERC721A {
                 do {
                     // Revert if the burner is not authorized to burn the token.
                     if (!mayBurn)
-                        if (getApproved(currTokenId) != burner) revert TransferCallerNotOwnerNorApproved();
+                        if (_tokenApprovals[currTokenId].value != burner) revert TransferCallerNotOwnerNorApproved();
                     // Call the hook.
                     _beforeTokenTransfers(tokenOwner, address(0), currTokenId, 1);
                     // Emit the `Transfer` event for burn.
@@ -1133,8 +1133,9 @@ contract ERC721A is IERC721A {
                 // If the slot after the mini batch is neither out of bounds, nor initialized.
                 if (currTokenId != stop)
                     if (lastOwnershipPacked == 0)
-                        // If `lastOwnershipPacked == 0` we didn't break the loop due to an initialized slot.
-                        if (_packedOwnerships[currTokenId] == 0) _packedOwnerships[currTokenId] = prevOwnershipPacked;
+                        if (_packedOwnerships[currTokenId] == 0)
+                            // If `lastOwnershipPacked == 0` we didn't break the loop due to an initialized slot.
+                            _packedOwnerships[currTokenId] = prevOwnershipPacked;
 
                 // Update the address data in ERC721A's storage.
                 //
