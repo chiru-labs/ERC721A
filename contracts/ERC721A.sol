@@ -1039,7 +1039,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Destroys `tokenIds`.
-     * The approval is cleared when the token is burned.
+     * Approvals are not cleared when tokenIds are burned.
      *
      * Requirements:
      *
