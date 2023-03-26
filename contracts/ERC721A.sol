@@ -1039,7 +1039,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Destroys `tokenIds`.
-     * The approval is cleared when the token is burned.
+     * Approvals are not cleared when tokenIds are burned.
      *
      * Requirements:
      *
@@ -1068,6 +1068,7 @@ contract ERC721A is IERC721A {
             uint256 tokenId;
             uint256 currTokenId;
             uint256 prevOwnershipPacked;
+            address prevTokenOwner;
             address tokenOwner;
             bool mayBurn;
             for (uint256 i; i != n; ) {
@@ -1091,8 +1092,13 @@ contract ERC721A is IERC721A {
                 // Unpack the `tokenOwner` from bits [0..159] of `prevOwnershipPacked`.
                 tokenOwner = address(uint160(prevOwnershipPacked));
 
-                // Check if the burner is either the owner or an approved operator for all tokens
-                mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+                if (tokenOwner != prevTokenOwner) {
+                    // Update `prevTokenOwner`.
+                    prevTokenOwner = tokenOwner;
+
+                    // Check if the burner is either the owner or an approved operator for all tokens
+                    mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+                }
 
                 currTokenId = tokenId;
                 uint256 offset;
@@ -1114,9 +1120,7 @@ contract ERC721A is IERC721A {
                         // Token ID is sequential.
                         tokenIds[i + offset] == currTokenId &&
                         // The packed ownership slot is not initialized.
-                        (_packedOwnerships[currTokenId] == 0 ||
-                            // or if initialized, it is set to 0.
-                            (_packedOwnerships[currTokenId] = 0) == 0)
+                        _packedOwnerships[currTokenId] == 0
                 );
 
                 // Update the packed ownership for `tokenId` in ERC721A's storage.
