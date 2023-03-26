@@ -1120,7 +1120,7 @@ contract ERC721A is IERC721A {
                         // Token ID is sequential.
                         tokenIds[i + offset] == currTokenId &&
                         // The packed ownership slot is not initialized.
-                        (_packedOwnerships[currTokenId] == 0)
+                        _packedOwnerships[currTokenId] == 0
                 );
 
                 // Update the packed ownership for `tokenId` in ERC721A's storage.
