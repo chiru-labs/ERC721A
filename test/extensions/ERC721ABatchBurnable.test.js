@@ -104,6 +104,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         await expect(query).to.be.revertedWith('OwnerQueryForNonexistentToken');
       });
 
+      it('can only burn tokenIds when provided in ascending order', async function () {
+        const query = this.erc721aBatchBurnable
+          .connect(this.addr1)
+          .batchBurn([this.notBurnedTokenId3, this.notBurnedTokenId2, this.notBurnedTokenId1]);
+        await expect(query).to.be.revertedWith('TokenIdsNotStrictlyAscending');
+      });
+
       it('cannot burn a burned token', async function () {
         const query = this.erc721aBatchBurnable.connect(this.addr1).batchBurn(this.burnedTokenIds1);
         await expect(query).to.be.revertedWith('OwnerQueryForNonexistentToken');
