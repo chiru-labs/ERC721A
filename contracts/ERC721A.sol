@@ -1068,6 +1068,7 @@ contract ERC721A is IERC721A {
             uint256 tokenId;
             uint256 currTokenId;
             uint256 prevOwnershipPacked;
+            address prevTokenOwner;
             address tokenOwner;
             bool mayBurn;
             for (uint256 i; i != n; ) {
@@ -1091,8 +1092,13 @@ contract ERC721A is IERC721A {
                 // Unpack the `tokenOwner` from bits [0..159] of `prevOwnershipPacked`.
                 tokenOwner = address(uint160(prevOwnershipPacked));
 
-                // Check if the burner is either the owner or an approved operator for all tokens
-                mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+                if (tokenOwner != prevTokenOwner) {
+                    // Update `prevTokenOwner`.
+                    prevTokenOwner = tokenOwner;
+
+                    // Check if the burner is either the owner or an approved operator for all tokens
+                    mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+                }
 
                 currTokenId = tokenId;
                 uint256 offset;
