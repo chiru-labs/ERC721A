@@ -1380,7 +1380,7 @@ contract ERC721A is IERC721A {
                 do {
                     // Revert if the burner is not authorized to burn the token.
                     if (!mayBurn)
-                        if (getApproved(currTokenId) != burner) revert TransferCallerNotOwnerNorApproved();
+                        if (_tokenApprovals[currTokenId].value != burner) revert TransferCallerNotOwnerNorApproved();
                     // Call the hook.
                     _beforeTokenTransfers(tokenOwner, address(0), currTokenId, 1);
                     // Emit the `Transfer` event for burn.
