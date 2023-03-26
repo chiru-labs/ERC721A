@@ -34,12 +34,13 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         this.uninitializedToken = 13;
 
         await this.erc721aBatchBurnable['safeMint(address,uint256)'](this.addr1.address, this.numTestTokens);
+        // Manually initialize token IDs
+        await this.erc721aBatchBurnable.initializeOwnershipAt(3);
+        await this.erc721aBatchBurnable.initializeOwnershipAt(this.initializedToken);
+
         await this.erc721aBatchBurnable
           .connect(this.addr1)
           .batchBurn([...this.burnedTokenIds1, ...this.burnedTokenIds2]);
-
-        // Manually initialize `this.initializedToken`
-        await this.erc721aBatchBurnable.initializeOwnershipAt(this.initializedToken);
       });
 
       context('totalSupply()', function () {
@@ -204,6 +205,28 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               initializedTokens.includes(i) ? this.addr1.address : ZERO_ADDRESS
             );
           }
+        });
+
+        it('with tokens burned and cleared', async function () {
+          const initializedToken = 15;
+
+          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(ZERO_ADDRESS);
+          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(ZERO_ADDRESS);
+
+          // Initialize token
+          await this.erc721aBatchBurnable.initializeOwnershipAt(initializedToken);
+          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(ZERO_ADDRESS);
+          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(this.addr1.address);
+
+          // Burn tokens
+          await this.erc721aBatchBurnable.connect(this.addr1).batchBurn([initializedToken - 1, initializedToken]);
+          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(
+            this.addr1.address
+          );
+
+          // Initialized tokens in a consecutive burn are cleared
+          expect((await this.erc721aBatchBurnable.getOwnershipAt(3))[0]).to.be.equal(ZERO_ADDRESS);
+          expect((await this.erc721aBatchBurnable.getOwnershipAt(initializedToken))[0]).to.be.equal(ZERO_ADDRESS);
         });
 
         it('with token before previously burnt token transferred and burned', async function () {
