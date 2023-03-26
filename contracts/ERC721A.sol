@@ -1069,6 +1069,7 @@ contract ERC721A is IERC721A {
             uint256 currTokenId;
             uint256 prevOwnershipPacked;
             address prevTokenOwner;
+            uint256 lastOwnershipPacked;
             address tokenOwner;
             bool mayBurn;
             for (uint256 i; i != n; ) {
@@ -1120,7 +1121,7 @@ contract ERC721A is IERC721A {
                         // Token ID is sequential.
                         tokenIds[i + offset] == currTokenId &&
                         // The packed ownership slot is not initialized.
-                        _packedOwnerships[currTokenId] == 0
+                        (lastOwnershipPacked = _packedOwnerships[currTokenId]) == 0
                 );
 
                 // Update the packed ownership for `tokenId` in ERC721A's storage.
@@ -1131,7 +1132,9 @@ contract ERC721A is IERC721A {
 
                 // If the slot after the mini batch is neither out of bounds, nor initialized.
                 if (currTokenId != stop)
-                    if (_packedOwnerships[currTokenId] == 0) _packedOwnerships[currTokenId] = prevOwnershipPacked;
+                    if (lastOwnershipPacked == 0)
+                        // If `lastOwnershipPacked == 0` we didn't break the loop due to an initialized slot.
+                        if (_packedOwnerships[currTokenId] == 0) _packedOwnerships[currTokenId] = prevOwnershipPacked;
 
                 // Update the address data in ERC721A's storage.
                 //
