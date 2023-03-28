@@ -23,5 +23,5 @@
 </div></div>
 - **Links**
   - [<div class="s0cial"><i class="icon-github-circled"></i>Github</div>](https://github.com/chiru-labs/ERC721A)
-  - [<div class="s0cial"><i class="icon-twitter"></i>Twitter</div>](https://twitter.com/AzukiOfficial)
+  - [<div class="s0cial"><i class="icon-twitter"></i>Twitter</div>](https://twitter.com/Azuki)
   <div class="copyright"><a href="https://www.chirulabs.com/" target="_blank" title="Chiru Labs">© Chiru Labs 2022</a></div>
