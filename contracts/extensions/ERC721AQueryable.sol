@@ -195,7 +195,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                         // if `ownership.burned == false`.
                         case 0 {
                             // if `ownership.addr != address(0)`.
-                            // The `addr` already has it's upper 96 bits clearned,
+                            // The `addr` already has it's upper 96 bits cleared
                             // since it is written to memory with regular Solidity.
                             if mload(ownership) {
                                 currOwnershipAddr := mload(ownership)
