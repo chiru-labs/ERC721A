@@ -1051,7 +1051,7 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Called during each token transfer to set the 24bit `extraData` field.
-     * Intended to be overridden by the cosumer contract.
+     * Intended to be overridden by the consumer contract.
      *
      * `previousExtraData` - the value of `extraData` before transfer.
      *
