@@ -877,8 +877,6 @@ contract ERC721A is IERC721A {
         uint256 quantity,
         bytes memory _data
     ) internal virtual {
-        _mint(to, quantity);
-
         unchecked {
             if (to.code.length != 0) {
                 uint256 end = _currentIndex;
@@ -892,6 +890,8 @@ contract ERC721A is IERC721A {
                 if (_currentIndex != end) _revert(bytes4(0));
             }
         }
+
+        _mint(to, quantity);
     }
 
     /**
