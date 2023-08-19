@@ -1,0 +1,63 @@
+{
+  "name": "@openzeppelin/test-helpers",
+  "version": "0.5.15",
+  "description": "JavaScript testing helpers for Ethereum smart contract development.",
+  "main": "index.js",
+  "files": [
+    "src",
+    "index.js",
+    "configure.js"
+  ],
+  "scripts": {
+    "docs": "oz-docs",
+    "docs:watch": "npm run docs watch",
+    "lint": "eslint .",
+    "release": "scripts/release/release.sh",
+    "test": "./scripts/test.sh --network ganache",
+    "test-integration": "bash -x test-integration/run-all.sh",
+    "version": "scripts/release/update-changelog-release-date.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenZeppelin/openzeppelin-test-helpers.git"
+  },
+  "keywords": [
+    "ethereum",
+    "smart",
+    "contracts",
+    "test",
+    "solidity",
+    "zeppelin",
+    "openzeppelin"
+  ],
+  "author": "OpenZeppelin Community <maintainers@openzeppelin.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/OpenZeppelin/openzeppelin-test-helpers/issues"
+  },
+  "homepage": "https://github.com/OpenZeppelin/openzeppelin-test-helpers#readme",
+  "dependencies": {
+    "@openzeppelin/contract-loader": "^0.6.2",
+    "@truffle/contract": "^4.0.35",
+    "ansi-colors": "^3.2.3",
+    "chai": "^4.2.0",
+    "chai-bn": "^0.2.1",
+    "ethjs-abi": "^0.2.1",
+    "lodash.flatten": "^4.4.0",
+    "semver": "^5.6.0",
+    "web3": "^1.2.5",
+    "web3-utils": "^1.2.5"
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "ganache-cli": "^6.5.0",
+    "openzeppelin-docs-utils": "git+https://OpenZeppelin@github.com/OpenZeppelin/docs-utils.git",
+    "truffle": "^5.1.46"
+  }
+}

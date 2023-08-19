@@ -1,0 +1,48 @@
+{
+  "_ethers.alias": {
+    "elliptic.js": "browser-elliptic.js"
+  },
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {
+    "@ethersproject/bytes": "^5.0.9",
+    "@ethersproject/logger": "^5.0.8",
+    "@ethersproject/properties": "^5.0.7",
+    "elliptic": "6.5.3"
+  },
+  "description": "Elliptic curve library functions for the secp256k1 curve.",
+  "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
+  "gitHead": "e0ccafb140ad8a10353a49909b8d425ba71b87de",
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/signing-key",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "packages/signing-key",
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "sideEffects": false,
+  "tarballHash": "0x42e87243616abf38ed6b29c4bcfd93f9f81588e18eb13d84f2d634915321ecfd",
+  "types": "./lib/index.d.ts",
+  "version": "5.0.8"
+}

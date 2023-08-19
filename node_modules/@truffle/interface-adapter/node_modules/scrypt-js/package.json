@@ -1,0 +1,26 @@
+{
+  "name": "scrypt-js",
+  "version": "2.0.4",
+  "description": "The scrypt password-based key derivation function with asynchronous operation and ablility to be cancelled.",
+  "main": "scrypt.js",
+  "scripts": {
+    "test": "node test/test-scrypt.js"
+  },
+  "devDependencies": {
+    "nodeunit": "0.9.1"
+  },
+  "keywords": [
+    "scrypt",
+    "pbkdf",
+    "password",
+    "async",
+    "asynchronous",
+    "stepwise"
+  ],
+  "author": "Richard Moore <me@ricmoo.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ricmoo/scrypt-js.git"
+  },
+  "license": "MIT"
+}

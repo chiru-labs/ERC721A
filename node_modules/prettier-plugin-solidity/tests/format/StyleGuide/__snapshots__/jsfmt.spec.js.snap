@@ -1,0 +1,772 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BlankLines.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract A {
+}
+contract B {
+}
+
+contract C {
+}
+
+contract A {
+    function spam() public pure {
+        // ...
+    }
+    function ham() public pure {
+        // ...
+    }
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract A {}
+
+contract B {}
+
+contract C {}
+
+contract A {
+    function spam() public pure {
+        // ...
+    }
+
+    function ham() public pure {
+        // ...
+    }
+}
+
+================================================================================
+`;
+
+exports[`ControlStructures.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract ControlStructures
+{
+    struct Bank
+    {
+        address owner;
+        uint balance;
+    }
+
+    function () {
+        if (true)
+        {
+            doSomething();
+        }
+
+        while(true){
+            break;
+        }
+
+        for (uint a; a < 10; a++) {
+            doSomethingElse();}
+
+        /* TODO: singleline trueBody should be printed and indented in a new
+                 line
+        if (x < 10)
+            x += 1;
+        */
+
+        /* TODO: force braquets if statement is too complex
+        if (x < 10)
+            someArray.push(Coin({
+                name: 'spam',
+                value: 42
+            }));
+        */
+
+        if (x < 3) {
+            x += 1;
+        } else
+        if (x > 7) {
+            x -= 1;
+        }
+        else {
+            x = 5;
+        }
+
+        /* TODO: singleline trueBody and falseBody should be printed and
+                 indented in a new line
+        if (x < 3)
+            x += 1;
+        else
+            x -= 1;
+        */
+    }
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract ControlStructures {
+    struct Bank {
+        address owner;
+        uint256 balance;
+    }
+
+    function() {
+        if (true) {
+            doSomething();
+        }
+
+        while (true) {
+            break;
+        }
+
+        for (uint256 a; a < 10; a++) {
+            doSomethingElse();
+        }
+
+        /* TODO: singleline trueBody should be printed and indented in a new
+                 line
+        if (x < 10)
+            x += 1;
+        */
+
+        /* TODO: force braquets if statement is too complex
+        if (x < 10)
+            someArray.push(Coin({
+                name: 'spam',
+                value: 42
+            }));
+        */
+
+        if (x < 3) {
+            x += 1;
+        } else if (x > 7) {
+            x -= 1;
+        } else {
+            x = 5;
+        }
+
+        /* TODO: singleline trueBody and falseBody should be printed and
+                 indented in a new line
+        if (x < 3)
+            x += 1;
+        else
+            x -= 1;
+        */
+    }
+}
+
+================================================================================
+`;
+
+exports[`FunctionDeclaration.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract FunctionDeclaration {
+    function increment(uint x) public pure returns (uint)
+    {
+        return x + 1;
+    }
+
+    function increment(uint x) public pure returns (uint){
+        return x + 1;
+    }
+
+    function increment(uint x) public pure returns (uint) {
+        return x + 1;
+        }
+
+    function increment(uint x) public pure returns (uint) {
+        return x + 1;}
+
+    function kill() onlyowner public {
+        selfdestruct(owner);
+    }
+
+    /* TODO: modifiers should always split if arguments split */
+    function thisFunctionHasLotsOfArguments(address a, address b, address c,
+        address d, address e, address f) public {
+        doSomething();
+    }
+
+    function thisFunctionHasLotsOfArguments(address a,
+                                            address b,
+                                            address c,
+                                            address d,
+                                            address e,
+                                            address f) public {
+        doSomething();
+    }
+
+    function thisFunctionHasLotsOfArguments(
+        address a,
+        address b,
+        address c,
+        address d,
+        address e,
+        address f) public {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(address x, address y, address z)
+                                          public
+                                          onlyowner
+                                          priced
+                                          returns (address) {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(address x, address y, address z)
+        public onlyowner priced returns (address)
+    {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(address x, address y, address z)
+        public
+        onlyowner
+        priced
+        returns (address) {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(
+        address a,
+        address b,
+        address c
+    )
+        public
+        returns (address someAddressName,
+                 uint256 LongArgument,
+                 uint256 Argument)
+    {
+        doSomething();
+
+        return (veryVeryLongReturnArg1,
+                veryVeryLongReturnArg1,
+                veryVeryLongReturnArg1);
+    }
+}
+
+
+// Base contracts just to make this compile
+contract B {
+    constructor(uint) public {
+    }
+}
+
+
+contract C {
+    constructor(uint, uint) public {
+    }
+}
+
+
+contract D {
+    constructor(uint) public {
+    }
+}
+
+
+/* TODO: constructors calls have priority over visibility */
+contract A is B, C, D {
+    uint x;
+
+    constructor(uint param1, uint param2, uint param3, uint param4, uint param5)
+    B(param1)
+    C(param2, param3)
+    D(param4)
+    public
+    {
+        x = param5;
+    }
+}
+
+
+contract X is B, C, D {
+    uint x;
+
+    constructor(uint param1, uint param2, uint param3, uint param4, uint param5)
+        public
+        B(param1)
+        C(param2, param3)
+        D(param4) {
+        x = param5;
+    }
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract FunctionDeclaration {
+    function increment(uint256 x) public pure returns (uint256) {
+        return x + 1;
+    }
+
+    function increment(uint256 x) public pure returns (uint256) {
+        return x + 1;
+    }
+
+    function increment(uint256 x) public pure returns (uint256) {
+        return x + 1;
+    }
+
+    function increment(uint256 x) public pure returns (uint256) {
+        return x + 1;
+    }
+
+    function kill() public onlyowner {
+        selfdestruct(owner);
+    }
+
+    /* TODO: modifiers should always split if arguments split */
+    function thisFunctionHasLotsOfArguments(
+        address a,
+        address b,
+        address c,
+        address d,
+        address e,
+        address f
+    ) public {
+        doSomething();
+    }
+
+    function thisFunctionHasLotsOfArguments(
+        address a,
+        address b,
+        address c,
+        address d,
+        address e,
+        address f
+    ) public {
+        doSomething();
+    }
+
+    function thisFunctionHasLotsOfArguments(
+        address a,
+        address b,
+        address c,
+        address d,
+        address e,
+        address f
+    ) public {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(
+        address x,
+        address y,
+        address z
+    ) public onlyowner priced returns (address) {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(
+        address x,
+        address y,
+        address z
+    ) public onlyowner priced returns (address) {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(
+        address x,
+        address y,
+        address z
+    ) public onlyowner priced returns (address) {
+        doSomething();
+    }
+
+    function thisFunctionNameIsReallyLong(
+        address a,
+        address b,
+        address c
+    )
+        public
+        returns (
+            address someAddressName,
+            uint256 LongArgument,
+            uint256 Argument
+        )
+    {
+        doSomething();
+
+        return (
+            veryVeryLongReturnArg1,
+            veryVeryLongReturnArg1,
+            veryVeryLongReturnArg1
+        );
+    }
+}
+
+// Base contracts just to make this compile
+contract B {
+    constructor(uint256) public {}
+}
+
+contract C {
+    constructor(uint256, uint256) public {}
+}
+
+contract D {
+    constructor(uint256) public {}
+}
+
+/* TODO: constructors calls have priority over visibility */
+contract A is B, C, D {
+    uint256 x;
+
+    constructor(
+        uint256 param1,
+        uint256 param2,
+        uint256 param3,
+        uint256 param4,
+        uint256 param5
+    ) public B(param1) C(param2, param3) D(param4) {
+        x = param5;
+    }
+}
+
+contract X is B, C, D {
+    uint256 x;
+
+    constructor(
+        uint256 param1,
+        uint256 param2,
+        uint256 param3,
+        uint256 param4,
+        uint256 param5
+    ) public B(param1) C(param2, param3) D(param4) {
+        x = param5;
+    }
+}
+
+================================================================================
+`;
+
+exports[`Mappings.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract Mappings {
+    mapping (uint => uint) map;
+    mapping( address => bool ) registeredAddresses;
+    mapping (uint => mapping (bool => Data[])) public data;
+    mapping(uint => mapping (uint => s)) data;
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract Mappings {
+    mapping(uint256 => uint256) map;
+    mapping(address => bool) registeredAddresses;
+    mapping(uint256 => mapping(bool => Data[])) public data;
+    mapping(uint256 => mapping(uint256 => s)) data;
+}
+
+================================================================================
+`;
+
+exports[`MaximumLineLength.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract FunctionCalls {
+    function() {
+        thisFunctionCallIsReallyLong(longArgument1,
+                                     longArgument2,
+                                     longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(longArgument1,
+            longArgument2,
+            longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(
+            longArgument1, longArgument2,
+            longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(
+        longArgument1,
+        longArgument2,
+        longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(
+            longArgument1,
+            longArgument2,
+            longArgument3);
+    }
+}
+
+
+contract AssignmentStatements {
+    function() {
+        thisIsALongNestedMapping[being][set][to_some_value] = someFunction(argument1,
+                                                                           argument2,
+                                                                           argument3,
+                                                                           argument4);
+    }
+}
+
+
+contract EventDefinitionsAndEventEmitters {
+    event LongAndLotsOfArgs(address sender,
+                            address recipient,
+                            uint256 publicKey,
+                            uint256 amount,
+                            bytes32[] options,
+                            bytes32 longAttribute);
+
+    function() {
+        LongAndLotsOfArgs(sender,
+                          recipient,
+                          publicKey,
+                          amount,
+                          options,
+                          longAttribute);
+        emit LongAndLotsOfArgs(sender,
+                               recipient,
+                               publicKey,
+                               amount,
+                               options,
+                               longAttribute);
+    }
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract FunctionCalls {
+    function() {
+        thisFunctionCallIsReallyLong(
+            longArgument1,
+            longArgument2,
+            longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(
+            longArgument1,
+            longArgument2,
+            longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(
+            longArgument1,
+            longArgument2,
+            longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(
+            longArgument1,
+            longArgument2,
+            longArgument3
+        );
+
+        thisFunctionCallIsReallyLong(
+            longArgument1,
+            longArgument2,
+            longArgument3
+        );
+    }
+}
+
+contract AssignmentStatements {
+    function() {
+        thisIsALongNestedMapping[being][set][to_some_value] = someFunction(
+            argument1,
+            argument2,
+            argument3,
+            argument4
+        );
+    }
+}
+
+contract EventDefinitionsAndEventEmitters {
+    event LongAndLotsOfArgs(
+        address sender,
+        address recipient,
+        uint256 publicKey,
+        uint256 amount,
+        bytes32[] options,
+        bytes32 longAttribute
+    );
+
+    function() {
+        LongAndLotsOfArgs(
+            sender,
+            recipient,
+            publicKey,
+            amount,
+            options,
+            longAttribute
+        );
+        emit LongAndLotsOfArgs(
+            sender,
+            recipient,
+            publicKey,
+            amount,
+            options,
+            longAttribute
+        );
+    }
+}
+
+================================================================================
+`;
+
+exports[`OtherRecommendations.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract OtherRecommendations {
+    function () {
+        str = 'bar';
+        /* TODO: escape quotes in Strings when enforcing a new quote
+        str = '"Be yourself; everyone else is already taken." -Oscar Wilde';
+        */
+
+        x=3;
+        x = 100/10;
+        x += 3+4;
+        x |= y&&z;
+
+
+        /* TODO: whitespace around and operator can be different than 1 space if
+                 it is the same length before and after
+        x = 2**3 + 5;
+        x = 2*y + 3*z;
+        x = (a+b) * (a-b);
+        */
+
+
+        x = 2** 3 + 5;
+        x = y+z;
+        x +=1;
+    }
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract OtherRecommendations {
+    function() {
+        str = "bar";
+        /* TODO: escape quotes in Strings when enforcing a new quote
+        str = '"Be yourself; everyone else is already taken." -Oscar Wilde';
+        */
+
+        x = 3;
+        x = 100 / 10;
+        x += 3 + 4;
+        x |= y && z;
+
+        /* TODO: whitespace around and operator can be different than 1 space if
+                 it is the same length before and after
+        x = 2**3 + 5;
+        x = 2*y + 3*z;
+        x = (a+b) * (a-b);
+        */
+
+        x = 2**3 + 5;
+        x = y + z;
+        x += 1;
+    }
+}
+
+================================================================================
+`;
+
+exports[`VariableDeclarations.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract VariableDeclarations {
+    uint [] x;
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract VariableDeclarations {
+    uint256[] x;
+}
+
+================================================================================
+`;
+
+exports[`WhitespaceInExpressions.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.0 <0.7.0;
+
+
+contract WhitespaceInExpressions {
+    function () {
+        spam( ham[ 1 ], Coin( { name: "ham" } ) );
+        x             = 1;
+        y             = 2;
+        long_variable = 3;
+    }
+
+    function spam(uint i , Coin coin) public ;
+}
+
+=====================================output=====================================
+pragma solidity >=0.4.0 <0.7.0;
+
+contract WhitespaceInExpressions {
+    function() {
+        spam(ham[1], Coin({name: "ham"}));
+        x = 1;
+        y = 2;
+        long_variable = 3;
+    }
+
+    function spam(uint256 i, Coin coin) public;
+}
+
+================================================================================
+`;

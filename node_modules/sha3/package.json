@@ -1,0 +1,49 @@
+{
+  "name": "sha3",
+  "version": "2.1.4",
+  "description": "The Keccak family of hashing algorithms.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "keywords": [
+    "sha",
+    "sha3",
+    "sha-3",
+    "keccak",
+    "hash",
+    "hashing"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/phusion/node-sha3.git"
+  },
+  "author": {
+    "name": "Devin Canterberry",
+    "email": "devin@twuni.org"
+  },
+  "license": "MIT",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "babel --only '**/index.js' --no-comments --compact true --minified --source-maps false --out-dir lib src; cp -vfR README.md LICENSE package.json yarn.lock index.d.ts lib/",
+    "benchmark": "node benchmark",
+    "coverage": "nyc report",
+    "lint": "eslint src test",
+    "test": "nyc --silent --check-coverage --lines 100 --per-file mocha --require @babel/register --recursive test"
+  },
+  "devDependencies": {
+    "@babel/cli": "7.12.10",
+    "@babel/core": "7.12.10",
+    "@babel/preset-env": "7.12.11",
+    "@babel/register": "7.12.10",
+    "@types/node": "14.14.22",
+    "babel-eslint": "10.1.0",
+    "eslint": "7.18.0",
+    "eslint-plugin-ante": "1.0.4",
+    "mocha": "8.2.1",
+    "nyc": "15.1.0"
+  },
+  "dependencies": {
+    "buffer": "6.0.3"
+  }
+}

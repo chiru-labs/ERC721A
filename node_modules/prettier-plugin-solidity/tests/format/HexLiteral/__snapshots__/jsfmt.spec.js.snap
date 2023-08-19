@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HexLiteral.sol - {"compiler":"0.8.6","singleQuote":false} format 1`] = `
+====================================options=====================================
+compiler: "0.8.6"
+parsers: ["solidity-parse"]
+printWidth: 80
+singleQuote: false
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.10;
+
+contract HexLiteral {
+  bytes8 hex1 = hex'DeadBeef';
+  bytes8 hex2 = hex"DeadBeef";
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.10;
+
+contract HexLiteral {
+    bytes8 hex1 = hex"DeadBeef";
+    bytes8 hex2 = hex"DeadBeef";
+}
+
+================================================================================
+`;
+
+exports[`HexLiteral.sol - {"compiler":"0.8.6","singleQuote":true} format 1`] = `
+====================================options=====================================
+compiler: "0.8.6"
+parsers: ["solidity-parse"]
+printWidth: 80
+singleQuote: true
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.10;
+
+contract HexLiteral {
+  bytes8 hex1 = hex'DeadBeef';
+  bytes8 hex2 = hex"DeadBeef";
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.10;
+
+contract HexLiteral {
+    bytes8 hex1 = hex'DeadBeef';
+    bytes8 hex2 = hex'DeadBeef';
+}
+
+================================================================================
+`;

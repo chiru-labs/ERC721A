@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pragma.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.4.21   <0.6.0;
+pragma solidity >=0.4.21 <=0.6.0    ;
+pragma solidity    >0.4.21 <0.6.0;
+pragma solidity >0.4.21 <=0.6.0;
+pragma solidity >=0.4.21<0.6.0;
+pragma solidity   ^ 0.4.21  ;
+pragma solidity  ~ 0.4.21  ;
+pragma solidity   ^0.5.0   ||   ^0.6.0   ||   ^0.7.0  ;
+
+=====================================output=====================================
+pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.4.21 <=0.6.0;
+pragma solidity >0.4.21 <0.6.0;
+pragma solidity >0.4.21 <=0.6.0;
+pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.4.21;
+pragma solidity ~0.4.21;
+pragma solidity ^0.5.0 || ^0.6.0 || ^0.7.0;
+
+================================================================================
+`;

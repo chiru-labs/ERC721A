@@ -1,0 +1,10 @@
+sudo: false
+language: node_js
+node_js:
+  - "9"
+install:
+  - "yarn install"
+test:
+  - "yarn test"
+notifications:
+after_success: 'yarn run coveralls'

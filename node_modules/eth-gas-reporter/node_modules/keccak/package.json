@@ -1,0 +1,60 @@
+{
+  "name": "keccak",
+  "version": "2.1.0",
+  "description": "Keccak sponge function family",
+  "keywords": [
+    "sha3",
+    "sha-3",
+    "keccak",
+    "shake"
+  ],
+  "bugs": {
+    "url": "https://github.com/cryptocoinjs/keccak/issues"
+  },
+  "license": "MIT",
+  "contributors": [
+    "Kirill Fomichev <fanatid@ya.ru> (https://github.com/fanatid)"
+  ],
+  "files": [
+    "lib",
+    "src",
+    "binding.gyp",
+    "bindings.js",
+    "index.js",
+    "js.js"
+  ],
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cryptocoinjs/keccak.git"
+  },
+  "scripts": {
+    "coverage": "nyc tape test/index.js",
+    "coverage-lcov": "npm run coverage && nyc report -r lcov",
+    "install": "npm run rebuild || echo \"Keccak bindings compilation fail. Pure JS implementation will be used.\"",
+    "lint": "standard",
+    "rebuild": "node-gyp rebuild",
+    "test": "npm run lint && npm run unit",
+    "unit": "tape test/index.js"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "inherits": "^2.0.4",
+    "nan": "^2.14.0",
+    "safe-buffer": "^5.2.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.0",
+    "nyc": "^14.1.1",
+    "proxyquire": "^2.1.3",
+    "standard": "^14.3.1",
+    "tape": "^4.11.0"
+  },
+  "engines": {
+    "node": ">=5.12.0"
+  },
+  "gypfile": true,
+  "browser": {
+    "./index.js": "./js.js"
+  }
+}

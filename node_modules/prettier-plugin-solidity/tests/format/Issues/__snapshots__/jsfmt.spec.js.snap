@@ -1,0 +1,174 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Issue205.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract Example {
+    using SafeMath for uint256;
+    
+    struct BalanceState {
+        uint256 balance;
+    }
+
+    mapping(address => mapping(address => BalanceState)) private balanceStates;
+    function example(address token, uint amount) public {
+        balanceStates[msg.sender][token].balance = balanceStates[msg.sender][token].balance.sub(amount);
+    }
+}
+
+=====================================output=====================================
+contract Example {
+    using SafeMath for uint256;
+
+    struct BalanceState {
+        uint256 balance;
+    }
+
+    mapping(address => mapping(address => BalanceState)) private balanceStates;
+
+    function example(address token, uint256 amount) public {
+        balanceStates[msg.sender][token].balance = balanceStates[msg.sender][
+            token
+        ].balance.sub(amount);
+    }
+}
+
+================================================================================
+`;
+
+exports[`Issue289.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract Issue289 {
+  function f() {
+	address[] storage proposalValidators
+ = ethProposals[_blockNumber][_proposalId].proposalValidators;
+  }
+}
+
+=====================================output=====================================
+contract Issue289 {
+    function f() {
+        address[] storage proposalValidators = ethProposals[_blockNumber][
+            _proposalId
+        ].proposalValidators;
+    }
+}
+
+================================================================================
+`;
+
+exports[`Issue355.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity 0.6.12;
+
+contract Bug {
+  // This is a comment
+  uint public hello;
+
+  // Another comment
+  uint public bigNum = 100_000;
+
+  // This will disappear
+  uint public magic;
+}
+
+=====================================output=====================================
+pragma solidity 0.6.12;
+
+contract Bug {
+    // This is a comment
+    uint256 public hello;
+
+    // Another comment
+    uint256 public bigNum = 100_000;
+
+    // This will disappear
+    uint256 public magic;
+}
+
+================================================================================
+`;
+
+exports[`Issue385.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract Issue385 {
+  function emptyTryCatch() {
+            try
+                IService(_THIS_SERVICE).server().assign{value: msg.value}(
+                    taskReceipt
+                )
+             {} catch Error(string memory error) {
+                error.revertWithInfo("BService.delegatecall.assign:");
+            } catch {
+                revert("BService.delegatecall.assign:undefined");
+            }
+  }
+}
+
+=====================================output=====================================
+contract Issue385 {
+    function emptyTryCatch() {
+        try
+            IService(_THIS_SERVICE).server().assign{value: msg.value}(
+                taskReceipt
+            )
+        {} catch Error(string memory error) {
+            error.revertWithInfo("BService.delegatecall.assign:");
+        } catch {
+            revert("BService.delegatecall.assign:undefined");
+        }
+    }
+}
+
+================================================================================
+`;
+
+exports[`Issue564.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract Issue564 {
+    function isAuthorized(
+        bytes32 serviceId,
+        address client
+    ) external view override returns (bool) {
+        WhitelistStatus storage whitelistStatus = serviceIdToClientToWhitelistStatus[serviceId][client];
+        return true;
+    }
+}
+
+=====================================output=====================================
+contract Issue564 {
+    function isAuthorized(bytes32 serviceId, address client)
+        external
+        view
+        override
+        returns (bool)
+    {
+        WhitelistStatus
+            storage whitelistStatus = serviceIdToClientToWhitelistStatus[
+                serviceId
+            ][client];
+        return true;
+    }
+}
+
+================================================================================
+`;

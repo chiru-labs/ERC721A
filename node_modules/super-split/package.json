@@ -1,0 +1,63 @@
+{
+	"name": "super-split",
+	"main": "super-split",
+	"version": "1.1.0",
+	"description": "🔪  split string by delimiter array - delimiters retained",
+	"license": "MIT",
+	"repository": "F1LT3R/super-split",
+	"author": {
+		"name": "F1LT3R",
+		"email": "al@pwn.io",
+		"url": "f1lt3r.io"
+	},
+	"scripts": {
+		"test": "xo && yarn run cover",
+		"unit": "ava",
+		"watch": "ava --watch",
+		"cover": "nyc --reporter=lcov --reporter=html --reporter=text ava *.test.js ",
+		"coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls -v",
+		"precommit": "yarn test"
+	},
+	"files": [
+		"index.js"
+	],
+	"keywords": [
+		"split",
+		"string",
+		"array",
+		"delimiter",
+		"delimiters",
+		"separators",
+		"retain",
+		"keep"
+	],
+	"dependencies": {},
+	"devDependencies": {
+		"ava": "^0.25.0",
+		"coveralls": "^3.0.0",
+		"git-hooks": "^1.1.10",
+		"git-pre-commit": "^2.1.3",
+		"nyc": "^11.6.0",
+		"xo": "^0.20.3"
+	},
+	"nyc": {
+		"reporter": [
+			"lcov",
+			"text"
+		]
+	},
+	"xo": {
+		"esnext": true,
+		"semicolon": false,
+		"globals": [
+			"__dirname"
+		],
+		"rules": {
+			"no-console": 1,
+			"space-before-function-paren": 0
+		}
+	},
+	"ava": {
+		"failFast": true
+	}
+}

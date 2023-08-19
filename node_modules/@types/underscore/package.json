@@ -1,0 +1,74 @@
+{
+    "name": "@types/underscore",
+    "version": "1.11.4",
+    "description": "TypeScript definitions for Underscore",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/underscore",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Boris Yankov",
+            "url": "https://github.com/borisyankov",
+            "githubUsername": "borisyankov"
+        },
+        {
+            "name": "Josh Baldwin",
+            "url": "https://github.com/jbaldwin",
+            "githubUsername": "jbaldwin"
+        },
+        {
+            "name": "Christopher Currens",
+            "url": "https://github.com/ccurrens",
+            "githubUsername": "ccurrens"
+        },
+        {
+            "name": "Ard Timmerman",
+            "url": "https://github.com/confususs",
+            "githubUsername": "confususs"
+        },
+        {
+            "name": "Julian Gonggrijp",
+            "url": "https://github.com/jgonggrijp",
+            "githubUsername": "jgonggrijp"
+        },
+        {
+            "name": "Florian Imdahl",
+            "url": "https://github.com/ffflorian",
+            "githubUsername": "ffflorian"
+        },
+        {
+            "name": "Regev Brody",
+            "url": "https://github.com/regevbr",
+            "githubUsername": "regevbr"
+        },
+        {
+            "name": "Piotr Błażejewicz",
+            "url": "https://github.com/peterblazejewicz",
+            "githubUsername": "peterblazejewicz"
+        },
+        {
+            "name": "Michael Ness",
+            "url": "https://github.com/reubenrybnik",
+            "githubUsername": "reubenrybnik"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/underscore"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "2415a9e04c5831291feea62c613f489db9ffec8092645de80c0ab90f8e789e54",
+    "typeScriptVersion": "3.8",
+    "exports": {
+        ".": {
+            "types": {
+                "import": "./index.d.mts",
+                "default": "./index.d.ts"
+            }
+        },
+        "./package.json": "./package.json"
+    }
+}

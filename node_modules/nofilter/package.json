@@ -1,0 +1,49 @@
+{
+  "name": "nofilter",
+  "version": "1.0.4",
+  "description": "Read and write a growable buffer as a stream",
+  "main": "lib/index.js",
+  "scripts": {
+    "clean": "rm -rf coverage doc **/.DS_Store",
+    "lint": "eslint lib/*.js test/*.js",
+    "coverage": "nyc -r html npm test",
+    "test": "mocha test/*.js",
+    "doc": "jsdoc -c .jsdoc.conf",
+    "release": "npm version patch && git push --follow-tags && npm publish",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hildjj/nofilter.git"
+  },
+  "keywords": [
+    "buffer",
+    "stream",
+    "duplex",
+    "transform",
+    "#nofilter",
+    "no-filter",
+    "concat"
+  ],
+  "author": {
+    "name": "Joe Hildebrand",
+    "email": "joe-github@cursive.net"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hildjj/nofilter/issues"
+  },
+  "homepage": "https://github.com/hildjj/nofilter#readme",
+  "devDependencies": {
+    "@types/node": "^14.0.27",
+    "chai": "^4.2",
+    "coveralls": "^3.1.0",
+    "jsdoc": "^3.6.5",
+    "minami": "^1.2.3",
+    "mocha": "^7.2.0",
+    "nyc": "^15.1.0"
+  },
+  "engines": {
+    "node": ">=8"
+  }
+}

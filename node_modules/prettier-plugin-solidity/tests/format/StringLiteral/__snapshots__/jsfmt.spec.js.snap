@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StringLiteral.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract StringLiteral {
+    bytes32 public constant PERMIT_TYPEHASH = keccak256(
+        "Permit("
+            "address owner,"
+            "address spender,"
+            "uint256 value,"
+            "uint256 nonce,"
+            "uint256 deadline"
+        ")"
+    );
+}
+
+=====================================output=====================================
+contract StringLiteral {
+    bytes32 public constant PERMIT_TYPEHASH =
+        keccak256(
+            "Permit("
+            "address owner,"
+            "address spender,"
+            "uint256 value,"
+            "uint256 nonce,"
+            "uint256 deadline"
+            ")"
+        );
+}
+
+================================================================================
+`;

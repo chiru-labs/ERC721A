@@ -1,0 +1,37 @@
+{
+  "name": "bip66",
+  "version": "1.1.5",
+  "description": "Strict DER signature encoding/decoding.",
+  "keywords": [
+    "bip66",
+    "bitcoin"
+  ],
+  "homepage": "https://github.com/bitcoinjs/bip66",
+  "bugs": {
+    "url": "https://github.com/bitcoinjs/bip66/issues"
+  },
+  "license": "MIT",
+  "author": "Daniel Cousens",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitcoinjs/bip66.git"
+  },
+  "scripts": {
+    "coverage": "nyc --check-coverage --branches 100 --functions 100 tape test/*.js",
+    "lint": "standard",
+    "test": "npm run lint && npm run unit",
+    "unit": "tape test/*.js"
+  },
+  "devDependencies": {
+    "nyc": "^6.4.0",
+    "standard": "^10.0.2",
+    "tape": "^4.5.1"
+  },
+  "dependencies": {
+    "safe-buffer": "^5.0.1"
+  }
+}

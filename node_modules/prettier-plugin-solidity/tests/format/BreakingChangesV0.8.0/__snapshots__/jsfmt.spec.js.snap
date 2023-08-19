@@ -1,0 +1,815 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BreakingChangesV0.8.0.sol - {"compiler":"0.7.0","explicitTypes":"always"} format 1`] = `
+====================================options=====================================
+compiler: "0.7.0"
+explicitTypes: "always"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint256 a = (1**2)**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    bytes1 public g;
+
+    struct S {
+        bytes1 c;
+        bytes1 g;
+    }
+
+    event Event(bytes1 _c, bytes1 _g);
+
+    function func(bytes1 _c, bytes1 _g) public returns (bytes1, bytes1) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol - {"compiler":"0.7.0","explicitTypes":"never"} format 1`] = `
+====================================options=====================================
+compiler: "0.7.0"
+explicitTypes: "never"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = (1**2)**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    byte public c;
+    byte public g;
+
+    struct S {
+        byte c;
+        byte g;
+    }
+
+    event Event(byte _c, byte _g);
+
+    function func(byte _c, byte _g) public returns (byte, byte) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol - {"compiler":"0.7.0","explicitTypes":"preserve"} format 1`] = `
+====================================options=====================================
+compiler: "0.7.0"
+explicitTypes: "preserve"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = (1**2)**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(bytes1 _c, byte _g) public returns (bytes1, byte) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol - {"compiler":"0.8.0","explicitTypes":"never"} format 1`] = `
+====================================options=====================================
+compiler: "0.8.0"
+explicitTypes: "never"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**(2**3);
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    bytes1 public g;
+
+    struct S {
+        bytes1 c;
+        bytes1 g;
+    }
+
+    event Event(bytes1 _c, bytes1 _g);
+
+    function func(bytes1 _c, bytes1 _g) public returns (bytes1, bytes1) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol - {"compiler":"0.8.0","explicitTypes":"preserve"} format 1`] = `
+====================================options=====================================
+compiler: "0.8.0"
+explicitTypes: "preserve"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**(2**3);
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    bytes1 public g;
+
+    struct S {
+        bytes1 c;
+        bytes1 g;
+    }
+
+    event Event(bytes1 _c, bytes1 _g);
+
+    function func(bytes1 _c, bytes1 _g) public returns (bytes1, bytes1) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol - {"compiler":"0.8.0"} format 1`] = `
+====================================options=====================================
+compiler: "0.8.0"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint256 a = 1**(2**3);
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    bytes1 public g;
+
+    struct S {
+        bytes1 c;
+        bytes1 g;
+    }
+
+    event Event(bytes1 _c, bytes1 _g);
+
+    function func(bytes1 _c, bytes1 _g) public returns (bytes1, bytes1) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol - {"explicitTypes":"never"} format 1`] = `
+====================================options=====================================
+explicitTypes: "never"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    bytes1 public g;
+
+    struct S {
+        bytes1 c;
+        bytes1 g;
+    }
+
+    event Event(bytes1 _c, bytes1 _g);
+
+    function func(bytes1 _c, bytes1 _g) public returns (bytes1, bytes1) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol - {"explicitTypes":"preserve"} format 1`] = `
+====================================options=====================================
+explicitTypes: "preserve"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    bytes1 public g;
+
+    struct S {
+        bytes1 c;
+        bytes1 g;
+    }
+
+    event Event(bytes1 _c, bytes1 _g);
+
+    function func(bytes1 _c, bytes1 _g) public returns (bytes1, bytes1) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;
+
+exports[`BreakingChangesV0.8.0.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    byte public g;
+
+    struct S {
+        bytes1 c;
+        byte g;
+    }
+
+    event Event(bytes1 _c, byte _g);
+
+    function func(
+        bytes1 _c,
+        byte _g
+    )
+        public
+        returns (
+            bytes1,
+            byte
+        )
+    {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+=====================================output=====================================
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0 <=0.8.5;
+
+contract BreakingChangesV080 {
+    /**
+     * - if options.compiler is undefined we leave 1**2**3.
+     * - if options.compiler is lower than 0.8.0 we format as (1**2)**3.
+     * - if options.compiler is greater than or equal to 0.8.0 we format as
+     *   1**(2**3).
+     */
+    uint256 a = 1**2**3;
+
+    /**
+     * - if options.compiler is undefined we enforce the use of bytes1.
+     * - if options.compiler is lower than 0.8.0 we rely on
+     *   options.explicitTypes to decide wether to use byte or bytes1.
+     * - if options.compiler is greater than or equal to 0.8.0 we enforce the
+     *   use of bytes1.
+     */
+    bytes1 public c;
+    bytes1 public g;
+
+    struct S {
+        bytes1 c;
+        bytes1 g;
+    }
+
+    event Event(bytes1 _c, bytes1 _g);
+
+    function func(bytes1 _c, bytes1 _g) public returns (bytes1, bytes1) {
+        emit Event(_c, _g);
+        return (_c, _g);
+    }
+}
+
+================================================================================
+`;

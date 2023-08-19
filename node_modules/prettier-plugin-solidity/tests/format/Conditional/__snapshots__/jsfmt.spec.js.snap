@@ -1,0 +1,80 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Conditional.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity ^0.4.24;
+
+
+contract Conditional {
+    function foo() {
+        address contextAddress = longAddress_ == address(0) ? msg.sender : currentContextAddress_;
+        asset == ETH
+        ? require(address(uint160(msg.sender)).send(quantity), "failed to transfer ether") // explicit casting to \`address payable\`
+        : transferTokensToAccountSecurely(Token(asset), quantity, msg.sender);
+        asset == ETH
+        ? true
+        : transferTokensToAccountSecurely(Token(asset), quantity, msg.sender);
+        asset == ETH
+        ? require(address(uint160(msg.sender)).send(quantity), "failed to transfer ether")
+        : false;
+    }
+
+    // TODO: work with a break in the condition level.
+    // function foo() {
+    //     address contextAddress = veryVeryVeryVeryVeryVeryVeryVeryVeryLongAddress_ == address(0) ? msg.sender : currentContextAddress_;
+    // }
+
+    function bar() {
+        uint a = true ? 0 : 1;
+    }
+}
+
+=====================================output=====================================
+pragma solidity ^0.4.24;
+
+contract Conditional {
+    function foo() {
+        address contextAddress = longAddress_ == address(0)
+            ? msg.sender
+            : currentContextAddress_;
+        asset == ETH
+            ? require(
+                address(uint160(msg.sender)).send(quantity),
+                "failed to transfer ether"
+            ) // explicit casting to \`address payable\`
+            : transferTokensToAccountSecurely(
+                Token(asset),
+                quantity,
+                msg.sender
+            );
+        asset == ETH
+            ? true
+            : transferTokensToAccountSecurely(
+                Token(asset),
+                quantity,
+                msg.sender
+            );
+        asset == ETH
+            ? require(
+                address(uint160(msg.sender)).send(quantity),
+                "failed to transfer ether"
+            )
+            : false;
+    }
+
+    // TODO: work with a break in the condition level.
+    // function foo() {
+    //     address contextAddress = veryVeryVeryVeryVeryVeryVeryVeryVeryLongAddress_ == address(0) ? msg.sender : currentContextAddress_;
+    // }
+
+    function bar() {
+        uint256 a = true ? 0 : 1;
+    }
+}
+
+================================================================================
+`;

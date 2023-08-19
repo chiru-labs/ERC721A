@@ -1,0 +1,40 @@
+{
+  "name": "eth-sig-util",
+  "version": "2.5.4",
+  "description": "A few useful functions for signing ethereum data",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "utils/"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node test/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/MetaMask/eth-sig-util.git"
+  },
+  "keywords": [
+    "ethereum",
+    "signature"
+  ],
+  "author": "Dan Finlay",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MetaMask/eth-sig-util/issues"
+  },
+  "homepage": "https://github.com/MetaMask/eth-sig-util#readme",
+  "dependencies": {
+    "ethereumjs-abi": "0.6.8",
+    "ethereumjs-util": "^5.1.1",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.0"
+  },
+  "devDependencies": {
+    "@metamask/eslint-config": "^2.0.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-import": "^2.20.1",
+    "tape": "^4.9.1"
+  }
+}

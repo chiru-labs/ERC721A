@@ -1,0 +1,63 @@
+{
+    "name": "cheerio-select",
+    "description": "CSS selector engine supporting jQuery selectors",
+    "version": "1.5.0",
+    "author": "Felix Boehm <me@feedic.com>",
+    "funding": {
+        "url": "https://github.com/sponsors/fb55"
+    },
+    "license": "BSD-2-Clause",
+    "sideEffects": false,
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/cheeriojs/cheerio-select.git"
+    },
+    "directories": {
+        "lib": "lib/"
+    },
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "files": [
+        "lib/**/*"
+    ],
+    "scripts": {
+        "test": "jest --coverage && npm run lint",
+        "coverage": "cat coverage/lcov.info | coveralls",
+        "lint": "npm run lint:es && npm run lint:prettier",
+        "lint:es": "eslint src",
+        "lint:prettier": "npm run format:prettier:raw -- --check",
+        "format": "npm run format:es && npm run format:prettier",
+        "format:es": "npm run lint:es -- --fix",
+        "format:prettier": "npm run format:prettier:raw -- --write",
+        "format:prettier:raw": "prettier '**/*.{ts,md,json,yml}'",
+        "build": "tsc",
+        "prepare": "npm run build"
+    },
+    "dependencies": {
+        "css-select": "^4.1.3",
+        "css-what": "^5.0.1",
+        "domelementtype": "^2.2.0",
+        "domhandler": "^4.2.0",
+        "domutils": "^2.7.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^26.0.23",
+        "@typescript-eslint/eslint-plugin": "^4.26.0",
+        "@typescript-eslint/parser": "^4.26.0",
+        "coveralls": "^3.1.0",
+        "eslint": "^7.28.0",
+        "eslint-config-prettier": "^8.3.0",
+        "htmlparser2": "^6.1.0",
+        "jest": "^27.0.4",
+        "prettier": "^2.3.1",
+        "ts-jest": "^27.0.3",
+        "typescript": "^4.3.2"
+    },
+    "jest": {
+        "preset": "ts-jest",
+        "testEnvironment": "node"
+    },
+    "prettier": {
+        "tabWidth": 4
+    }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "@openzeppelin/contract-loader",
+  "version": "0.6.3",
+  "description": "Load contract ABIs from built artifacts and return contract objects",
+  "files": [
+    "lib"
+  ],
+  "main": "./lib/index.js",
+  "scripts": {
+    "compile": "rm -rf lib && tsc",
+    "docs": "oz-docs",
+    "docs:watch": "npm run docs watch",
+    "prepare": "npm run compile",
+    "test": "cd test && ./run-all.sh",
+    "watch": "tsc -w"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && npx tsc --noEmit",
+      "pre-push": "npm run test"
+    }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "author": "Nicolas Venturo <nicolas@openzeppelin.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenZeppelin/contract-loader.git"
+  },
+  "keywords": [
+    "smart-contracts",
+    "solidity",
+    "ethereum",
+    "javascript",
+    "web3"
+  ],
+  "homepage": "https://github.com/OpenZeppelin/contract-loader#readme",
+  "devDependencies": {
+    "@types/fs-extra": "^8.0.0",
+    "@types/node": "^12.7.5",
+    "@typescript-eslint/eslint-plugin": "^2.2.0",
+    "@typescript-eslint/parser": "^2.2.0",
+    "eslint": "^6.3.0",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "husky": "^3.0.5",
+    "lint-staged": "^9.2.5",
+    "openzeppelin-docs-utils": "github:OpenZeppelin/docs-utils",
+    "prettier": "^1.18.2",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "find-up": "^4.1.0",
+    "fs-extra": "^8.1.0"
+  }
+}

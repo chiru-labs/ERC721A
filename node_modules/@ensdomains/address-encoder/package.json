@@ -1,0 +1,51 @@
+{
+  "name": "@ensdomains/address-encoder",
+  "version": "0.1.9",
+  "description": "Encodes and decodes address formats for various cryptocurrencies",
+  "source": "src/index.ts",
+  "main": "lib/index.js",
+  "module": "lib/index.module.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "microbundle --external crypto",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test",
+    "size": "browserify lib/index.js | wc -c",
+    "test": "jest --config jestconfig.json"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "keywords": [
+    "blockchain",
+    "cryptocurrency",
+    "bitcoin",
+    "ethereum",
+    "encoding"
+  ],
+  "author": "Nick Johnson <nick@ens.domains>",
+  "license": "BSD",
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "@types/node": "^12.7.12",
+    "browserify": "^16.5.0",
+    "jest": "^26.4.2",
+    "microbundle": "^0.12.4",
+    "prettier": "^1.18.2",
+    "ts-jest": "^26.4.1",
+    "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.8.2"
+  },
+  "dependencies": {
+    "bech32": "^1.1.3",
+    "blakejs": "^1.1.0",
+    "bn.js": "^4.11.8",
+    "bs58": "^4.0.1",
+    "crypto-addr-codec": "^0.1.7",
+    "nano-base32": "^1.0.1",
+    "ripemd160": "^2.0.2"
+  }
+}

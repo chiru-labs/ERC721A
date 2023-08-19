@@ -1,0 +1,9 @@
+{
+  "env": {
+    "jest": true
+  },
+  "extends": ["airbnb-base", "prettier"],
+  "globals": {
+    "run_spec": false
+  }
+}

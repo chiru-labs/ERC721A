@@ -1,0 +1,54 @@
+{
+  "name": "drbg.js",
+  "version": "1.0.1",
+  "description": "Deterministic Random Bit Generators",
+  "keywords": [
+    "drbg",
+    "nist sp 800-90a",
+    "ctrdrbg",
+    "hashdrbg",
+    "hmacdrbg"
+  ],
+  "bugs": {
+    "url": "https://github.com/cryptocoinjs/drbg.js/issues"
+  },
+  "license": "MIT",
+  "author": "Kirill Fomichev <fanatid@yandex.ru> (https://github.com/fanatid)",
+  "files": [
+    "lib",
+    "hash.js",
+    "hmac.js",
+    "index.js"
+  ],
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cryptocoinjs/drbg.js.git"
+  },
+  "scripts": {
+    "lint": "standard",
+    "test": "npm run lint && npm run unit",
+    "unit": "npm run unit:node && npm run unit:browser",
+    "unit:node": "tap --cov test/**/*.js",
+    "unit:browser": "karma start karma.conf.js"
+  },
+  "dependencies": {
+    "browserify-aes": "^1.0.6",
+    "create-hash": "^1.1.2",
+    "create-hmac": "^1.1.4"
+  },
+  "devDependencies": {
+    "browserify": "^12.0.0",
+    "karma": "^0.13.19",
+    "karma-browserify": "^5.0.1",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-detect-browsers": "^2.0.2",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-tap": "^1.0.3",
+    "tap": "^5.4.4",
+    "standard": "^6.0.4"
+  },
+  "engines": {
+    "node": ">=0.10"
+  }
+}

@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: semver
+        versions:
+          - 7.3.5
+      - dependency-name: eslint
+        versions:
+          - 7.23.0
+      - dependency-name: '@solidity-parser/parser'
+        versions:
+          - 0.12.2
+      - dependency-name: emoji-regex
+        versions:
+          - 9.2.2
+      - dependency-name: string-width
+        versions:
+          - 4.2.1

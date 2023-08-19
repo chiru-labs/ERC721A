@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ContractDefinitions.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract ContractDefinition is Contract1, Contract2, Contract3, Contract4, Contract5 {
+}
+
+=====================================output=====================================
+contract ContractDefinition is
+    Contract1,
+    Contract2,
+    Contract3,
+    Contract4,
+    Contract5
+{}
+
+================================================================================
+`;

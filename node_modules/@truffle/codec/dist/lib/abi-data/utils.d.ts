@@ -1,0 +1,14 @@
+import * as Ast from "../ast";
+import type * as Abi from "@truffle/abi-utils";
+import type { FunctionAbiBySelectors } from "./types";
+export declare const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorEntry;
+export declare function computeSelectors(abi: Abi.Abi | undefined): FunctionAbiBySelectors | undefined;
+export declare function abiHasPayableFallback(abi: Abi.Abi | undefined): boolean | undefined;
+export declare function abiSignature(abiEntry: Abi.FunctionEntry | Abi.EventEntry | Abi.ErrorEntry): string;
+export declare function abiTupleSignature(parameters: Abi.Parameter[]): string;
+export declare function abiSelector(abiEntry: Abi.FunctionEntry | Abi.EventEntry | Abi.ErrorEntry): string;
+export declare function abisMatch(entry1: Abi.Entry | undefined, entry2: Abi.Entry | undefined): boolean;
+export declare function definitionMatchesAbi(abiEntry: Abi.Entry, definition: Ast.AstNode, referenceDeclarations: Ast.AstNodes): boolean;
+export declare function topicsCount(abiEntry: Abi.EventEntry): number;
+export declare function abiEntryIsObviouslyIllTyped(abiEntry: Abi.Entry): boolean;
+export declare function abiEntryHasStorageParameters(abiEntry: Abi.Entry): boolean;

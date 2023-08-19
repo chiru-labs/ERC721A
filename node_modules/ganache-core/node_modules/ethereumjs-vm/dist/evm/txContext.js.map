@@ -1,0 +1,1 @@
+{"version":3,"file":"txContext.js","sourceRoot":"","sources":["../../lib/evm/txContext.ts"],"names":[],"mappings":";;AAAA;IAIE,mBAAY,QAAgB,EAAE,MAAc;QAC1C,IAAI,CAAC,QAAQ,GAAG,QAAQ,CAAA;QACxB,IAAI,CAAC,MAAM,GAAG,MAAM,CAAA;IACtB,CAAC;IACH,gBAAC;AAAD,CAAC,AARD,IAQC"}

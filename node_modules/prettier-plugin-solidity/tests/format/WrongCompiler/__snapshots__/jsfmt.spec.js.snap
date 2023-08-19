@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WrongCompiler.sol - {"compiler":"0.8.4"} format 1`] = `
+====================================options=====================================
+compiler: "0.8.4"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >= 0.7.0;
+pragma solidity >0.7.2 <= 0.7.5;
+pragma solidity 0.7.3;
+=====================================output=====================================
+pragma solidity >=0.7.0;
+pragma solidity >0.7.2 <=0.7.5;
+pragma solidity 0.7.3;
+
+================================================================================
+`;
+
+exports[`WrongCompiler.sol - {"compiler":"v0.7.3+commit.9bfce1f6"} format 1`] = `
+====================================options=====================================
+compiler: "v0.7.3+commit.9bfce1f6"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >= 0.7.0;
+pragma solidity >0.7.2 <= 0.7.5;
+pragma solidity 0.7.3;
+=====================================output=====================================
+pragma solidity >=0.7.0;
+pragma solidity >0.7.2 <=0.7.5;
+pragma solidity 0.7.3;
+
+================================================================================
+`;
+
+exports[`WrongCompiler.sol - {"compiler":"v0.7.5-nightly.2020.11.9+commit.41f50365"} format 1`] = `
+====================================options=====================================
+compiler: "v0.7.5-nightly.2020.11.9+commit.41f50365"
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >= 0.7.0;
+pragma solidity >0.7.2 <= 0.7.5;
+pragma solidity 0.7.3;
+=====================================output=====================================
+pragma solidity >=0.7.0;
+pragma solidity >0.7.2 <=0.7.5;
+pragma solidity 0.7.3;
+
+================================================================================
+`;

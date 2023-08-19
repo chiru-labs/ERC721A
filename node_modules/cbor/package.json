@@ -1,0 +1,71 @@
+{
+  "name": "cbor",
+  "version": "5.2.0",
+  "description": "Encode and parse data in the Concise Binary Object Representation (CBOR) data format (RFC7049).",
+  "main": "./lib/cbor.js",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/hildjj/node-cbor.git"
+  },
+  "homepage": "http://hildjj.github.io/node-cbor/",
+  "directories": {
+    "lib": "lib"
+  },
+  "browser": {
+    "fs": false
+  },
+  "scripts": {
+    "clean": "rm -rf coverage .nyc_output/ docs/api man/*",
+    "lint": "eslint lib/*.js cli/lib/* cli/bin/* test/*.js",
+    "doc": "jsdoc -c .jsdoc.conf",
+    "coverage": "nyc npm test",
+    "coveragehtml": "nyc -r html ava",
+    "test": "ava",
+    "man": "mkdir -p man; for f in man_src/*.md; do b=`basename $f`; marked-man $f -o man/${b%.md}.1; gzip -9f man/${b%.md}.1; done",
+    "release": "npm version patch && git push --follow-tags && npm publish",
+    "predev": "npm run coveragehtml",
+    "dev": "light-server -q -s. -w 'lib/*.js # npm run doc' -w 'lib/*.js,test/*.js # npm run coveragehtml' -o /coverage/index.html",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
+    "typecheck": "tsc --allowJs --checkJs --noEmit --target ES6 --moduleResolution node lib/*.js"
+  },
+  "keywords": [
+    "coap",
+    "cbor",
+    "json"
+  ],
+  "author": {
+    "name": "Joe Hildebrand",
+    "email": "joe-github@cursive.net"
+  },
+  "contributors": [
+    "Patrick Gansterer <paroga@paroga.com> (http://paroga.com/)",
+    "Artyom Yagilev <github@scorpi.org> (http://scorpi.org/)",
+    "Denis Lapaev <den@lapaev.me> (http://lapaev.me/)",
+    "Ruben Bridgewater <ruben@bridgewater.de>",
+    "Burt Harris <Burt_Harris_cbor@azxs.33mail.com>"
+  ],
+  "ava": {
+    "files": [
+      "test/*.ava.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "ava": "1.4.1",
+    "concordance": "^5.0",
+    "garbage": "0.0",
+    "jsdoc": "^3.6.6",
+    "light-server": "*",
+    "minami": "*",
+    "nyc": "^14.1.1"
+  },
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "bignumber.js": "^9.0.1",
+    "nofilter": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  }
+}

@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`InheritanceSpecifier.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract InheritanceSpecifier is SomeOtherContract(1234,false) {}
+contract LongInheritanceSpecifier is SomeOtherContract(123467890,false,0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c) {}
+
+=====================================output=====================================
+contract InheritanceSpecifier is SomeOtherContract(1234, false) {}
+
+contract LongInheritanceSpecifier is
+    SomeOtherContract(
+        123467890,
+        false,
+        0xCA35b7d915458EF540aDe6068dFe2F44E8fa733c
+    )
+{}
+
+================================================================================
+`;

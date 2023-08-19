@@ -1,0 +1,48 @@
+{
+  "name": "big-integer",
+  "version": "1.6.36",
+  "author": "Peter Olson <peter.e.c.olson+npm@gmail.com>",
+  "description": "An arbitrary length integer library for Javascript",
+  "contributors": [],
+  "bin": {},
+  "scripts": {
+    "test": "tsc && karma start my.conf.js && node spec/tsDefinitions.js",
+    "minify": "uglifyjs BigInteger.js -o BigInteger.min.js"
+  },
+  "main": "./BigInteger",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:peterolson/BigInteger.js.git"
+  },
+  "keywords": [
+    "math",
+    "big",
+    "bignum",
+    "bigint",
+    "biginteger",
+    "integer",
+    "arbitrary",
+    "precision",
+    "arithmetic"
+  ],
+  "devDependencies": {
+    "@types/lodash": "^4.14.109",
+    "@types/node": "^7.0.65",
+    "coveralls": "^2.11.4",
+    "jasmine": "2.1.x",
+    "jasmine-core": "^2.3.4",
+    "karma": "^0.13.22",
+    "karma-cli": "^1.0.1",
+    "karma-coverage": "^0.4.2",
+    "karma-jasmine": "^0.3.6",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "lodash": "^4.17.4",
+    "typescript": "^2.3.3",
+    "uglifyjs": "^2.4.10"
+  },
+  "license": "Unlicense",
+  "engines": {
+    "node": ">=0.6"
+  },
+  "typings": "./BigInteger.d.ts"
+}

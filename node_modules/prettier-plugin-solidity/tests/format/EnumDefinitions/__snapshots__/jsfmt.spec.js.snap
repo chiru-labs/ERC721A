@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EnumDefinitions.sol - {"bracketSpacing":true} format 1`] = `
+====================================options=====================================
+bracketSpacing: true
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract EnumDefinitions {
+    enum ActionChoices { GoLeft, GoRight, GoStraight, SitStill }
+    enum States { State1, State2, State3, State4, State5, State6, State7, State8, State9 }
+}
+
+=====================================output=====================================
+contract EnumDefinitions {
+    enum ActionChoices {
+        GoLeft,
+        GoRight,
+        GoStraight,
+        SitStill
+    }
+    enum States {
+        State1,
+        State2,
+        State3,
+        State4,
+        State5,
+        State6,
+        State7,
+        State8,
+        State9
+    }
+}
+
+================================================================================
+`;
+
+exports[`EnumDefinitions.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract EnumDefinitions {
+    enum ActionChoices { GoLeft, GoRight, GoStraight, SitStill }
+    enum States { State1, State2, State3, State4, State5, State6, State7, State8, State9 }
+}
+
+=====================================output=====================================
+contract EnumDefinitions {
+    enum ActionChoices {
+        GoLeft,
+        GoRight,
+        GoStraight,
+        SitStill
+    }
+    enum States {
+        State1,
+        State2,
+        State3,
+        State4,
+        State5,
+        State6,
+        State7,
+        State8,
+        State9
+    }
+}
+
+================================================================================
+`;

@@ -1,0 +1,26 @@
+{
+  "name": "nano-base32",
+  "author": "Gray Olson",
+  "version": "1.0.1",
+  "license": "MIT",
+  "repository": "temrhn/nano-base32",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "standard && mocha"
+  },
+  "devDependencies": {
+    "array-buffer-to-hex": "^1.0.0",
+    "blakejs": "^1.1.0",
+    "hex-to-array-buffer": "^0.1.0",
+    "mocha": "^5.0.1",
+    "standard": "^8.0.0-beta.5"
+  },
+  "keywords": [
+    "base32 encode",
+    "base32 encoder",
+    "base32",
+    "base32hex",
+    "nano"
+  ]
+}

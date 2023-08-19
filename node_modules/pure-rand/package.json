@@ -1,0 +1,71 @@
+{
+  "name": "pure-rand",
+  "version": "5.0.0",
+  "description": " Pure random number generator written in TypeScript",
+  "type": "commonjs",
+  "main": "lib/pure-rand.js",
+  "exports": {
+    ".": {
+      "require": "./lib/pure-rand.js",
+      "import": "./lib/esm/pure-rand.js",
+      "default": "./lib/esm/pure-rand.js"
+    }
+  },
+  "module": "lib/esm/pure-rand.js",
+  "types": "lib/types/pure-rand.d.ts",
+  "files": [
+    "lib"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "format:check": "prettier --list-different \"**/*.{js,ts}\"",
+    "format": "prettier --write \"**/*.{js,ts}\"",
+    "build": "tsc && tsc -p ./tsconfig.declaration.json",
+    "build:esm": "tsc --module es2015 --outDir lib/esm --moduleResolution node && cp package.esm-template.json lib/esm/package.json",
+    "build:prod": "yarn build && yarn build:esm && node postbuild/main.cjs",
+    "build:prod-ci": "cross-env EXPECT_GITHUB_SHA=true yarn build:prod",
+    "test": "jest --config jest.config.js --coverage",
+    "build:bench:old": "tsc --target es6",
+    "build:bench:new": "tsc --target es6 --outDir lib-new/",
+    "bench": "node perf/benchmark.cjs",
+    "auto:bench": "git stash && yarn build:bench:old && git stash pop && yarn build:bench:new && yarn bench"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dubzzz/pure-rand.git"
+  },
+  "author": "Nicolas DUBIEN <github@dubien.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dubzzz/pure-rand/issues"
+  },
+  "homepage": "https://github.com/dubzzz/pure-rand#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^26.0.4",
+    "@types/node": "^15.0.0",
+    "benchmark": "^2.1.4",
+    "chalk": "^4.1.0",
+    "console-table-printer": "2.9.0",
+    "cross-env": "^7.0.3",
+    "fast-check": "^2.7.0",
+    "glob": "^7.1.6",
+    "jest": "^26.1.0",
+    "microtime": "^3.0.0",
+    "prettier": "2.3.1",
+    "replace-in-file": "^6.1.0",
+    "source-map-support": "^0.5.16",
+    "ts-jest": "^26.1.2",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.0.2",
+    "yargs": "^17.0.1"
+  },
+  "keywords": [
+    "pure random",
+    "random number generator"
+  ],
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/fast-check"
+  }
+}

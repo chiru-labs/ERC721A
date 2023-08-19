@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": "./src",
+    "strict": true,
+    "lib": [
+      "es2017"
+    ],
+  },
+  "include": [
+    "./src/**/*",
+  ]
+}

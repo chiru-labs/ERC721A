@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Immutable.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >0.6.4 <0.7.0;
+
+contract Immutable {
+    uint constant X = 32**22 + 8;
+    string constant TEXT = "abc";
+    bytes32 constant MY_HASH = keccak256("abc");
+    uint immutable decimals;
+    uint immutable maxBalance;
+    address immutable owner = msg.sender;
+
+    constructor(uint _decimals, address _reference) public {
+        decimals = _decimals;
+        // Assignments to immutables can even access the environment.
+        maxBalance = _reference.balance;
+    }
+
+    function isBalanceTooHigh(address _other) public view returns (bool) {
+        return _other.balance > maxBalance;
+    }
+}
+
+=====================================output=====================================
+pragma solidity >0.6.4 <0.7.0;
+
+contract Immutable {
+    uint256 constant X = 32**22 + 8;
+    string constant TEXT = "abc";
+    bytes32 constant MY_HASH = keccak256("abc");
+    uint256 immutable decimals;
+    uint256 immutable maxBalance;
+    address immutable owner = msg.sender;
+
+    constructor(uint256 _decimals, address _reference) public {
+        decimals = _decimals;
+        // Assignments to immutables can even access the environment.
+        maxBalance = _reference.balance;
+    }
+
+    function isBalanceTooHigh(address _other) public view returns (bool) {
+        return _other.balance > maxBalance;
+    }
+}
+
+================================================================================
+`;

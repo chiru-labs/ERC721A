@@ -1,0 +1,16 @@
+# Installation
+> `npm install --save @types/abstract-leveldown`
+
+# Summary
+This package contains type definitions for abstract-leveldown (https://github.com/Level/abstract-leveldown).
+
+# Details
+Files were exported from https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/abstract-leveldown.
+
+### Additional Details
+ * Last updated: Wed, 05 Jan 2022 14:31:41 GMT
+ * Dependencies: none
+ * Global values: none
+
+# Credits
+These definitions were written by [Meirion Hughes](https://github.com/MeirionHughes), [Daniel Byrne](https://github.com/danwbyrne), and [Steffen Park](https://github.com/istherepie).

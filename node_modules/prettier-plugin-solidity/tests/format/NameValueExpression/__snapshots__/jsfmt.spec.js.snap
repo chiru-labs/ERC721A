@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NameValueExpression.sol - {"bracketSpacing":true} format 1`] = `
+====================================options=====================================
+bracketSpacing: true
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.6.2 <0.7.0;
+
+contract NameValueExpression {
+    function callFeed() public { feed.info{value: 10, gas: 800, test: true, many: variables(), to: check[0], forSplits: true}(); }
+    D newD = new D{value: amount}(arg);
+}
+=====================================output=====================================
+pragma solidity >=0.6.2 <0.7.0;
+
+contract NameValueExpression {
+    function callFeed() public {
+        feed.info{
+            value: 10,
+            gas: 800,
+            test: true,
+            many: variables(),
+            to: check[0],
+            forSplits: true
+        }();
+    }
+
+    D newD = new D{ value: amount }(arg);
+}
+
+================================================================================
+`;
+
+exports[`NameValueExpression.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+pragma solidity >=0.6.2 <0.7.0;
+
+contract NameValueExpression {
+    function callFeed() public { feed.info{value: 10, gas: 800, test: true, many: variables(), to: check[0], forSplits: true}(); }
+    D newD = new D{value: amount}(arg);
+}
+=====================================output=====================================
+pragma solidity >=0.6.2 <0.7.0;
+
+contract NameValueExpression {
+    function callFeed() public {
+        feed.info{
+            value: 10,
+            gas: 800,
+            test: true,
+            many: variables(),
+            to: check[0],
+            forSplits: true
+        }();
+    }
+
+    D newD = new D{value: amount}(arg);
+}
+
+================================================================================
+`;

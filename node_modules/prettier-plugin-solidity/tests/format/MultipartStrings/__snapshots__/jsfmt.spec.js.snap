@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MultipartStrings.sol format 1`] = `
+====================================options=====================================
+parsers: ["solidity-parse"]
+printWidth: 80
+                                                                                | printWidth
+=====================================input======================================
+contract MultipartStrings {
+  bytes b1 = hex'beef';
+  bytes b2 = hex"beef";
+  bytes b3 = hex"beef" hex"c0ffee";
+  bytes b4 = hex"beeeeeeeeeeeeeeeeeeeeeef" hex"c0000000000ffeeeeeeeeeeeeeeeeeee";
+
+  string s1 = "foo";
+  string s2 = "foo" "bar";
+  string s3 = "foofoofoofooofoofoofofoooofofoo" "barbarbrabrbarbarbabrabrbabr";
+}
+
+=====================================output=====================================
+contract MultipartStrings {
+    bytes b1 = hex"beef";
+    bytes b2 = hex"beef";
+    bytes b3 = hex"beef" hex"c0ffee";
+    bytes b4 =
+        hex"beeeeeeeeeeeeeeeeeeeeeef"
+        hex"c0000000000ffeeeeeeeeeeeeeeeeeee";
+
+    string s1 = "foo";
+    string s2 =
+        "foo"
+        "bar";
+    string s3 =
+        "foofoofoofooofoofoofofoooofofoo"
+        "barbarbrabrbarbarbabrabrbabr";
+}
+
+================================================================================
+`;

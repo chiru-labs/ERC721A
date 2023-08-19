@@ -1,0 +1,49 @@
+{
+  "name": "chai-bn",
+  "version": "0.2.2",
+  "description": "Chai assertions for comparing arbitrary-precision integers using the bignumber.js library",
+  "main": "chai-bn.js",
+  "types": "chai-bn.d.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "mocha test/*.js"
+  },
+  "devDependencies": {
+    "bn.js": "^4.11.8",
+    "chai": "^4.2.0",
+    "eslint": "^5.11.1",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "mocha": "^5.2.0"
+  },
+  "author": "Nicolas Venturo <nicolas.venturo@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/ZeppelinSolutions/chai-bn#readme",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ZeppelinSolutions/chai-bn"
+  },
+  "keywords": [
+    "chai",
+    "chai-plugin",
+    "math",
+    "test",
+    "arbitrary",
+    "precision",
+    "arithmetic",
+    "big",
+    "number",
+    "decimal",
+    "float",
+    "bignumber",
+    "bn"
+  ],
+  "files": [
+    "chai-bn.js",
+    "chai-bn.d.ts"
+  ],
+  "dependencies": {},
+  "peerDependencies": {
+    "bn.js": "^4.11.0",
+    "chai": "^4.0.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+	"root": true,
+
+	"extends": "@ljharb",
+
+	"env": {
+		"es6": true
+	},
+
+	"rules": {
+		"id-length": [2, { "min": 1, "max": 30 }],
+		"max-lines": [2, 100],
+		"max-lines-per-function": [2, 70],
+		"max-statements": [2, 18],
+		"multiline-comment-style": 0,
+		"no-magic-numbers": 0,
+		"operator-linebreak": [2, "before"]
+	}
+}

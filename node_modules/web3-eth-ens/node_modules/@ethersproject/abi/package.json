@@ -1,0 +1,38 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "dependencies": {
+    "@ethersproject/address": "^5.0.4",
+    "@ethersproject/bignumber": "^5.0.7",
+    "@ethersproject/bytes": "^5.0.4",
+    "@ethersproject/constants": "^5.0.4",
+    "@ethersproject/hash": "^5.0.4",
+    "@ethersproject/keccak256": "^5.0.3",
+    "@ethersproject/logger": "^5.0.5",
+    "@ethersproject/properties": "^5.0.3",
+    "@ethersproject/strings": "^5.0.4"
+  },
+  "description": "Utilities and Classes for parsing, formatting and managing Ethereum ABIs.",
+  "ethereum": "donations.ethers.eth",
+  "gitHead": "b61e2cc96afcfc4984522097b3dc53d08e86e316",
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/abi",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "tarballHash": "0x1cb0dc8fd334cbf9dba1c9746ed316852af2f5dbbd61f07048e737f452568352",
+  "types": "./lib/index.d.ts",
+  "version": "5.0.7"
+}

@@ -1,0 +1,4 @@
+coverage/**/*.js
+tests/format/**/*.sol
+tests/format/RespectDefaultOptions/respect-default-options.js
+src/prettier-comments/**/*.js

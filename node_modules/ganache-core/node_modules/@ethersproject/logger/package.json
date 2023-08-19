@@ -1,0 +1,39 @@
+{
+  "author": "Richard Moore <me@ricmoo.com>",
+  "description": "Logger utility functions for ethers.",
+  "ethereum": "donations.ethers.eth",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://gitcoin.co/grants/13/ethersjs-complete-simple-and-tiny-2"
+    },
+    {
+      "type": "individual",
+      "url": "https://www.buymeacoffee.com/ricmoo"
+    }
+  ],
+  "gitHead": "211defa27f85af111e81b400a18922f35dff21e1",
+  "keywords": [
+    "Ethereum",
+    "ethers"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "module": "./lib.esm/index.js",
+  "name": "@ethersproject/logger",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "packages/logger",
+    "type": "git",
+    "url": "git://github.com/ethers-io/ethers.js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "sideEffects": false,
+  "tarballHash": "0x5017c8da7b7d8467daee3cc7b637d9e30727756d541cb32523362b701ef0dd36",
+  "types": "./lib/index.d.ts",
+  "version": "5.0.8"
+}
