@@ -133,11 +133,15 @@ contract ERC721A is IERC721A {
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
+    // Define Unlock Time (Storage)
+    uint256 public unlockTime;
+
+
     // =============================================================
     //                          CONSTRUCTOR
     // =============================================================
 
-    constructor(string memory name_, string memory symbol_) {
+    constructor(uint256 _unlockTime, string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
         _currentIndex = _startTokenId();
@@ -1146,4 +1150,11 @@ contract ERC721A is IERC721A {
             revert(0x00, 0x04)
         }
     }
+
+    // Create Modifier for Time Restriction
+    modifier onlyAfterUnlock() {
+        require(block.timestamp >= unlockTime, "Time lock not expired");
+        _;
+    }
+
 }
