@@ -133,6 +133,10 @@ contract ERC721A is IERC721A {
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
+    // Define Unlock Time (Storage)
+    uint256 public unlockTime;
+
+
     // =============================================================
     //                          CONSTRUCTOR
     // =============================================================
@@ -804,6 +808,12 @@ contract ERC721A is IERC721A {
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
 
+    // Set Unlock Time in Mint Operations
+    constructor(uint256 _unlockTime) public {
+        unlockTime = _unlockTime;
+    }
+
+
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
      *
@@ -1146,4 +1156,11 @@ contract ERC721A is IERC721A {
             revert(0x00, 0x04)
         }
     }
+
+    // Create Modifier for Time Restriction
+    modifier onlyAfterUnlock() {
+        require(block.timestamp >= unlockTime, "Time lock not expired");
+        _;
+    }
+
 }
