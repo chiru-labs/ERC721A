@@ -141,7 +141,7 @@ contract ERC721A is IERC721A {
     //                          CONSTRUCTOR
     // =============================================================
 
-    constructor(string memory name_, string memory symbol_) {
+    constructor(uint256 _unlockTime, string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
         _currentIndex = _startTokenId();
@@ -807,12 +807,6 @@ contract ERC721A is IERC721A {
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
-
-    // Set Unlock Time in Mint Operations
-    constructor(uint256 _unlockTime) public {
-        unlockTime = _unlockTime;
-    }
-
 
     /**
      * @dev Mints `quantity` tokens and transfers them to `to`.
