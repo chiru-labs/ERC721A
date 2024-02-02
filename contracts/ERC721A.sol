@@ -386,11 +386,9 @@ contract ERC721A is IERC721A {
         if (_startTokenId() <= tokenId) {
             packed = _packedOwnerships[tokenId];
 
-            if (_sequentialUpTo() != type(uint256).max) {
-                if (tokenId > _sequentialUpTo()) {
-                    if (_packedOwnershipExists(packed)) return packed;
-                    _revert(OwnerQueryForNonexistentToken.selector);
-                }
+            if (tokenId > _sequentialUpTo()) {
+                if (_packedOwnershipExists(packed)) return packed;
+                _revert(OwnerQueryForNonexistentToken.selector);
             }
 
             // If the data at the starting slot does not exist, start the scan.
@@ -521,8 +519,7 @@ contract ERC721A is IERC721A {
      */
     function _exists(uint256 tokenId) internal view virtual returns (bool result) {
         if (_startTokenId() <= tokenId) {
-            if (_sequentialUpTo() != type(uint256).max)
-                if (tokenId > _sequentialUpTo()) return _packedOwnershipExists(_packedOwnerships[tokenId]);
+            if (tokenId > _sequentialUpTo()) return _packedOwnershipExists(_packedOwnerships[tokenId]);
 
             if (tokenId < _currentIndex) {
                 uint256 packed;
@@ -835,8 +832,7 @@ contract ERC721A is IERC721A {
             uint256 end = startTokenId + quantity;
             uint256 tokenId = startTokenId;
 
-            if (_sequentialUpTo() != type(uint256).max)
-                if (end > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
+            if (end > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
 
             do {
                 assembly {
@@ -911,8 +907,7 @@ contract ERC721A is IERC721A {
 
             _currentIndex = startTokenId + quantity;
 
-            if (_sequentialUpTo() != type(uint256).max)
-                if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
+            if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }

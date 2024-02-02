@@ -46,11 +46,8 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
     {
         unchecked {
             if (tokenId >= _startTokenId()) {
-                // Workflow if spot-minting is enabled.
-                if (_sequentialUpTo() != type(uint256).max) {
-                    // If the `tokenId` is above the sequential range.
-                    if (tokenId > _sequentialUpTo()) return _ownershipAt(tokenId);
-                }
+                if (tokenId > _sequentialUpTo()) return _ownershipAt(tokenId);
+
                 if (tokenId < _nextTokenId()) {
                     // If the `tokenId` is within bounds,
                     // scan backwards for the initialized ownership slot.
