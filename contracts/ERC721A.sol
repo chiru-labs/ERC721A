@@ -963,6 +963,8 @@ contract ERC721A is IERC721A {
      * - `tokenId` must be greater than `_sequentialUpTo()`.
      * - `tokenId` must not exist.
      *
+     * If the token at `tokenId` has been previously burned, its `extraData` will be cleared.
+     *
      * Emits a {Transfer} event for each mint.
      */
     function _mintSpot(address to, uint256 tokenId) internal virtual {
