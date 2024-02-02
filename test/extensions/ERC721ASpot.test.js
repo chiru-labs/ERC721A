@@ -165,11 +165,8 @@ describe('ERC721ASpot', function () {
     });
 
     context('with transfers', function () {
-      beforeEach(async function () {
-        await this.erc721aSpot.safeMint(this.addr1.address, 5);
-      });
-
       it('reverts if token is not minted', async function () {
+        await this.erc721aSpot.safeMint(this.addr1.address, 10);
         await expect(this.erc721aSpot
           .connect(this.addr1)
           .transferFrom(this.addr1.address, this.owner.address, 21)).to.be.revertedWith(
@@ -179,6 +176,32 @@ describe('ERC721ASpot', function () {
         await this.erc721aSpot
           .connect(this.addr1)
           .transferFrom(this.addr1.address, this.owner.address, 21);
+      });
+
+      it('edge case 1', async function () {
+        await this.erc721aSpot.safeMintSpot(this.addr1.address, 20);
+        await this.erc721aSpot.safeMint(this.addr1.address, 10);
+        await this.erc721aSpot.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 20);
+        expect(await this.erc721aSpot.ownerOf(20)).to.eq(this.owner.address);
+        expect(await this.erc721aSpot.ownerOf(19)).to.eq(this.addr1.address);
+        expect(await this.erc721aSpot.ownerOf(18)).to.eq(this.addr1.address);
+        await this.erc721aSpot.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 19);
+        expect(await this.erc721aSpot.ownerOf(20)).to.eq(this.owner.address);
+        expect(await this.erc721aSpot.ownerOf(19)).to.eq(this.owner.address);
+        expect(await this.erc721aSpot.ownerOf(18)).to.eq(this.addr1.address);
+      });
+
+      it('edge case 2', async function () {
+        await this.erc721aSpot.safeMintSpot(this.addr1.address, 20);
+        await this.erc721aSpot.safeMint(this.addr1.address, 10);
+        await this.erc721aSpot.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 19);
+        expect(await this.erc721aSpot.ownerOf(20)).to.eq(this.addr1.address);
+        expect(await this.erc721aSpot.ownerOf(19)).to.eq(this.owner.address);
+        expect(await this.erc721aSpot.ownerOf(18)).to.eq(this.addr1.address);
+        await this.erc721aSpot.connect(this.addr1).transferFrom(this.addr1.address, this.owner.address, 20);
+        expect(await this.erc721aSpot.ownerOf(20)).to.eq(this.owner.address);
+        expect(await this.erc721aSpot.ownerOf(19)).to.eq(this.owner.address);
+        expect(await this.erc721aSpot.ownerOf(18)).to.eq(this.addr1.address);
       });
     });
 
