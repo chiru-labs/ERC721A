@@ -137,11 +137,35 @@ describe('ERC721ASpot', function () {
       );
     });
 
-    it('sequential mints exceeding limit reverts', async function () {
+    it('reverts if sequential mint exceeds limit', async function () {
       await expect(this.erc721aSpot.safeMint(this.addr1.address, 11)).to.be.revertedWith(
         'SequentialMintExceedsLimit'
       );
       await this.erc721aSpot.safeMint(this.addr1.address, 10);
+    });
+
+    it('reverts if _mintSpot tokenId is too small', async function () {
+      await expect(this.erc721aSpot.safeMintSpot(this.addr1.address, 19)).to.be.revertedWith(
+        'SpotMintTokenIdTooSmall'
+      );
+    });
+
+    context('with transfers', function () {
+      beforeEach(async function () {
+        await this.erc721aSpot.safeMint(this.addr1.address, 5);
+      });
+
+      it('reverts if token is not minted', async function () {
+        await expect(this.erc721aSpot
+          .connect(this.addr1)
+          .transferFrom(this.addr1.address, this.owner.address, 21)).to.be.revertedWith(
+            'OwnerQueryForNonexistentToken'
+          );
+        await this.erc721aSpot.safeMintSpot(this.addr1.address, 21);
+        await this.erc721aSpot
+          .connect(this.addr1)
+          .transferFrom(this.addr1.address, this.owner.address, 21);
+      });
     });
 
     context('with burns', function () {
@@ -210,12 +234,14 @@ describe('ERC721ASpot', function () {
       it('forwards extraData after burn and re-mint', async function () {
         await this.erc721aSpot.setExtraDataAt(20, 123);
         let explicitOwnership = await this.erc721aSpot.explicitOwnershipOf(20);
+        expect(await this.erc721aSpot.exists(20)).to.eq(true);
         expect(explicitOwnership.addr).to.eq(this.addr1.address);
         expect(explicitOwnership.burned).to.eq(false);
         expect(explicitOwnership.extraData).to.eq(123);
         expect(await this.erc721aSpot.exists(20)).to.eq(true);
 
         await this.erc721aSpot.connect(this.addr1).burn(20);
+        expect(await this.erc721aSpot.exists(20)).to.eq(false);
         explicitOwnership = await this.erc721aSpot.explicitOwnershipOf(20);
         expect(explicitOwnership.addr).to.eq(this.addr1.address);
         expect(explicitOwnership.burned).to.eq(true);
@@ -223,6 +249,7 @@ describe('ERC721ASpot', function () {
         expect(await this.erc721aSpot.exists(20)).to.eq(false);
 
         this.erc721aSpot.safeMintSpot(this.owner.address, 20);
+        expect(await this.erc721aSpot.exists(20)).to.eq(true);
         explicitOwnership = await this.erc721aSpot.explicitOwnershipOf(20);
         expect(explicitOwnership.addr).to.eq(this.owner.address);
         expect(explicitOwnership.burned).to.eq(false);
