@@ -38,10 +38,6 @@ contract ERC721ASpotMock is StartTokenIdHelper, SequentialUpToHelper, ERC721AQue
         _safeMintSpot(to, tokenId);
     }
 
-    function getOwnershipAt(uint256 index) public view returns (TokenOwnership memory) {
-        return _ownershipAt(index);
-    }
-
     function totalSpotMinted() public view returns (uint256) {
         return _totalSpotMinted();
     }

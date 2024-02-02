@@ -231,30 +231,38 @@ describe('ERC721ASpot', function () {
         expect(await this.erc721aSpot.totalBurned()).to.eq(7);
       });
 
-      it('forwards extraData after burn and re-mint', async function () {
-        await this.erc721aSpot.setExtraDataAt(20, 123);
-        let explicitOwnership = await this.erc721aSpot.explicitOwnershipOf(20);
-        expect(await this.erc721aSpot.exists(20)).to.eq(true);
-        expect(explicitOwnership.addr).to.eq(this.addr1.address);
-        expect(explicitOwnership.burned).to.eq(false);
-        expect(explicitOwnership.extraData).to.eq(123);
+      it('affects _exists', async function () {
+        expect(await this.erc721aSpot.exists(0)).to.eq(false);
+        expect(await this.erc721aSpot.exists(9)).to.eq(false);
+        expect(await this.erc721aSpot.exists(10)).to.eq(true);
+        
         expect(await this.erc721aSpot.exists(20)).to.eq(true);
 
         await this.erc721aSpot.connect(this.addr1).burn(20);
         expect(await this.erc721aSpot.exists(20)).to.eq(false);
+
+        this.erc721aSpot.safeMintSpot(this.owner.address, 20);
+        expect(await this.erc721aSpot.exists(20)).to.eq(true);
+      });
+
+      it('forwards extraData after burn and re-mint', async function () {
+        await this.erc721aSpot.setExtraDataAt(20, 123);
+        let explicitOwnership = await this.erc721aSpot.explicitOwnershipOf(20);
+        expect(explicitOwnership.addr).to.eq(this.addr1.address);
+        expect(explicitOwnership.burned).to.eq(false);
+        expect(explicitOwnership.extraData).to.eq(123);
+
+        await this.erc721aSpot.connect(this.addr1).burn(20);
         explicitOwnership = await this.erc721aSpot.explicitOwnershipOf(20);
         expect(explicitOwnership.addr).to.eq(this.addr1.address);
         expect(explicitOwnership.burned).to.eq(true);
         expect(explicitOwnership.extraData).to.eq(123);
-        expect(await this.erc721aSpot.exists(20)).to.eq(false);
 
         this.erc721aSpot.safeMintSpot(this.owner.address, 20);
-        expect(await this.erc721aSpot.exists(20)).to.eq(true);
         explicitOwnership = await this.erc721aSpot.explicitOwnershipOf(20);
         expect(explicitOwnership.addr).to.eq(this.owner.address);
         expect(explicitOwnership.burned).to.eq(false);
         expect(explicitOwnership.extraData).to.eq(123);
-        expect(await this.erc721aSpot.exists(20)).to.eq(true);
       });
     });
   });
