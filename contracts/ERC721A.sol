@@ -134,7 +134,7 @@ contract ERC721A is IERC721A {
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     // The amount of tokens minted above `_sequentialUpTo()`.
-    // We call these spot mints.
+    // We call these spot mints (i.e. non-sequential mints).
     uint256 private _spotMinted;
 
     // =============================================================

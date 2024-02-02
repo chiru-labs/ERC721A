@@ -130,6 +130,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      * an out-of-gas error (10K collections should be fine).
      */
     function tokensOfOwner(address owner) external view virtual override returns (uint256[] memory) {
+        // If spot mints are enabled, full-range scan is disabled.
         if (_sequentialUpTo() != type(uint256).max) _revert(NotCompatibleWithSpotMints.selector);
         uint256 start = _startTokenId();
         uint256 stop = _nextTokenId();
