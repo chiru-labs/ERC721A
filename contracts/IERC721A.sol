@@ -82,7 +82,7 @@ interface IERC721A {
     /**
      * The `tokenId` of a sequential mint exceeds `_sequentialUpTo()`.
      */
-    error SequentialMintsExceedLimit();
+    error SequentialMintExceedLimit();
 
     /**
      * Spot minting requires a `tokenId` greater than `_sequentialUpTo()`.

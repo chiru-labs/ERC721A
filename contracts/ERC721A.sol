@@ -134,7 +134,7 @@ contract ERC721A is IERC721A {
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     // The amount of tokens minted above `_sequentialUpTo()`.
-    // We call these "spot-minted" tokens.
+    // We call these spot mints.
     uint256 private _spotMinted;
 
     // =============================================================
@@ -155,17 +155,23 @@ contract ERC721A is IERC721A {
     // =============================================================
 
     /**
-     * @dev Returns the starting token ID.
-     * To change the starting token ID, please override this function.
+     * @dev Returns the starting token ID for sequential mints.
+     *
+     * Override this function to change the starting token ID for sequential mints.
+     *
+     * Note: The value returned must never change after any tokens have been minted.
      */
     function _startTokenId() internal view virtual returns (uint256) {
         return 0;
     }
 
     /**
-     * @dev Returns the maximum token ID (inclusive) for sequential minting.
-     * To enable spot (non-sequential) minting of tokens above `_sequentialUpTo()`,
-     * override this function to larger than `_startTokenId()`, but smaller than 2**256 - 1.
+     * @dev Returns the maximum token ID (inclusive) for sequential mints.
+     *
+     * Override this function to return a value less than 2**256 - 1,
+     * but greater than `_startTokenId()`, to enable spot (non-sequential) mints.
+     *
+     * Note: The value returned must never change after any tokens have been minted.
      */
     function _sequentialUpTo() internal view virtual returns (uint256) {
         return type(uint256).max;
@@ -829,7 +835,7 @@ contract ERC721A is IERC721A {
             uint256 tokenId = startTokenId;
 
             if (_sequentialUpTo() != type(uint256).max)
-                if (end > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
+                if (end > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
 
             do {
                 assembly {
@@ -905,7 +911,7 @@ contract ERC721A is IERC721A {
             _currentIndex = startTokenId + quantity;
 
             if (_sequentialUpTo() != type(uint256).max)
-                if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
+                if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
