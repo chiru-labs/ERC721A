@@ -146,28 +146,24 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
         address owner,
         uint256 start,
         uint256 stop
-    ) private view returns (uint256[] memory) {
+    ) private view returns (uint256[] memory tokenIds) {
         unchecked {
             if (start >= stop) _revert(InvalidQueryRange.selector);
             // Set `start = max(start, _startTokenId())`.
-            if (start < _startTokenId()) {
-                start = _startTokenId();
-            }
+            if (start < _startTokenId()) start = _startTokenId();
             uint256 nextTokenId = _nextTokenId();
+            // If spot mints are enabled, scan all the way until the specified `stop`.
             uint256 stopLimit = _sequentialUpTo() != type(uint256).max ? stop : nextTokenId;
             // Set `stop = min(stop, stopLimit)`.
-            if (stop >= stopLimit) {
-                stop = stopLimit;
-            }
-            uint256[] memory tokenIds;
-            uint256 tokenIdsMaxLength;
-            if (start < stop) tokenIdsMaxLength = balanceOf(owner);
+            if (stop >= stopLimit) stop = stopLimit;
+            // Number of tokens to scan.
+            uint256 tokenIdsMaxLength = balanceOf(owner);
+            // Set `tokenIdsMaxLength` to zero if the range contains no tokens.
+            if (start >= stop) tokenIdsMaxLength = 0;
+            // If there are one or more tokens to scan.
             if (tokenIdsMaxLength != 0) {
-                // Set `tokenIdsMaxLength = min(balanceOf(owner), stop - start)`,
-                // to cater for cases where `balanceOf(owner)` is too big.
-                if (stop - start <= tokenIdsMaxLength) {
-                    tokenIdsMaxLength = stop - start;
-                }
+                // Set `tokenIdsMaxLength = min(balanceOf(owner), tokenIdsMaxLength)`.
+                if (stop - start <= tokenIdsMaxLength) tokenIdsMaxLength = stop - start;
                 uint256 m; // Start of available memory.
                 assembly {
                     // Grab the free memory pointer.
@@ -185,9 +181,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 // initialize `currOwnershipAddr`.
                 // `ownership.address` will not be zero,
                 // as `start` is clamped to the valid token ID range.
-                if (!ownership.burned) {
-                    currOwnershipAddr = ownership.addr;
-                }
+                if (!ownership.burned) currOwnershipAddr = ownership.addr;
                 uint256 tokenIdsIdx;
                 // Use a do-while, which is slightly more efficient for this case,
                 // as the array will at least contain one element.
@@ -198,7 +192,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                         // Reset `currOwnershipAddr`, as each spot-minted token is a batch of one.
                         if (start > _sequentialUpTo()) currOwnershipAddr = address(0);
                     }
-                    ownership = _ownershipAt(start);
+                    ownership = _ownershipAt(start); // This implicitly allocates memory.
                     assembly {
                         switch mload(add(ownership, 0x40))
                         // if `ownership.burned == false`.
@@ -224,7 +218,8 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                             currOwnershipAddr := 0
                         }
                         start := add(start, 1)
-                        // Free temporary memory allocated for ownership to prevent memory expansion.
+                        // Free temporary memory implicitly allocated for ownership
+                        // to avoid quadratic memory expansion costs.
                         mstore(0x40, m)
                     }
                 } while (!(start == stop || tokenIdsIdx == tokenIdsMaxLength));
@@ -233,7 +228,6 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                     mstore(tokenIds, tokenIdsIdx)
                 }
             }
-            return tokenIds;
         }
     }
 }
