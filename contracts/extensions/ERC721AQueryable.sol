@@ -46,6 +46,12 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
     {
         unchecked {
             if (tokenId >= _startTokenId()) {
+                // Workflow if spot-minting is enabled.
+                if (_sequentialUpTo() != type(uint256).max) {
+                    // If the `tokenId` is above the sequential range.
+                    if (tokenId > _sequentialUpTo()) 
+                        return _ownershipAt(tokenId);
+                }
                 if (tokenId < _nextTokenId()) {
                     // If the `tokenId` is within bounds,
                     // scan backwards for the initialized ownership slot.
@@ -125,6 +131,7 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
      * an out-of-gas error (10K collections should be fine).
      */
     function tokensOfOwner(address owner) external view virtual override returns (uint256[] memory) {
+        if (_sequentialUpTo() != type(uint256).max) _revert(NotCompatibleWithSpotMints.selector);
         uint256 start = _startTokenId();
         uint256 stop = _nextTokenId();
         uint256[] memory tokenIds;
