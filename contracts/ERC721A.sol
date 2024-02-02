@@ -380,17 +380,15 @@ contract ERC721A is IERC721A {
      */
     function _packedOwnershipOf(uint256 tokenId) private view returns (uint256 packed) {
         if (_startTokenId() <= tokenId) {
-            // Workflow if spot-minting is enabled.
+            packed = _packedOwnerships[tokenId];
+
             if (_sequentialUpTo() != type(uint256).max) {
-                // If the `tokenId` is above the sequential range.
                 if (tokenId > _sequentialUpTo()) {
-                    packed = _packedOwnerships[tokenId];
-                    if (packed & _BITMASK_BURNED == 0) _revert(OwnerQueryForNonexistentToken.selector);
-                    return packed;
+                    if (_packedOwnershipExists(packed)) return packed;
+                    _revert(OwnerQueryForNonexistentToken.selector);
                 }
             }
 
-            packed = _packedOwnerships[tokenId];
             // If the data at the starting slot does not exist, start the scan.
             if (packed == 0) {
                 if (tokenId >= _currentIndex) _revert(OwnerQueryForNonexistentToken.selector);
@@ -519,9 +517,8 @@ contract ERC721A is IERC721A {
      */
     function _exists(uint256 tokenId) internal view virtual returns (bool result) {
         if (_startTokenId() <= tokenId) {
-            // Workflow if spot-minting is enabled.
+            
             if (_sequentialUpTo() != type(uint256).max) {
-                // If the `tokenId` is above the sequential range.
                 if (tokenId > _sequentialUpTo()) 
                     return _packedOwnershipExists(_packedOwnerships[tokenId]);
             }
