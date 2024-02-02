@@ -60,6 +60,12 @@ describe('ERC721ASpot', function () {
       this.erc721aSpot = await deployContract('ERC721ASpotMock', args);
     });
 
+    it('_mintSpot emits a Transfer event', async function () {
+      await expect(this.erc721aSpot.safeMintSpot(this.addr1.address, 20))
+        .to.emit(this.erc721aSpot, 'Transfer')
+        .withArgs(ZERO_ADDRESS, this.addr1.address, 20);
+    });
+
     it('increases _totalSpotMinted, totalSupply', async function () {
       await this.erc721aSpot.safeMint(this.addr1.address, 5);
       expect(await this.erc721aSpot.totalSpotMinted()).to.eq(0);
@@ -75,29 +81,37 @@ describe('ERC721ASpot', function () {
     });
 
     it('tokensOfOwnerIn', async function () {
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 4294967295)).to.eql([]);
+
       await this.erc721aSpot.safeMint(this.addr1.address, 5);
-      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 50))
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 4294967295))
         .to.eql([10, 11, 12, 13, 14].map(BigNumber.from));
       
       await this.erc721aSpot.safeMintSpot(this.addr1.address, 21);
-      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 50))
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 4294967295))
         .to.eql([10, 11, 12, 13, 14, 21].map(BigNumber.from));
       
       await this.erc721aSpot.safeMintSpot(this.addr1.address, 31);
-      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 50))
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 4294967295))
         .to.eql([10, 11, 12, 13, 14, 21, 31].map(BigNumber.from));
       
       await this.erc721aSpot.safeMintSpot(this.addr1.address, 22);
-      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 50))
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 4294967295))
         .to.eql([10, 11, 12, 13, 14, 21, 22, 31].map(BigNumber.from));
       
       await this.erc721aSpot.safeMint(this.addr1.address, 5);
-      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 50))
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 4294967295))
         .to.eql([10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 31].map(BigNumber.from));
 
       await this.erc721aSpot.safeMintSpot(this.addr1.address, 20);
-      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 50))
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 4294967295))
         .to.eql([10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 31].map(BigNumber.from));
+
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 32))
+        .to.eql([10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 31].map(BigNumber.from));
+
+      expect(await this.erc721aSpot.tokensOfOwnerIn(this.addr1.address, 0, 31))
+        .to.eql([10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(BigNumber.from));
     });
 
     it('explicitOwnershipOf', async function () {
@@ -173,6 +187,15 @@ describe('ERC721ASpot', function () {
         await this.erc721aSpot.safeMint(this.addr1.address, 5);
         await this.erc721aSpot.safeMintSpot(this.addr1.address, 20);
         await this.erc721aSpot.safeMintSpot(this.addr1.address, 30);
+      });
+
+      it.only('sets ownership correctly', async function () {
+        const tokenIds = [10,11,12,13,14,20,30];
+        for (let i = 0; i < 35; ++i) {
+          const tx = this.erc721aSpot.getOwnershipOf(i);
+          if (tokenIds.includes(i)) await tx;
+          else await expect(tx).to.be.revertedWith('OwnerQueryForNonexistentToken');
+        }
       });
 
       it('reduces balanceOf, totalSupply', async function () {
