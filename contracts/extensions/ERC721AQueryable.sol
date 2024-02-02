@@ -193,7 +193,9 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 // as the array will at least contain one element.
                 do {
                     if (_sequentialUpTo() != type(uint256).max) {
+                        // Skip the remaining unused sequential slots.
                         if (start == nextTokenId) start = _sequentialUpTo() + 1;
+                        // Reset `currOwnershipAddr`, as each spot-minted token is a batch of one.
                         if (start > _sequentialUpTo()) currOwnershipAddr = address(0);
                     }
                     ownership = _ownershipAt(start);

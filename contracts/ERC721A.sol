@@ -28,6 +28,9 @@ interface ERC721A__IERC721Receiver {
  * Token IDs are minted in sequential order (e.g. 0, 1, 2, 3, ...)
  * starting from `_startTokenId()`.
  *
+ * The `_sequentialUpTo()` function can be overriden to enable spot mints
+ * (i.e. non-consecutive mints) for `tokenId`s greater than `_sequentialUpTo()`.
+ *
  * Assumptions:
  *
  * - An owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
@@ -189,8 +192,8 @@ contract ERC721A is IERC721A {
      * To get the total number of tokens minted, please see {_totalMinted}.
      */
     function totalSupply() public view virtual override returns (uint256 result) {
-        // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than `_currentIndex - _startTokenId()` times.
+        // Counter underflow is impossible as `_burnCounter` cannot be incremented
+        // more than `_currentIndex + _spotMinted - _startTokenId()` times.
         unchecked {
             result = _currentIndex - _burnCounter - _startTokenId();
             if (_sequentialUpTo() != type(uint256).max) result += _spotMinted;
