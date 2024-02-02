@@ -189,13 +189,17 @@ describe('ERC721ASpot', function () {
         await this.erc721aSpot.safeMintSpot(this.addr1.address, 30);
       });
 
-      it.only('sets ownership correctly', async function () {
-        const tokenIds = [10,11,12,13,14,20,30];
-        for (let i = 0; i < 35; ++i) {
-          const tx = this.erc721aSpot.getOwnershipOf(i);
-          if (tokenIds.includes(i)) await tx;
-          else await expect(tx).to.be.revertedWith('OwnerQueryForNonexistentToken');
-        }
+      it('sets ownership correctly', async function () {
+        const t = async (tokenIds) => {
+          for (let i = 0; i < 35; ++i) {
+            const tx = this.erc721aSpot.getOwnershipOf(i);
+            if (tokenIds.includes(i)) await tx;
+            else await expect(tx).to.be.revertedWith('OwnerQueryForNonexistentToken');
+          }
+        };
+        await t([10, 11, 12, 13, 14, 20, 30]);
+        await this.erc721aSpot.connect(this.addr1).burn(20);
+        await t([10, 11, 12, 13, 14, 30]);
       });
 
       it('reduces balanceOf, totalSupply', async function () {

@@ -940,7 +940,7 @@ contract ERC721A is IERC721A {
                         _revert(TransferToNonERC721ReceiverImplementer.selector);
                     }
                 } while (index < end);
-                // Reentrancy protection, scoped to `_mint`.
+                // Reentrancy protection, scoped to `_safeMint`.
                 if (_currentIndex != end) revert();
             }
         }
@@ -1041,7 +1041,7 @@ contract ERC721A is IERC721A {
                 if (!_checkContractOnERC721Received(address(0), to, tokenId, _data)) {
                     _revert(TransferToNonERC721ReceiverImplementer.selector);
                 }
-                // Reentrancy protection, scoped to `_mintSpot`.
+                // Reentrancy protection, scoped to `_safeMintSpot`.
                 if (_spotMinted != currentSpotMinted) revert();
             }
         }
