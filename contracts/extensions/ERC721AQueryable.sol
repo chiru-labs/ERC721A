@@ -153,7 +153,8 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
             if (start < _startTokenId()) {
                 start = _startTokenId();
             }
-            uint256 stopLimit = _nextTokenId();
+            uint256 nextTokenId = _nextTokenId();
+            uint256 stopLimit = _sequentialUpTo() != type(uint256).max ? type(uint256).max : nextTokenId;
             // Set `stop = min(stop, stopLimit)`.
             if (stop >= stopLimit) {
                 stop = stopLimit;
@@ -171,12 +172,14 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 if (stop - start <= tokenIdsMaxLength) {
                     tokenIdsMaxLength = stop - start;
                 }
+                uint256 m; // Start of available memory.
                 assembly {
                     // Grab the free memory pointer.
                     tokenIds := mload(0x40)
                     // Allocate one word for the length, and `tokenIdsMaxLength` words
                     // for the data. `shl(5, x)` is equivalent to `mul(32, x)`.
-                    mstore(0x40, add(tokenIds, shl(5, add(tokenIdsMaxLength, 1))))
+                    m := add(tokenIds, shl(5, add(tokenIdsMaxLength, 1)))
+                    mstore(0x40, m)
                 }
                 // We need to call `explicitOwnershipOf(start)`,
                 // because the slot at `start` may not be initialized.
@@ -193,6 +196,10 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                 // Use a do-while, which is slightly more efficient for this case,
                 // as the array will at least contain one element.
                 do {
+                    if (_sequentialUpTo() != type(uint256).max) {
+                        if (start == nextTokenId) start = _sequentialUpTo() + 1;
+                        if (start > _sequentialUpTo()) currOwnershipAddr = address(0);
+                    }
                     ownership = _ownershipAt(start);
                     assembly {
                         switch mload(add(ownership, 0x40))
@@ -219,6 +226,8 @@ abstract contract ERC721AQueryable is ERC721A, IERC721AQueryable {
                             currOwnershipAddr := 0
                         }
                         start := add(start, 1)
+                        // Free temporary memory allocated for ownership to prevent memory expansion.
+                        mstore(0x40, m)
                     }
                 } while (!(start == stop || tokenIdsIdx == tokenIdsMaxLength));
                 // Store the length of the array.

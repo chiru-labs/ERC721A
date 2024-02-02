@@ -146,7 +146,7 @@ contract ERC721A is IERC721A {
         _symbol = symbol_;
         _currentIndex = _startTokenId();
 
-        if (_sequentialUpTo() <= _startTokenId()) _revert(SequentialUpToTooSmall.selector);
+        if (_sequentialUpTo() < _startTokenId()) _revert(SequentialUpToTooSmall.selector);
     }
 
     // =============================================================
@@ -831,7 +831,7 @@ contract ERC721A is IERC721A {
             uint256 end = startTokenId + quantity;
             uint256 tokenId = startTokenId;
 
-            if (end > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
+            if (end - 1 > _sequentialUpTo()) _revert(SequentialMintExceedsLimit.selector);
 
             do {
                 assembly {
@@ -902,11 +902,11 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
+            if (startTokenId + quantity - 1 > _sequentialUpTo()) _revert(SequentialMintExceedsLimit.selector);
+
             emit ConsecutiveTransfer(startTokenId, startTokenId + quantity - 1, address(0), to);
 
             _currentIndex = startTokenId + quantity;
-
-            if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintExceedLimit.selector);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -962,13 +962,12 @@ contract ERC721A is IERC721A {
      * - `tokenId` must be greater than `_sequentialUpTo()`.
      * - `tokenId` must not exist.
      *
-     * If the token at `tokenId` has been previously burned, its `extraData` will be cleared.
-     *
      * Emits a {Transfer} event for each mint.
      */
     function _mintSpot(address to, uint256 tokenId) internal virtual {
         if (tokenId <= _sequentialUpTo()) _revert(SpotMintTokenIdTooSmall.selector);
-        if (_packedOwnershipExists(_packedOwnerships[tokenId])) _revert(TokenAlreadyExists.selector);
+        uint256 prevOwnershipPacked = _packedOwnerships[tokenId];
+        if (_packedOwnershipExists(prevOwnershipPacked)) _revert(TokenAlreadyExists.selector);
 
         _beforeTokenTransfers(address(0), to, tokenId, 1);
 
@@ -983,7 +982,7 @@ contract ERC721A is IERC721A {
             // - `nextInitialized` to `true` (as `quantity == 1`).
             _packedOwnerships[tokenId] = _packOwnershipData(
                 to,
-                _nextInitializedFlag(1) | _nextExtraData(address(0), to, 0)
+                _nextInitializedFlag(1) | _nextExtraData(address(0), to, prevOwnershipPacked)
             );
 
             // Updates:
