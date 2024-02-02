@@ -145,7 +145,7 @@ contract ERC721A is IERC721A {
         _name = name_;
         _symbol = symbol_;
         _currentIndex = _startTokenId();
-        // Construction-time check if spot minting is enabled.
+
         if (_sequentialUpTo() != type(uint256).max)
             if (_sequentialUpTo() <= _startTokenId()) revert SequentialUpToTooSmall();
     }
@@ -188,7 +188,6 @@ contract ERC721A is IERC721A {
         // more than `_currentIndex - _startTokenId()` times.
         unchecked {
             result = _currentIndex - _burnCounter - _startTokenId();
-            // If spot minting is enabled, add `_spotMinted`.
             if (_sequentialUpTo() != type(uint256).max) result += _spotMinted;
         }
     }
@@ -201,7 +200,6 @@ contract ERC721A is IERC721A {
         // and it is initialized to `_startTokenId()`.
         unchecked {
             result = _currentIndex - _startTokenId();
-            // If spot minting is enabled, add `_spotMinted`.
             if (_sequentialUpTo() != type(uint256).max) result += _spotMinted;
         }
     }
