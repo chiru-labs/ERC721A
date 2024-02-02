@@ -522,7 +522,8 @@ contract ERC721A is IERC721A {
             // Workflow if spot-minting is enabled.
             if (_sequentialUpTo() != type(uint256).max) {
                 // If the `tokenId` is above the sequential range.
-                if (tokenId > _sequentialUpTo()) return _packedOwnershipExists(_packedOwnerships[tokenId]);
+                if (tokenId > _sequentialUpTo()) 
+                    return _packedOwnershipExists(_packedOwnerships[tokenId]);
             }
             if (tokenId < _currentIndex) {
                 uint256 packed;
@@ -834,8 +835,9 @@ contract ERC721A is IERC721A {
             uint256 end = startTokenId + quantity;
             uint256 tokenId = startTokenId;
 
-            if (_sequentialUpTo() != type(uint256).max)
-                if (end > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
+            if (_sequentialUpTo() != type(uint256).max) 
+                if (end > _sequentialUpTo())
+                    _revert(SequentialMintsExceedLimit.selector);
 
             do {
                 assembly {
@@ -910,8 +912,9 @@ contract ERC721A is IERC721A {
 
             _currentIndex = startTokenId + quantity;
 
-            if (_sequentialUpTo() != type(uint256).max)
-                if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
+            if (_sequentialUpTo() != type(uint256).max) 
+                if (startTokenId + quantity > _sequentialUpTo()) 
+                    _revert(SequentialMintsExceedLimit.selector);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
