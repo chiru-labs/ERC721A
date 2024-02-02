@@ -146,8 +146,7 @@ contract ERC721A is IERC721A {
         _symbol = symbol_;
         _currentIndex = _startTokenId();
 
-        if (_sequentialUpTo() != type(uint256).max)
-            if (_sequentialUpTo() <= _startTokenId()) revert SequentialUpToTooSmall();
+        if (_sequentialUpTo() <= _startTokenId()) revert SequentialUpToTooSmall();
     }
 
     // =============================================================
