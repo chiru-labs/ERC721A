@@ -517,10 +517,8 @@ contract ERC721A is IERC721A {
      */
     function _exists(uint256 tokenId) internal view virtual returns (bool result) {
         if (_startTokenId() <= tokenId) {
-            
             if (_sequentialUpTo() != type(uint256).max) {
-                if (tokenId > _sequentialUpTo()) 
-                    return _packedOwnershipExists(_packedOwnerships[tokenId]);
+                if (tokenId > _sequentialUpTo()) return _packedOwnershipExists(_packedOwnerships[tokenId]);
             }
             if (tokenId < _currentIndex) {
                 uint256 packed;
@@ -535,7 +533,7 @@ contract ERC721A is IERC721A {
      */
     function _packedOwnershipExists(uint256 packed) private pure returns (bool result) {
         assembly {
-            result := iszero(or(iszero(packed), and(packed, _BITMASK_BURNED)))
+            result := gt(and(packed, _BITMASK_ADDRESS), and(packed, _BITMASK_BURNED))
         }
     }
 
@@ -832,9 +830,8 @@ contract ERC721A is IERC721A {
             uint256 end = startTokenId + quantity;
             uint256 tokenId = startTokenId;
 
-            if (_sequentialUpTo() != type(uint256).max) 
-                if (end > _sequentialUpTo())
-                    _revert(SequentialMintsExceedLimit.selector);
+            if (_sequentialUpTo() != type(uint256).max)
+                if (end > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
 
             do {
                 assembly {
@@ -909,9 +906,8 @@ contract ERC721A is IERC721A {
 
             _currentIndex = startTokenId + quantity;
 
-            if (_sequentialUpTo() != type(uint256).max) 
-                if (startTokenId + quantity > _sequentialUpTo()) 
-                    _revert(SequentialMintsExceedLimit.selector);
+            if (_sequentialUpTo() != type(uint256).max)
+                if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
