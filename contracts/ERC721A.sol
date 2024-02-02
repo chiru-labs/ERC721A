@@ -533,10 +533,11 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Returns whether the the packed ownership exists.
+     * @dev Returns whether `packed` represents a token that exists.
      */
     function _packedOwnershipExists(uint256 packed) private pure returns (bool result) {
         assembly {
+            // The following is equivalent to `owner != address(0) && burned == false`.
             result := gt(and(packed, _BITMASK_ADDRESS), and(packed, _BITMASK_BURNED))
         }
     }
