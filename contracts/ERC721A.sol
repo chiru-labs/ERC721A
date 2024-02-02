@@ -515,9 +515,9 @@ contract ERC721A is IERC721A {
      */
     function _exists(uint256 tokenId) internal view virtual returns (bool result) {
         if (_startTokenId() <= tokenId) {
-            if (_sequentialUpTo() != type(uint256).max) {
-                if (tokenId > _sequentialUpTo()) return _packedOwnershipExists(_packedOwnerships[tokenId]);
-            }
+            if (_sequentialUpTo() != type(uint256).max && tokenId > _sequentialUpTo())
+                return _packedOwnershipExists(_packedOwnerships[tokenId]);
+
             if (tokenId < _currentIndex) {
                 uint256 packed;
                 while ((packed = _packedOwnerships[tokenId]) == 0) --tokenId;
