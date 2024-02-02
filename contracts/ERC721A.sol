@@ -522,8 +522,7 @@ contract ERC721A is IERC721A {
             // Workflow if spot-minting is enabled.
             if (_sequentialUpTo() != type(uint256).max) {
                 // If the `tokenId` is above the sequential range.
-                if (tokenId > _sequentialUpTo()) 
-                    return _packedOwnershipExists(_packedOwnerships[tokenId]);
+                if (tokenId > _sequentialUpTo()) return _packedOwnershipExists(_packedOwnerships[tokenId]);
             }
             if (tokenId < _currentIndex) {
                 uint256 packed;
@@ -835,9 +834,8 @@ contract ERC721A is IERC721A {
             uint256 end = startTokenId + quantity;
             uint256 tokenId = startTokenId;
 
-            if (_sequentialUpTo() != type(uint256).max) 
-                if (end > _sequentialUpTo())
-                    _revert(SequentialMintsExceedLimit.selector);
+            if (_sequentialUpTo() != type(uint256).max)
+                if (end > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
 
             do {
                 assembly {
@@ -858,67 +856,6 @@ contract ERC721A is IERC721A {
             _currentIndex = end;
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
-    }
-
-    /**
-     * @dev Mints a single token at `tokenId`.
-     *
-     * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     * - `tokenId` must be greater than `_sequentialUpTo()`.
-     * - `tokenId` must not exist.
-     *
-     * Emits a {Transfer} event for each mint.
-     */
-    function _mintSpot(address to, uint256 tokenId) internal virtual {
-        if (tokenId <= _sequentialUpTo()) _revert(SpotMintTokenIdTooSmall.selector);
-        if (_packedOwnershipExists(_packedOwnerships[tokenId])) _revert(TokenAlreadyExists.selector);
-
-        _beforeTokenTransfers(address(0), to, tokenId, 1);
-
-        // Overflows are incredibly unrealistic.
-        // The `numberMinted` for `to` is incremented by 1, and has a max limit of 2**64 - 1.
-        // `_spotMinted` is incremented by 1, and has a max limit of 2**256 - 1.
-        unchecked {
-            // Updates:
-            // - `address` to the owner.
-            // - `startTimestamp` to the timestamp of minting.
-            // - `burned` to `false`.
-            // - `nextInitialized` to `true`.
-            _packedOwnerships[tokenId] = _packOwnershipData(
-                to,
-                _nextInitializedFlag(1) | _nextExtraData(address(0), to, 0)
-            );
-
-            // Updates:
-            // - `balance += 1`.
-            // - `numberMinted += 1`.
-            //
-            // We can directly add to the `balance` and `numberMinted`.
-            _packedAddressData[to] += (1 << _BITPOS_NUMBER_MINTED) | 1;
-
-            // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
-            uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
-
-            if (toMasked == 0) _revert(MintToZeroAddress.selector);
-
-            assembly {
-                // Emit the `Transfer` event.
-                log4(
-                    0, // Start of data (0, since no data).
-                    0, // End of data (0, since no data).
-                    _TRANSFER_EVENT_SIGNATURE, // Signature.
-                    0, // `address(0)`.
-                    toMasked, // `to`.
-                    tokenId // `tokenId`.
-                )
-            }
-
-            ++_spotMinted;
-        }
-
-        _afterTokenTransfers(address(0), to, tokenId, 1);
     }
 
     /**
@@ -973,9 +910,8 @@ contract ERC721A is IERC721A {
 
             _currentIndex = startTokenId + quantity;
 
-            if (_sequentialUpTo() != type(uint256).max) 
-                if (_currentIndex > _sequentialUpTo()) 
-                    _revert(SequentialMintsExceedLimit.selector);
+            if (_sequentialUpTo() != type(uint256).max)
+                if (startTokenId + quantity > _sequentialUpTo()) _revert(SequentialMintsExceedLimit.selector);
         }
         _afterTokenTransfers(address(0), to, startTokenId, quantity);
     }
@@ -1009,8 +945,8 @@ contract ERC721A is IERC721A {
                         _revert(TransferToNonERC721ReceiverImplementer.selector);
                     }
                 } while (index < end);
-                // Reentrancy protection.
-                if (_currentIndex != end) _revert(bytes4(0));
+                // Reentrancy protection, scoped to `_mint`.
+                if (_currentIndex != end) revert();
             }
         }
     }
@@ -1020,6 +956,106 @@ contract ERC721A is IERC721A {
      */
     function _safeMint(address to, uint256 quantity) internal virtual {
         _safeMint(to, quantity, '');
+    }
+
+    /**
+     * @dev Mints a single token at `tokenId`.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `tokenId` must be greater than `_sequentialUpTo()`.
+     * - `tokenId` must not exist.
+     *
+     * Emits a {Transfer} event for each mint.
+     */
+    function _mintSpot(address to, uint256 tokenId) internal virtual {
+        if (tokenId <= _sequentialUpTo()) _revert(SpotMintTokenIdTooSmall.selector);
+        if (_packedOwnershipExists(_packedOwnerships[tokenId])) _revert(TokenAlreadyExists.selector);
+
+        _beforeTokenTransfers(address(0), to, tokenId, 1);
+
+        // Overflows are incredibly unrealistic.
+        // The `numberMinted` for `to` is incremented by 1, and has a max limit of 2**64 - 1.
+        // `_spotMinted` is incremented by 1, and has a max limit of 2**256 - 1.
+        unchecked {
+            // Updates:
+            // - `address` to the owner.
+            // - `startTimestamp` to the timestamp of minting.
+            // - `burned` to `false`.
+            // - `nextInitialized` to `true` (as `quantity == 1`).
+            _packedOwnerships[tokenId] = _packOwnershipData(
+                to,
+                _nextInitializedFlag(1) | _nextExtraData(address(0), to, 0)
+            );
+
+            // Updates:
+            // - `balance += 1`.
+            // - `numberMinted += 1`.
+            //
+            // We can directly add to the `balance` and `numberMinted`.
+            _packedAddressData[to] += (1 << _BITPOS_NUMBER_MINTED) | 1;
+
+            // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
+
+            if (toMasked == 0) _revert(MintToZeroAddress.selector);
+
+            assembly {
+                // Emit the `Transfer` event.
+                log4(
+                    0, // Start of data (0, since no data).
+                    0, // End of data (0, since no data).
+                    _TRANSFER_EVENT_SIGNATURE, // Signature.
+                    0, // `address(0)`.
+                    toMasked, // `to`.
+                    tokenId // `tokenId`.
+                )
+            }
+
+            ++_spotMinted;
+        }
+
+        _afterTokenTransfers(address(0), to, tokenId, 1);
+    }
+
+    /**
+     * @dev Safely mints a single token at `tokenId`.
+     *
+     * Requirements:
+     *
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}.
+     * - `tokenId` must be greater than `_sequentialUpTo()`.
+     * - `tokenId` must not exist.
+     *
+     * See {_mintSpot}.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _safeMintSpot(
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) internal virtual {
+        _mintSpot(to, tokenId);
+
+        unchecked {
+            if (to.code.length != 0) {
+                uint256 currentSpotMinted = _spotMinted;
+                if (!_checkContractOnERC721Received(address(0), to, tokenId, _data)) {
+                    _revert(TransferToNonERC721ReceiverImplementer.selector);
+                }
+                // Reentrancy protection, scoped to `_mintSpot`.
+                if (_spotMinted != currentSpotMinted) revert();
+            }
+        }
+    }
+
+    /**
+     * @dev Equivalent to `_safeMintSpot(to, tokenId, '')`.
+     */
+    function _safeMintSpot(address to, uint256 tokenId) internal virtual {
+        _safeMintSpot(to, tokenId, '');
     }
 
     // =============================================================
