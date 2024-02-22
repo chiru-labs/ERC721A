@@ -74,6 +74,31 @@ interface IERC721A {
      */
     error OwnershipNotInitializedForExtraData();
 
+    /**
+     * `_sequentialUpTo()` must be greater than `_startTokenId()`.
+     */
+    error SequentialUpToTooSmall();
+
+    /**
+     * The `tokenId` of a sequential mint exceeds `_sequentialUpTo()`.
+     */
+    error SequentialMintExceedsLimit();
+
+    /**
+     * Spot minting requires a `tokenId` greater than `_sequentialUpTo()`.
+     */
+    error SpotMintTokenIdTooSmall();
+
+    /**
+     * Cannot mint over a token that already exists.
+     */
+    error TokenAlreadyExists();
+
+    /**
+     * The feature is not compatible with spot mints.
+     */
+    error NotCompatibleWithSpotMints();
+
     // =============================================================
     //                            STRUCTS
     // =============================================================

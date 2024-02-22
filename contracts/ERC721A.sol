@@ -28,6 +28,9 @@ interface ERC721A__IERC721Receiver {
  * Token IDs are minted in sequential order (e.g. 0, 1, 2, 3, ...)
  * starting from `_startTokenId()`.
  *
+ * The `_sequentialUpTo()` function can be overriden to enable spot mints
+ * (i.e. non-consecutive mints) for `tokenId`s greater than `_sequentialUpTo()`.
+ *
  * Assumptions:
  *
  * - An owner cannot have more than 2**64 - 1 (max value of uint64) of supply.
@@ -133,6 +136,10 @@ contract ERC721A is IERC721A {
     // Mapping from owner to operator approvals
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
+    // The amount of tokens minted above `_sequentialUpTo()`.
+    // We call these spot mints (i.e. non-sequential mints).
+    uint256 private _spotMinted;
+
     // =============================================================
     //                          CONSTRUCTOR
     // =============================================================
@@ -141,6 +148,8 @@ contract ERC721A is IERC721A {
         _name = name_;
         _symbol = symbol_;
         _currentIndex = _startTokenId();
+
+        if (_sequentialUpTo() < _startTokenId()) _revert(SequentialUpToTooSmall.selector);
     }
 
     // =============================================================
@@ -148,11 +157,26 @@ contract ERC721A is IERC721A {
     // =============================================================
 
     /**
-     * @dev Returns the starting token ID.
-     * To change the starting token ID, please override this function.
+     * @dev Returns the starting token ID for sequential mints.
+     *
+     * Override this function to change the starting token ID for sequential mints.
+     *
+     * Note: The value returned must never change after any tokens have been minted.
      */
     function _startTokenId() internal view virtual returns (uint256) {
         return 0;
+    }
+
+    /**
+     * @dev Returns the maximum token ID (inclusive) for sequential mints.
+     *
+     * Override this function to return a value less than 2**256 - 1,
+     * but greater than `_startTokenId()`, to enable spot (non-sequential) mints.
+     *
+     * Note: The value returned must never change after any tokens have been minted.
+     */
+    function _sequentialUpTo() internal view virtual returns (uint256) {
+        return type(uint256).max;
     }
 
     /**
@@ -167,22 +191,26 @@ contract ERC721A is IERC721A {
      * Burned tokens will reduce the count.
      * To get the total number of tokens minted, please see {_totalMinted}.
      */
-    function totalSupply() public view virtual override returns (uint256) {
-        // Counter underflow is impossible as _burnCounter cannot be incremented
-        // more than `_currentIndex - _startTokenId()` times.
+    function totalSupply() public view virtual override returns (uint256 result) {
+        // Counter underflow is impossible as `_burnCounter` cannot be incremented
+        // more than `_currentIndex + _spotMinted - _startTokenId()` times.
         unchecked {
-            return _currentIndex - _burnCounter - _startTokenId();
+            // With spot minting, the intermediate `result` can be temporarily negative,
+            // and the computation must be unchecked.
+            result = _currentIndex - _burnCounter - _startTokenId();
+            if (_sequentialUpTo() != type(uint256).max) result += _spotMinted;
         }
     }
 
     /**
      * @dev Returns the total amount of tokens minted in the contract.
      */
-    function _totalMinted() internal view virtual returns (uint256) {
+    function _totalMinted() internal view virtual returns (uint256 result) {
         // Counter underflow is impossible as `_currentIndex` does not decrement,
         // and it is initialized to `_startTokenId()`.
         unchecked {
-            return _currentIndex - _startTokenId();
+            result = _currentIndex - _startTokenId();
+            if (_sequentialUpTo() != type(uint256).max) result += _spotMinted;
         }
     }
 
@@ -191,6 +219,13 @@ contract ERC721A is IERC721A {
      */
     function _totalBurned() internal view virtual returns (uint256) {
         return _burnCounter;
+    }
+
+    /**
+     * @dev Returns the total number of tokens that are spot-minted.
+     */
+    function _totalSpotMinted() internal view virtual returns (uint256) {
+        return _spotMinted;
     }
 
     // =============================================================
@@ -349,11 +384,17 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * Returns the packed ownership data of `tokenId`.
+     * @dev Returns the packed ownership data of `tokenId`.
      */
     function _packedOwnershipOf(uint256 tokenId) private view returns (uint256 packed) {
         if (_startTokenId() <= tokenId) {
             packed = _packedOwnerships[tokenId];
+
+            if (tokenId > _sequentialUpTo()) {
+                if (_packedOwnershipExists(packed)) return packed;
+                _revert(OwnerQueryForNonexistentToken.selector);
+            }
+
             // If the data at the starting slot does not exist, start the scan.
             if (packed == 0) {
                 if (tokenId >= _currentIndex) _revert(OwnerQueryForNonexistentToken.selector);
@@ -482,11 +523,24 @@ contract ERC721A is IERC721A {
      */
     function _exists(uint256 tokenId) internal view virtual returns (bool result) {
         if (_startTokenId() <= tokenId) {
+            if (tokenId > _sequentialUpTo()) return _packedOwnershipExists(_packedOwnerships[tokenId]);
+
             if (tokenId < _currentIndex) {
                 uint256 packed;
                 while ((packed = _packedOwnerships[tokenId]) == 0) --tokenId;
                 result = packed & _BITMASK_BURNED == 0;
             }
+        }
+    }
+
+    /**
+     * @dev Returns whether `packed` represents a token that exists.
+     */
+    function _packedOwnershipExists(uint256 packed) private pure returns (bool result) {
+        assembly {
+            // The following is equivalent to `owner != address(0) && burned == false`.
+            // Symbolically tested.
+            result := gt(and(packed, _BITMASK_ADDRESS), and(packed, _BITMASK_BURNED))
         }
     }
 
@@ -783,6 +837,8 @@ contract ERC721A is IERC721A {
             uint256 end = startTokenId + quantity;
             uint256 tokenId = startTokenId;
 
+            if (end - 1 > _sequentialUpTo()) _revert(SequentialMintExceedsLimit.selector);
+
             do {
                 assembly {
                     // Emit the `Transfer` event.
@@ -852,6 +908,8 @@ contract ERC721A is IERC721A {
                 _nextInitializedFlag(quantity) | _nextExtraData(address(0), to, 0)
             );
 
+            if (startTokenId + quantity - 1 > _sequentialUpTo()) _revert(SequentialMintExceedsLimit.selector);
+
             emit ConsecutiveTransfer(startTokenId, startTokenId + quantity - 1, address(0), to);
 
             _currentIndex = startTokenId + quantity;
@@ -888,8 +946,9 @@ contract ERC721A is IERC721A {
                         _revert(TransferToNonERC721ReceiverImplementer.selector);
                     }
                 } while (index < end);
-                // Reentrancy protection.
-                if (_currentIndex != end) _revert(bytes4(0));
+                // This prevents reentrancy to `_safeMint`.
+                // It does not prevent reentrancy to `_safeMintSpot`.
+                if (_currentIndex != end) revert();
             }
         }
     }
@@ -899,6 +958,112 @@ contract ERC721A is IERC721A {
      */
     function _safeMint(address to, uint256 quantity) internal virtual {
         _safeMint(to, quantity, '');
+    }
+
+    /**
+     * @dev Mints a single token at `tokenId`.
+     *
+     * Note: A spot-minted `tokenId` that has been burned can be re-minted again.
+     *
+     * Requirements:
+     *
+     * - `to` cannot be the zero address.
+     * - `tokenId` must be greater than `_sequentialUpTo()`.
+     * - `tokenId` must not exist.
+     *
+     * Emits a {Transfer} event for each mint.
+     */
+    function _mintSpot(address to, uint256 tokenId) internal virtual {
+        if (tokenId <= _sequentialUpTo()) _revert(SpotMintTokenIdTooSmall.selector);
+        uint256 prevOwnershipPacked = _packedOwnerships[tokenId];
+        if (_packedOwnershipExists(prevOwnershipPacked)) _revert(TokenAlreadyExists.selector);
+
+        _beforeTokenTransfers(address(0), to, tokenId, 1);
+
+        // Overflows are incredibly unrealistic.
+        // The `numberMinted` for `to` is incremented by 1, and has a max limit of 2**64 - 1.
+        // `_spotMinted` is incremented by 1, and has a max limit of 2**256 - 1.
+        unchecked {
+            // Updates:
+            // - `address` to the owner.
+            // - `startTimestamp` to the timestamp of minting.
+            // - `burned` to `false`.
+            // - `nextInitialized` to `true` (as `quantity == 1`).
+            _packedOwnerships[tokenId] = _packOwnershipData(
+                to,
+                _nextInitializedFlag(1) | _nextExtraData(address(0), to, prevOwnershipPacked)
+            );
+
+            // Updates:
+            // - `balance += 1`.
+            // - `numberMinted += 1`.
+            //
+            // We can directly add to the `balance` and `numberMinted`.
+            _packedAddressData[to] += (1 << _BITPOS_NUMBER_MINTED) | 1;
+
+            // Mask `to` to the lower 160 bits, in case the upper bits somehow aren't clean.
+            uint256 toMasked = uint256(uint160(to)) & _BITMASK_ADDRESS;
+
+            if (toMasked == 0) _revert(MintToZeroAddress.selector);
+
+            assembly {
+                // Emit the `Transfer` event.
+                log4(
+                    0, // Start of data (0, since no data).
+                    0, // End of data (0, since no data).
+                    _TRANSFER_EVENT_SIGNATURE, // Signature.
+                    0, // `address(0)`.
+                    toMasked, // `to`.
+                    tokenId // `tokenId`.
+                )
+            }
+
+            ++_spotMinted;
+        }
+
+        _afterTokenTransfers(address(0), to, tokenId, 1);
+    }
+
+    /**
+     * @dev Safely mints a single token at `tokenId`.
+     *
+     * Note: A spot-minted `tokenId` that has been burned can be re-minted again.
+     *
+     * Requirements:
+     *
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}.
+     * - `tokenId` must be greater than `_sequentialUpTo()`.
+     * - `tokenId` must not exist.
+     *
+     * See {_mintSpot}.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _safeMintSpot(
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) internal virtual {
+        _mintSpot(to, tokenId);
+
+        unchecked {
+            if (to.code.length != 0) {
+                uint256 currentSpotMinted = _spotMinted;
+                if (!_checkContractOnERC721Received(address(0), to, tokenId, _data)) {
+                    _revert(TransferToNonERC721ReceiverImplementer.selector);
+                }
+                // This prevents reentrancy to `_safeMintSpot`.
+                // It does not prevent reentrancy to `_safeMint`.
+                if (_spotMinted != currentSpotMinted) revert();
+            }
+        }
+    }
+
+    /**
+     * @dev Equivalent to `_safeMintSpot(to, tokenId, '')`.
+     */
+    function _safeMintSpot(address to, uint256 tokenId) internal virtual {
+        _safeMintSpot(to, tokenId, '');
     }
 
     // =============================================================
@@ -1024,7 +1189,7 @@ contract ERC721A is IERC721A {
         emit Transfer(from, address(0), tokenId);
         _afterTokenTransfers(from, address(0), tokenId, 1);
 
-        // Overflow not possible, as _burnCounter cannot be exceed _currentIndex times.
+        // Overflow not possible, as `_burnCounter` cannot be exceed `_currentIndex + _spotMinted` times.
         unchecked {
             _burnCounter++;
         }
