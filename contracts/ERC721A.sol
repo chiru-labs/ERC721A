@@ -195,6 +195,8 @@ contract ERC721A is IERC721A {
         // Counter underflow is impossible as `_burnCounter` cannot be incremented
         // more than `_currentIndex + _spotMinted - _startTokenId()` times.
         unchecked {
+            // With spot minting, the intermediate `result` can be temporarily negative,
+            // and the computation must be unchecked.
             result = _currentIndex - _burnCounter - _startTokenId();
             if (_sequentialUpTo() != type(uint256).max) result += _spotMinted;
         }
@@ -537,6 +539,7 @@ contract ERC721A is IERC721A {
     function _packedOwnershipExists(uint256 packed) private pure returns (bool result) {
         assembly {
             // The following is equivalent to `owner != address(0) && burned == false`.
+            // Symbolically tested.
             result := gt(and(packed, _BITMASK_ADDRESS), and(packed, _BITMASK_BURNED))
         }
     }
@@ -943,7 +946,8 @@ contract ERC721A is IERC721A {
                         _revert(TransferToNonERC721ReceiverImplementer.selector);
                     }
                 } while (index < end);
-                // Reentrancy protection, scoped to `_safeMint`.
+                // This prevents reentrancy to `_safeMint`.
+                // It does not prevent reentrancy to `_safeMintSpot`.
                 if (_currentIndex != end) revert();
             }
         }
@@ -958,6 +962,8 @@ contract ERC721A is IERC721A {
 
     /**
      * @dev Mints a single token at `tokenId`.
+     *
+     * Note: A spot-minted `tokenId` that has been burned can be re-minted again.
      *
      * Requirements:
      *
@@ -1021,6 +1027,8 @@ contract ERC721A is IERC721A {
     /**
      * @dev Safely mints a single token at `tokenId`.
      *
+     * Note: A spot-minted `tokenId` that has been burned can be re-minted again.
+     *
      * Requirements:
      *
      * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}.
@@ -1044,7 +1052,8 @@ contract ERC721A is IERC721A {
                 if (!_checkContractOnERC721Received(address(0), to, tokenId, _data)) {
                     _revert(TransferToNonERC721ReceiverImplementer.selector);
                 }
-                // Reentrancy protection, scoped to `_safeMintSpot`.
+                // This prevents reentrancy to `_safeMintSpot`.
+                // It does not prevent reentrancy to `_safeMint`.
                 if (_spotMinted != currentSpotMinted) revert();
             }
         }
