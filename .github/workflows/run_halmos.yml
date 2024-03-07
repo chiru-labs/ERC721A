@@ -1,0 +1,39 @@
+name: ERC721A CI - Halmos
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+
+jobs:
+  run-halmos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - name: Install dependencies
+        run: npm ci
+      - name: Install halmos
+        run: python3 -m pip install --upgrade halmos
+      - name: Prepare for halmos
+        run: |
+          sed -i 's/\bprivate\b/internal/g' contracts/ERC721A.sol
+          cp halmos/ERC721A.t.sol contracts/
+      - name: Run halmos - mint
+        run: halmos --function testMint
+      - name: Run halmos - burn
+        run: halmos --function testBurn
+      - name: Run halmos - transfer
+        run: halmos --function testTransfer
+      - name: Run halmos - invariant
+        run: halmos --function prove
