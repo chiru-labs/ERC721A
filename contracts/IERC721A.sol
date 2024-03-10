@@ -70,7 +70,7 @@ interface IERC721A {
     error MintERC2309QuantityExceedsLimit();
 
     /**
-     * The `extraData` cannot be set on an unintialized ownership slot.
+     * The `extraData` cannot be set on an uninitialized ownership slot.
      */
     error OwnershipNotInitializedForExtraData();
 
