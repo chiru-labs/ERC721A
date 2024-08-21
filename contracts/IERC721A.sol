@@ -75,6 +75,11 @@ interface IERC721A {
     error OwnershipNotInitializedForExtraData();
 
     /**
+     * The `tokenIds` must be strictly ascending.
+     */
+    error TokenIdsNotStrictlyAscending();
+
+    /**
      * `_sequentialUpTo()` must be greater than `_startTokenId()`.
      */
     error SequentialUpToTooSmall();

@@ -1195,6 +1195,130 @@ contract ERC721A is IERC721A {
         }
     }
 
+    /**
+     * @dev Equivalent to `_batchBurn(msg.sender, tokenIds, false)`.
+     */
+    function _batchBurn(uint256[] memory tokenIds) internal virtual {
+        _batchBurn(_msgSenderERC721A(), tokenIds, false);
+    }
+
+    /**
+     * @dev Destroys `tokenIds`.
+     * Approvals are not cleared when tokenIds are burned.
+     *
+     * Requirements:
+     *
+     * - `tokenIds` must exist.
+     * - `tokenIds` must be strictly ascending.
+     * - `burner` must be the owner or approved to burn each of the token.
+     *
+     * Emits a {Transfer} event for each token burned.
+     */
+    function _batchBurn(
+        address burner,
+        uint256[] memory tokenIds,
+        bool approvalCheck
+    ) internal virtual {
+        // We can use unchecked as the length of `tokenIds` is bounded
+        // to a small number by the max block gas limit.
+        unchecked {
+            // The next `tokenId` to be minted (i.e. `_nextTokenId()`).
+            uint256 stop = _currentIndex;
+
+            uint256 n = tokenIds.length;
+
+            // For checking if the `tokenIds` are strictly ascending.
+            uint256 prevTokenId;
+
+            uint256 tokenId;
+            uint256 currTokenId;
+            uint256 prevOwnershipPacked;
+            address prevTokenOwner;
+            uint256 lastOwnershipPacked;
+            address tokenOwner;
+            bool mayBurn;
+            for (uint256 i; i != n; ) {
+                tokenId = tokenIds[i];
+
+                // Revert `tokenId` is out of bounds.
+                if (_or(tokenId < _startTokenId(), stop <= tokenId)) revert OwnerQueryForNonexistentToken();
+
+                // Revert if `tokenIds` is not strictly ascending.
+                if (i != 0)
+                    if (tokenId <= prevTokenId) revert TokenIdsNotStrictlyAscending();
+
+                // Scan backwards for an initialized packed ownership slot.
+                // ERC721A's invariant guarantees that there will always be an initialized slot as long as
+                // the start of the backwards scan falls within `[_startTokenId() .. _nextTokenId())`.
+                for (uint256 j = tokenId; (prevOwnershipPacked = _packedOwnerships[j]) == 0; ) --j;
+
+                // If the initialized slot is burned, revert.
+                if (prevOwnershipPacked & _BITMASK_BURNED != 0) revert OwnerQueryForNonexistentToken();
+
+                // Unpack the `tokenOwner` from bits [0..159] of `prevOwnershipPacked`.
+                tokenOwner = address(uint160(prevOwnershipPacked));
+
+                if (tokenOwner != prevTokenOwner) {
+                    // Update `prevTokenOwner`.
+                    prevTokenOwner = tokenOwner;
+
+                    // Check if the burner is either the owner or an approved operator for all tokens
+                    mayBurn = !approvalCheck || tokenOwner == burner || isApprovedForAll(tokenOwner, burner);
+                }
+
+                currTokenId = tokenId;
+                uint256 offset;
+                do {
+                    // Revert if the burner is not authorized to burn the token.
+                    if (!mayBurn)
+                        if (_tokenApprovals[currTokenId].value != burner) revert TransferCallerNotOwnerNorApproved();
+                    // Call the hook.
+                    _beforeTokenTransfers(tokenOwner, address(0), currTokenId, 1);
+                    // Emit the `Transfer` event for burn.
+                    emit Transfer(tokenOwner, address(0), currTokenId);
+                    // Call the hook.
+                    _afterTokenTransfers(tokenOwner, address(0), currTokenId, 1);
+                    // Increment `offset` and update `currTokenId`.
+                    currTokenId = tokenId + (++offset);
+                } while (
+                    // Neither out of bounds, nor at the end of `tokenIds`.
+                    !_or(currTokenId == stop, i + offset == n) &&
+                        // Token ID is sequential.
+                        tokenIds[i + offset] == currTokenId &&
+                        // The packed ownership slot is not initialized.
+                        (lastOwnershipPacked = _packedOwnerships[currTokenId]) == 0
+                );
+
+                // Update the packed ownership for `tokenId` in ERC721A's storage.
+                _packedOwnerships[tokenId] =
+                    _BITMASK_BURNED |
+                    (block.timestamp << _BITPOS_START_TIMESTAMP) |
+                    uint256(uint160(tokenOwner));
+
+                // If the slot after the mini batch is neither out of bounds, nor initialized.
+                if (currTokenId != stop)
+                    if (lastOwnershipPacked == 0)
+                        if (_packedOwnerships[currTokenId] == 0)
+                            // If `lastOwnershipPacked == 0` we didn't break the loop due to an initialized slot.
+                            _packedOwnerships[currTokenId] = prevOwnershipPacked;
+
+                // Update the address data in ERC721A's storage.
+                //
+                // Note that this update has to be in the loop as tokens
+                // can be burned by an operator that is not the token owner.
+                _packedAddressData[tokenOwner] += (offset << _BITPOS_NUMBER_BURNED) - offset;
+
+                // Advance `i` by `offset`, the number of tokens burned in the mini batch.
+                i += offset;
+
+                // Set the `prevTokenId` for checking that the `tokenIds` is strictly ascending.
+                prevTokenId = currTokenId - 1;
+            }
+            // Increase the `_burnCounter` in ERC721A's storage.
+            _burnCounter += n;
+        }
+    }
+
     // =============================================================
     //                     EXTRA DATA OPERATIONS
     // =============================================================
@@ -1309,6 +1433,15 @@ contract ERC721A is IERC721A {
         assembly {
             mstore(0x00, errorSelector)
             revert(0x00, 0x04)
+        }
+    }
+
+    /**
+     * @dev Branchless or.
+     */
+    function _or(bool a, bool b) private pure returns (bool c) {
+        assembly {
+            c := or(a, b)
         }
     }
 }
