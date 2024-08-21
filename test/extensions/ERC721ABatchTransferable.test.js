@@ -84,7 +84,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await mineBlockTimestamp(this.timestampToMine);
               this.timestampMined = await getBlockTimestamp();
 
-              // prettier-ignore
               this.transferTx = await this.erc721aBatchTransferable
               .connect(sender)[transferFn](this.from, this.to.address, this.tokenIds);
 
@@ -93,7 +92,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
               // Transfer part of uninitialized tokens
               this.tokensToTransferAlt = [25, 26, 27];
-              // prettier-ignore
               this.transferTxAlt = await this.erc721aBatchTransferable.connect(this.addr3)[transferFn](
               this.addr3.address, this.addr5.address, this.tokensToTransferAlt
             );
@@ -142,11 +140,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
 
               // Initialized tokens were updated
               expect((await this.erc721aBatchTransferable.getOwnershipAt(3))[0]).to.be.equal(this.to.address);
-
-              // // Initialized tokens in a consecutive transfer are cleared
-              // expect((await this.erc721aBatchTransferable.getOwnershipAt(8))[0]).to.be.equal(
-              //   transferFn !== 'batchTransferFromUnoptimized' ? ZERO_ADDRESS : this.to.address
-              // );
 
               // Uninitialized tokens are left uninitialized
               expect((await this.erc721aBatchTransferable.getOwnershipAt(7))[0]).to.be.equal(
@@ -230,7 +223,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               );
 
               // Transfer tokens
-              // prettier-ignore
               await this.erc721aBatchTransferable
                 .connect(this.addr2)[transferFn](
                   this.from, this.to.address, [initializedToken - 1, initializedToken]
@@ -238,11 +230,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               expect((await this.erc721aBatchTransferable.getOwnershipAt(initializedToken - 1))[0]).to.be.equal(
                 this.to.address
               );
-
-              // Initialized tokens in a consecutive transfer are cleared
-              // expect((await this.erc721aBatchTransferable.getOwnershipAt(initializedToken))[0]).to.be.equal(
-              //   transferFn !== 'batchTransferFromUnoptimized' ? ZERO_ADDRESS : this.to.address
-              // );
             });
 
             it('with tokens transferred and updated', async function () {
@@ -270,7 +257,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               expect((await this.erc721aBatchTransferable.getOwnershipAt(initializedToken))[3]).to.be.equal(extraData);
 
               // Transfer tokens
-              // prettier-ignore
               await this.erc721aBatchTransferable
                 .connect(this.addr2)[transferFn](
                   this.from, this.to.address, [initializedToken - 1, initializedToken]
@@ -292,7 +278,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               expect((await this.erc721aBatchTransferable.getOwnershipAt(0))[0]).to.be.equal(this.from);
               expect((await this.erc721aBatchTransferable.getOwnershipAt(1))[0]).to.be.equal(ZERO_ADDRESS);
 
-              // prettier-ignore
               await this.erc721aBatchTransferable
                   .connect(this.addr2)[transferFn](this.from, this.to.address, [0]);
 
@@ -307,7 +292,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 'OwnerQueryForNonexistentToken'
               );
 
-              // prettier-ignore
               await this.erc721aBatchTransferable
                 .connect(this.addr3)[transferFn](
                   this.addr3.address, this.to.address, [offsetted(this.numTotalTokens - 1
@@ -331,7 +315,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 ZERO_ADDRESS
               );
 
-              // prettier-ignore
               await this.erc721aBatchTransferable
                   .connect(this.addr2)[transferFn](this.from, this.to.address, [this.initializedToken]);
 
@@ -355,7 +338,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 ZERO_ADDRESS
               );
 
-              // prettier-ignore
               await this.erc721aBatchTransferable
                   .connect(this.addr2)[transferFn](this.from, this.to.address, [this.uninitializedToken]);
 
@@ -379,29 +361,40 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             });
 
             it('rejects unapproved transfer', async function () {
-              // prettier-ignore
               await expect(
-              this.erc721aBatchTransferable
-                .connect(this.sender)[transferFn](
-                  this.addr2.address, this.sender.address, this.tokenIds
-                )
-            ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
+                this.erc721aBatchTransferable
+                  .connect(this.sender)[transferFn](
+                    this.addr2.address, this.sender.address, this.tokenIds
+                  )
+              ).to.be.revertedWith('TransferCallerNotOwnerNorApproved');
             });
 
             it('rejects transfer from incorrect owner', async function () {
               await this.erc721aBatchTransferable.connect(this.addr2).setApprovalForAll(this.sender.address, true);
-              // prettier-ignore
               await expect(
-              this.erc721aBatchTransferable
-                .connect(this.sender)[transferFn](
-                  this.addr3.address, this.sender.address, this.tokenIds
+                this.erc721aBatchTransferable
+                  .connect(this.sender)[transferFn](
+                    this.addr3.address, this.sender.address, this.tokenIds
+                  )
+              ).to.be.revertedWith('TransferFromIncorrectOwner');
+            });
+
+            it('rejects transfer from zero address', async function () {
+              await this.erc721aBatchTransferable.connect(this.addr2).setApprovalForAll(this.sender.address, true);
+              await expect(
+                this.erc721aBatchTransferable
+                .connect(this.sender)['directBatchTransferFrom'](
+                  ZERO_ADDRESS, ZERO_ADDRESS, this.sender.address, this.tokenIds
                 )
-            ).to.be.revertedWith('TransferFromIncorrectOwner');
+              ).to.be.revertedWith('TransferFromIncorrectOwner');
+              this.erc721aBatchTransferable
+              .connect(this.sender)['directBatchTransferFrom'](
+                ZERO_ADDRESS, this.addr2.address, this.sender.address, this.tokenIds
+              );
             });
 
             it('rejects transfer to zero address', async function () {
               await this.erc721aBatchTransferable.connect(this.addr2).setApprovalForAll(this.sender.address, true);
-              // prettier-ignore
               await expect(
               this.erc721aBatchTransferable
                 .connect(this.sender)[transferFn](
@@ -419,7 +412,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             });
 
             it('approval allows batch transfers', async function () {
-              // prettier-ignore
               await expect(
               this.erc721aBatchTransferable
                 .connect(this.addr3)[transferFn](
@@ -432,12 +424,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 await this.erc721aBatchTransferable.connect(this.addr1).approve(this.addr3.address, tokenId);
               }
 
-              // prettier-ignore
               await this.erc721aBatchTransferable
               .connect(this.addr3)[transferFn](
                 this.addr1.address, this.addr3.address, this.tokenIds
               );
-              // prettier-ignore
               await expect(
               this.erc721aBatchTransferable
                 .connect(this.addr1)[transferFn](
@@ -453,7 +443,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
                 expect(await this.erc721aBatchTransferable.getApproved(tokenId)).to.equal(this.addr1.address);
               }
 
-              // prettier-ignore
               await this.erc721aBatchTransferable
             .connect(this.addr1)[transferFn](
               this.addr1.address, this.addr2.address, this.tokenIds
@@ -467,7 +456,6 @@ const createTestSuite = ({ contract, constructorArgs }) =>
             it('approval for all allows batch transfers', async function () {
               await this.erc721aBatchTransferable.connect(this.addr1).setApprovalForAll(this.addr3.address, true);
 
-              // prettier-ignore
               await this.erc721aBatchTransferable
               .connect(this.addr3)[transferFn](
                 this.addr1.address, this.addr3.address, this.tokenIds

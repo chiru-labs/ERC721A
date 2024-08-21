@@ -66,4 +66,13 @@ contract ERC721ABatchTransferableMock is ERC721ABatchTransferable {
             }
         }
     }
+
+    function directBatchTransferFrom(
+        address by,
+        address from,
+        address to,
+        uint256[] memory tokenIds
+    ) public {
+        _batchTransferFrom(by, from, to, tokenIds);
+    }
 }
