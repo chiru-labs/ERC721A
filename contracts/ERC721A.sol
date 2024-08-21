@@ -742,26 +742,27 @@ contract ERC721A is IERC721A {
         uint256 byMasked = uint160(by);
         // Disallow transfer to zero address.
         if (toMasked == uint256(0)) _revert(TransferToZeroAddress.selector);
-        // Early return if `tokenIds` is empty.
-        if (tokenIds.length == uint256(0)) return;
         // Whether we need to check the individual token approvals.
         bool approvalCheck = byMasked != uint256(0) && byMasked != fromMasked && !isApprovedForAll(from, by);
+        uint256 n = tokenIds.length;
+        // Early return if `tokenIds` is empty.
+        if (n == uint256(0)) return;
         // The next `tokenId` to be minted (i.e. `_nextTokenId()`).
         uint256 end = _currentIndex;
         // Pointer to start and end (exclusive) of `tokenIds`.
-        (uint256 i, uint256 e) = _mdata(tokenIds);
+        (uint256 i, uint256 e) = _mdataERC721A(tokenIds);
         // Ensure that `tokenIds` is strictly ascending, and perform the before hooks before any state changes.
         unchecked {
-            uint256 tokenId = _mload(i); // For checking if the `tokenIds` are strictly ascending.
+            uint256 tokenId = _mloadERC721A(i); // For checking if the `tokenIds` are strictly ascending.
             // Revert if the minimum of the `tokenIds` is out of bounds.
             // This is equivalent to `tokenId < _startTokenId() || end <= tokenId`.
             if (end - _startTokenId() <= tokenId - _startTokenId()) _revert(OwnerQueryForNonexistentToken.selector);
             _beforeTokenTransfers(from, to, tokenId, 1); // Perform the before hook.
-            uint256 n = tokenIds.length;
+
             if (n >= 2) {
                 uint256 j = i + 0x20;
                 do {
-                    uint256 next = _mload(j);
+                    uint256 next = _mloadERC721A(j);
                     if (next <= tokenId) _revert(TokenIdsNotStrictlyAscending.selector);
                     _beforeTokenTransfers(from, to, tokenId = next, 1); // Perform the before hook.
                 } while ((j += 0x20) != e);
@@ -774,7 +775,7 @@ contract ERC721A is IERC721A {
         }
         uint256 prevOwnershipPacked;
         do {
-            uint256 tokenId = _mload(i);
+            uint256 tokenId = _mloadERC721A(i);
             unchecked {
                 // Scan backwards for an initialized packed ownership slot.
                 // ERC721A's invariant guarantees that there will always be an initialized slot as long as
@@ -803,7 +804,7 @@ contract ERC721A is IERC721A {
                         log4(0, 0, _TRANSFER_EVENT_SIGNATURE, fromMasked, toMasked, tokenId)
                     }
                     _afterTokenTransfers(from, to, tokenId, 1); // Perform the after hook.
-                    if (_mload(i += 0x20) != ++tokenId) break; // Break if `tokenId` is not sequential.
+                    if (_mloadERC721A(i += 0x20) != ++tokenId) break; // Break if `tokenId` is not sequential.
                     if (i == e) break; // Break if at the end of `tokenIds`.
                     // Break if the packed ownership slot is initialized.
                 } while (_packedOwnerships[tokenId] == uint256(0));
@@ -878,8 +879,8 @@ contract ERC721A is IERC721A {
 
         unchecked {
             if (to.code.length != 0) {
-                for ((uint256 i, uint256 e) = _mdata(tokenIds); i != e; i += 0x20) {
-                    if (!_checkContractOnERC721Received(from, to, _mload(i), _data)) {
+                for ((uint256 i, uint256 e) = _mdataERC721A(tokenIds); i != e; i += 0x20) {
+                    if (!_checkContractOnERC721Received(from, to, _mloadERC721A(i), _data)) {
                         _revert(TransferToNonERC721ReceiverImplementer.selector);
                     }
                 }
@@ -1422,6 +1423,29 @@ contract ERC721A is IERC721A {
     }
 
     // =============================================================
+    //                        PRIVATE HELPERS
+    // =============================================================
+
+    /**
+     * @dev Returns a memory pointer to the start of `a`'s data.
+     */
+    function _mdataERC721A(uint256[] memory a) private pure returns (uint256 start, uint256 end) {
+        assembly {
+            start := add(a, 0x20)
+            end := add(start, shl(5, mload(a)))
+        }
+    }
+
+    /**
+     * @dev Returns the uint256 at `p` in memory.
+     */
+    function _mloadERC721A(uint256 p) private pure returns (uint256 result) {
+        assembly {
+            result := mload(p)
+        }
+    }
+
+    // =============================================================
     //                       OTHER OPERATIONS
     // =============================================================
 
@@ -1483,25 +1507,6 @@ contract ERC721A is IERC721A {
         assembly {
             mstore(0x00, errorSelector)
             revert(0x00, 0x04)
-        }
-    }
-
-    /**
-     * @dev Returns a memory pointer to the start of `a`'s data.
-     */
-    function _mdata(uint256[] memory a) private pure returns (uint256 start, uint256 end) {
-        assembly {
-            start := add(a, 0x20)
-            end := add(start, shl(5, mload(a)))
-        }
-    }
-
-    /**
-     * @dev Returns the uint256 at `p` in memory.
-     */
-    function _mload(uint256 p) private pure returns (uint256 result) {
-        assembly {
-            result := mload(p)
         }
     }
 }
