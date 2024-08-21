@@ -12,6 +12,7 @@ on:
 
 jobs:
   trigger:
+    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
