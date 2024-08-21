@@ -743,7 +743,8 @@ contract ERC721A is IERC721A {
         // Disallow transfer to zero address.
         if (toMasked == uint256(0)) _revert(TransferToZeroAddress.selector);
         // Whether we need to check the individual token approvals.
-        bool approvalCheck = byMasked != uint256(0) && byMasked != fromMasked && !isApprovedForAll(from, by);
+        bool approvalCheck;
+        if (!_orERC721A(byMasked == uint256(0), byMasked == fromMasked)) approvalCheck = !isApprovedForAll(from, by);
         uint256 n = tokenIds.length;
         // Early return if `tokenIds` is empty.
         if (n == uint256(0)) return;
@@ -755,10 +756,8 @@ contract ERC721A is IERC721A {
         unchecked {
             uint256 tokenId = _mloadERC721A(i); // For checking if the `tokenIds` are strictly ascending.
             // Revert if the minimum of the `tokenIds` is out of bounds.
-            // This is equivalent to `tokenId < _startTokenId() || end <= tokenId`.
-            if (end - _startTokenId() <= tokenId - _startTokenId()) _revert(OwnerQueryForNonexistentToken.selector);
+            if (_orERC721A(tokenId < _startTokenId(), end <= tokenId)) _revert(OwnerQueryForNonexistentToken.selector);
             _beforeTokenTransfers(from, to, tokenId, 1); // Perform the before hook.
-
             if (n >= 2) {
                 uint256 j = i + 0x20;
                 do {
@@ -789,7 +788,7 @@ contract ERC721A is IERC721A {
                 // - `address` to the next owner.
                 // - `startTimestamp` to the timestamp of transferring.
                 // - `burned` to `false`.
-                // - `nextInitialized` to `false`.
+                // - `nextInitialized` to `false`, as it is optional.
                 _packedOwnerships[tokenId] = _packOwnershipData(to, _nextExtraData(from, to, prevOwnershipPacked));
                 do {
                     (uint256 approvedAddressSlot, uint256 approvedAddressValue) = _getApprovedSlotAndValue(tokenId);
@@ -1442,6 +1441,15 @@ contract ERC721A is IERC721A {
     function _mloadERC721A(uint256 p) private pure returns (uint256 result) {
         assembly {
             result := mload(p)
+        }
+    }
+
+    /**
+     * @dev Branchless boolean or.
+     */
+    function _orERC721A(bool a, bool b) private pure returns (bool result) {
+        assembly {
+            result := or(iszero(iszero(a)), iszero(iszero(b)))
         }
     }
 
