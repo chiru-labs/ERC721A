@@ -737,14 +737,15 @@ contract ERC721A is IERC721A {
         address to,
         uint256[] memory tokenIds
     ) internal virtual {
+        uint256 byMasked = uint160(by);
         uint256 fromMasked = uint160(from);
         uint256 toMasked = uint160(to);
-        uint256 byMasked = uint160(by);
         // Disallow transfer to zero address.
         if (toMasked == uint256(0)) _revert(TransferToZeroAddress.selector);
         // Whether we need to check the individual token approvals.
         bool approvalCheck;
         if (!_orERC721A(byMasked == uint256(0), byMasked == fromMasked)) approvalCheck = !isApprovedForAll(from, by);
+
         uint256 n = tokenIds.length;
         // Early return if `tokenIds` is empty.
         if (n == uint256(0)) return;
@@ -754,16 +755,16 @@ contract ERC721A is IERC721A {
         (uint256 i, uint256 e) = _mdataERC721A(tokenIds);
         // Ensure that `tokenIds` is strictly ascending, and perform the before hooks before any state changes.
         unchecked {
-            uint256 tokenId = _mloadERC721A(i); // For checking if the `tokenIds` are strictly ascending.
+            uint256 tokenId = _mloadERC721A(i);
             // Revert if the minimum of the `tokenIds` is out of bounds.
             if (_orERC721A(tokenId < _startTokenId(), end <= tokenId)) _revert(OwnerQueryForNonexistentToken.selector);
-            _beforeTokenTransfers(from, to, tokenId, 1); // Perform the before hook.
+            _beforeTokenTransfers(from, to, tokenId, 1);
             if (n >= 2) {
                 uint256 j = i + 0x20;
                 do {
                     uint256 next = _mloadERC721A(j);
                     if (next <= tokenId) _revert(TokenIdsNotStrictlyAscending.selector);
-                    _beforeTokenTransfers(from, to, tokenId = next, 1); // Perform the before hook.
+                    _beforeTokenTransfers(from, to, tokenId = next, 1);
                 } while ((j += 0x20) != e);
                 // Revert if the maximum of the `tokenIds` is out of bounds.
                 if (end <= tokenId) _revert(OwnerQueryForNonexistentToken.selector);
@@ -802,13 +803,12 @@ contract ERC721A is IERC721A {
                         // Emit the `Transfer` event.
                         log4(0, 0, _TRANSFER_EVENT_SIGNATURE, fromMasked, toMasked, tokenId)
                     }
-                    _afterTokenTransfers(from, to, tokenId, 1); // Perform the after hook.
-                    if (_mloadERC721A(i += 0x20) != ++tokenId) break; // Break if `tokenId` is not sequential.
-                    if (i == e) break; // Break if at the end of `tokenIds`.
-                    // Break if the packed ownership slot is initialized.
+                    _afterTokenTransfers(from, to, tokenId, 1);
+                    if (_mloadERC721A(i += 0x20) != ++tokenId) break;
+                    if (i == e) break;
                 } while (_packedOwnerships[tokenId] == uint256(0));
             }
-            // If the slot after the mini batch is neither out of bounds, nor initialized.
+            // Initialize the next slot if needed.
             if (tokenId != end)
                 if (_packedOwnerships[tokenId] == uint256(0)) _packedOwnerships[tokenId] = prevOwnershipPacked;
         } while (i != e);
