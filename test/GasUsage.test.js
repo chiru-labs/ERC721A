@@ -67,6 +67,24 @@ describe('ERC721A Gas Usage', function () {
     it('transferTen average order', async function () {
       await this.erc721a.connect(this.owner).transferTenAvg(this.addr1.address);
     });
+
+    it('transferTen average order', async function () {
+      await this.erc721a.connect(this.owner).transferTenAvg(this.addr1.address);
+    });
+  });
+
+  context('batchTransferFromHundred', function () {
+    beforeEach(async function () {
+      await this.erc721a.mintHundred(this.owner.address);
+    });
+
+    it('batchTransferFromHundred unoptimized', async function () {
+      await this.erc721a.connect(this.owner).batchTransferHundredUnoptimized(this.addr1.address);
+    });
+
+    it('batchTransferFromHundred optimized', async function () {
+      await this.erc721a.connect(this.owner).batchTransferHundredOptimized(this.addr1.address);
+    });
   });
 
   it('mintOneERC2309', async function () {

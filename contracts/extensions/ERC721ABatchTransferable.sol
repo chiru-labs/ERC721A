@@ -18,7 +18,7 @@ abstract contract ERC721ABatchTransferable is ERC721A, IERC721ABatchTransferable
         address to,
         uint256[] memory tokenIds
     ) public payable virtual override {
-        _batchTransferFrom(from, to, tokenIds, true);
+        _batchTransferFrom(_msgSenderERC721A(), from, to, tokenIds);
     }
 
     function safeBatchTransferFrom(
@@ -26,7 +26,7 @@ abstract contract ERC721ABatchTransferable is ERC721A, IERC721ABatchTransferable
         address to,
         uint256[] memory tokenIds
     ) public payable virtual override {
-        _safeBatchTransferFrom(from, to, tokenIds, true);
+        _safeBatchTransferFrom(_msgSenderERC721A(), from, to, tokenIds, '');
     }
 
     function safeBatchTransferFrom(
@@ -35,6 +35,6 @@ abstract contract ERC721ABatchTransferable is ERC721A, IERC721ABatchTransferable
         uint256[] memory tokenIds,
         bytes memory _data
     ) public payable virtual override {
-        _safeBatchTransferFrom(from, to, tokenIds, _data, true);
+        _safeBatchTransferFrom(_msgSenderERC721A(), from, to, tokenIds, _data);
     }
 }
