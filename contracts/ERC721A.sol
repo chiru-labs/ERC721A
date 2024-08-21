@@ -1388,6 +1388,9 @@ contract ERC721A is IERC721A {
      * - `tokenIds` must be strictly ascending.
      * - `by` must be approved to burn these tokens by either {approve} or {setApprovalForAll}.
      *
+     * `by` is the address that to check token approval for.
+     * If token approval check is not needed, pass in `address(0)` for `by`.
+     *
      * Emits a {Transfer} event for each token burned.
      */
     function _batchBurn(address by, uint256[] memory tokenIds) internal virtual {
