@@ -745,19 +745,18 @@ contract ERC721A is IERC721A {
         // Whether we need to check the individual token approvals.
         bool mayTransfer = _orERC721A(byMasked == uint256(0), byMasked == fromMasked) || isApprovedForAll(from, by);
 
-        uint256 n = tokenIds.length;
         // Early return if `tokenIds` is empty.
-        if (n == uint256(0)) return;
+        if (tokenIds.length == uint256(0)) return;
         // The next `tokenId` to be minted (i.e. `_nextTokenId()`).
         uint256 end = _currentIndex;
         // Pointer to start and end (exclusive) of `tokenIds`.
-        (uint256 i, uint256 e) = _mdataERC721A(tokenIds);
+        (uint256 ptr, uint256 ptrEnd) = _mdataERC721A(tokenIds);
 
         uint256 prevTokenId;
         uint256 prevOwnershipPacked;
         unchecked {
             do {
-                uint256 tokenId = _mloadERC721A(i);
+                uint256 tokenId = _mloadERC721A(ptr);
                 uint256 miniBatchStart = tokenId;
                 // Revert `tokenId` is out of bounds.
                 if (_orERC721A(tokenId < _startTokenId(), end <= tokenId))
@@ -788,8 +787,8 @@ contract ERC721A is IERC721A {
                         log4(0, 0, _TRANSFER_EVENT_SIGNATURE, fromMasked, toMasked, tokenId)
                     }
 
-                    if (_mloadERC721A(i += 0x20) != ++tokenId) break;
-                    if (i == e) break;
+                    if (_mloadERC721A(ptr += 0x20) != ++tokenId) break;
+                    if (ptr == ptrEnd) break;
                 } while (_packedOwnerships[tokenId] == uint256(0));
 
                 // Updates tokenId:
@@ -801,18 +800,23 @@ contract ERC721A is IERC721A {
                     address(uint160(toMasked)),
                     _nextExtraData(address(uint160(fromMasked)), address(uint160(toMasked)), prevOwnershipPacked)
                 );
-                uint256 l = tokenId - miniBatchStart;
+                uint256 miniBatchLength = tokenId - miniBatchStart;
                 // Update the address data.
-                _packedAddressData[address(uint160(fromMasked))] -= l;
-                _packedAddressData[address(uint160(toMasked))] += l;
+                _packedAddressData[address(uint160(fromMasked))] -= miniBatchLength;
+                _packedAddressData[address(uint160(toMasked))] += miniBatchLength;
                 // Initialize the next slot if needed.
                 if (tokenId != end)
                     if (_packedOwnerships[tokenId] == uint256(0)) _packedOwnerships[tokenId] = prevOwnershipPacked;
                 // Perform the after hook for the batch.
-                _afterTokenTransfers(address(uint160(fromMasked)), address(uint160(toMasked)), miniBatchStart, l);
+                _afterTokenTransfers(
+                    address(uint160(fromMasked)),
+                    address(uint160(toMasked)),
+                    miniBatchStart,
+                    miniBatchLength
+                );
                 // Set the `prevTokenId` for checking that the `tokenIds` is strictly ascending.
                 prevTokenId = tokenId - 1;
-            } while (i != e);
+            } while (ptr != ptrEnd);
         }
     }
 
@@ -880,8 +884,8 @@ contract ERC721A is IERC721A {
 
         unchecked {
             if (to.code.length != 0) {
-                for ((uint256 i, uint256 e) = _mdataERC721A(tokenIds); i != e; i += 0x20) {
-                    if (!_checkContractOnERC721Received(from, to, _mloadERC721A(i), _data)) {
+                for ((uint256 ptr, uint256 ptrEnd) = _mdataERC721A(tokenIds); ptr != ptrEnd; ptr += 0x20) {
+                    if (!_checkContractOnERC721Received(from, to, _mloadERC721A(ptr), _data)) {
                         _revert(TransferToNonERC721ReceiverImplementer.selector);
                     }
                 }
@@ -1394,13 +1398,12 @@ contract ERC721A is IERC721A {
      * Emits a {Transfer} event for each token burned.
      */
     function _batchBurn(address by, uint256[] memory tokenIds) internal virtual {
-        uint256 n = tokenIds.length;
         // Early return if `tokenIds` is empty.
-        if (n == uint256(0)) return;
+        if (tokenIds.length == uint256(0)) return;
         // The next `tokenId` to be minted (i.e. `_nextTokenId()`).
         uint256 end = _currentIndex;
         // Pointer to start and end (exclusive) of `tokenIds`.
-        (uint256 i, uint256 e) = _mdataERC721A(tokenIds);
+        (uint256 ptr, uint256 ptrEnd) = _mdataERC721A(tokenIds);
 
         uint256 prevOwnershipPacked;
         address prevTokenOwner;
@@ -1408,7 +1411,7 @@ contract ERC721A is IERC721A {
         bool mayBurn;
         unchecked {
             do {
-                uint256 tokenId = _mloadERC721A(i);
+                uint256 tokenId = _mloadERC721A(ptr);
                 uint256 miniBatchStart = tokenId;
                 // Revert `tokenId` is out of bounds.
                 if (_orERC721A(tokenId < _startTokenId(), end <= tokenId))
@@ -1442,8 +1445,8 @@ contract ERC721A is IERC721A {
                         // Emit the `Transfer` event.
                         log4(0, 0, _TRANSFER_EVENT_SIGNATURE, and(_BITMASK_ADDRESS, tokenOwner), 0, tokenId)
                     }
-                    if (_mloadERC721A(i += 0x20) != ++tokenId) break;
-                    if (i == e) break;
+                    if (_mloadERC721A(ptr += 0x20) != ++tokenId) break;
+                    if (ptr == ptrEnd) break;
                 } while (_packedOwnerships[tokenId] == uint256(0));
 
                 // Updates tokenId:
@@ -1455,19 +1458,19 @@ contract ERC721A is IERC721A {
                     tokenOwner,
                     _BITMASK_BURNED | _nextExtraData(tokenOwner, address(0), prevOwnershipPacked)
                 );
-                uint256 l = tokenId - miniBatchStart;
+                uint256 miniBatchLength = tokenId - miniBatchStart;
                 // Update the address data.
-                _packedAddressData[tokenOwner] += (l << _BITPOS_NUMBER_BURNED) - l;
+                _packedAddressData[tokenOwner] += (miniBatchLength << _BITPOS_NUMBER_BURNED) - miniBatchLength;
                 // Initialize the next slot if needed.
                 if (tokenId != end)
                     if (_packedOwnerships[tokenId] == uint256(0)) _packedOwnerships[tokenId] = prevOwnershipPacked;
                 // Perform the after hook for the batch.
-                _afterTokenTransfers(tokenOwner, address(0), miniBatchStart, l);
+                _afterTokenTransfers(tokenOwner, address(0), miniBatchStart, miniBatchLength);
                 // Set the `prevTokenId` for checking that the `tokenIds` is strictly ascending.
                 prevTokenId = tokenId - 1;
-            } while (i != e);
+            } while (ptr != ptrEnd);
             // Increment the overall burn counter.
-            _burnCounter += n;
+            _burnCounter += tokenIds.length;
         }
     }
 
