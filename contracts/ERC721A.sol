@@ -742,7 +742,7 @@ contract ERC721A is IERC721A {
         uint256 toMasked = uint160(to);
         // Disallow transfer to zero address.
         if (toMasked == uint256(0)) _revert(TransferToZeroAddress.selector);
-        // Whether we need to check the individual token approvals.
+        // Whether `by` may transfer the tokens.
         bool mayTransfer = _orERC721A(byMasked == uint256(0), byMasked == fromMasked) || isApprovedForAll(from, by);
 
         // Early return if `tokenIds` is empty.
