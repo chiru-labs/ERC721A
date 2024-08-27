@@ -37,14 +37,4 @@ contract ERC721ABatchBurnableMock is ERC721ABatchBurnable, DirectBurnBitSetterHe
     function initializeOwnershipAt(uint256 index) public {
         _initializeOwnershipAt(index);
     }
-
-    function batchBurnUnoptimized(uint256[] memory tokenIds) public {
-        unchecked {
-            uint256 tokenId;
-            for (uint256 i; i < tokenIds.length; ++i) {
-                tokenId = tokenIds[i];
-                _burn(tokenId);
-            }
-        }
-    }
 }

@@ -821,41 +821,6 @@ contract ERC721A is IERC721A {
     }
 
     /**
-     * @dev Equivalent to `_safeBatchTransferFrom(from, to, tokenIds)`.
-     */
-    function _safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds
-    ) internal virtual {
-        _safeBatchTransferFrom(address(0), from, to, tokenIds);
-    }
-
-    /**
-     * @dev Equivalent to `_safeBatchTransferFrom(by, from, to, tokenIds, '')`.
-     */
-    function _safeBatchTransferFrom(
-        address by,
-        address from,
-        address to,
-        uint256[] memory tokenIds
-    ) internal virtual {
-        _safeBatchTransferFrom(by, from, to, tokenIds, '');
-    }
-
-    /**
-     * @dev Equivalent to `_safeBatchTransferFrom(address(0), from, to, tokenIds, _data)`.
-     */
-    function _safeBatchTransferFrom(
-        address from,
-        address to,
-        uint256[] memory tokenIds,
-        bytes memory _data
-    ) internal virtual {
-        _safeBatchTransferFrom(address(0), from, to, tokenIds, _data);
-    }
-
-    /**
      * @dev Safely transfers `tokenIds` in batch from `from` to `to`.
      *
      * Requirements:
@@ -1373,13 +1338,6 @@ contract ERC721A is IERC721A {
         unchecked {
             _burnCounter++;
         }
-    }
-
-    /**
-     * @dev Equivalent to `_batchBurn(address(0), tokenIds)`.
-     */
-    function _batchBurn(uint256[] memory tokenIds) internal virtual {
-        _batchBurn(address(0), tokenIds);
     }
 
     /**

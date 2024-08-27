@@ -59,6 +59,20 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         await this.erc721aBatchTransferable['safeMint(address,uint256)'](this.addr3.address, 7);
       });
 
+      it('test safe batch transfer with data', async function () {
+        const transferFn = 'safeBatchTransferFrom(address,address,uint256[],bytes)';
+        const tokensToTransfer = this.addr1.expected.tokens;
+        await expect(this.erc721aBatchTransferable.connect(this.addr1)[transferFn](
+          this.addr1.address, this.receiver.address, tokensToTransfer, '0x01'
+        )).to.be.revertedWith('reverted in the receiver contract!');
+      });
+
+      it('batch transfer nothing', async function () {
+        const transferFn = 'safeBatchTransferFrom(address,address,uint256[])';
+        await this.erc721aBatchTransferable.connect(this.addr1)[transferFn](
+          this.addr1.address, this.receiver.address, []);
+      });
+
       context('test batch transfer functionality', function () {
         const testSuccessfulBatchTransfer = function (transferFn, transferToContract = true) {
           describe('successful transfers', async function () {
@@ -93,8 +107,8 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               // Transfer part of uninitialized tokens
               this.tokensToTransferAlt = [25, 26, 27];
               this.transferTxAlt = await this.erc721aBatchTransferable.connect(this.addr3)[transferFn](
-              this.addr3.address, this.addr5.address, this.tokensToTransferAlt
-            );
+                this.addr3.address, this.addr5.address, this.tokensToTransferAlt
+              );
             });
 
             it('emits Transfers event', async function () {
@@ -383,13 +397,17 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               await this.erc721aBatchTransferable.connect(this.addr2).setApprovalForAll(this.sender.address, true);
               await expect(
                 this.erc721aBatchTransferable
-                .connect(this.sender)['directBatchTransferFrom'](
+                .connect(this.sender)['directBatchTransferFrom(address,address,address,uint256[])'](
                   ZERO_ADDRESS, ZERO_ADDRESS, this.sender.address, this.tokenIds
                 )
               ).to.be.revertedWith('TransferFromIncorrectOwner');
               this.erc721aBatchTransferable
-              .connect(this.sender)['directBatchTransferFrom'](
+              .connect(this.sender)['directBatchTransferFrom(address,address,address,uint256[])'](
                 ZERO_ADDRESS, this.addr2.address, this.sender.address, this.tokenIds
+              );
+              this.erc721aBatchTransferable
+              .connect(this.addr2)['directBatchTransferFrom(address,address,uint256[])'](
+                this.sender.address, this.addr2.address, this.tokenIds
               );
             });
 
@@ -478,6 +496,7 @@ const createTestSuite = ({ contract, constructorArgs }) =>
               testApproveBatchTransfer(fn, false);
             });
           });
+          
           context('safeBatchTransferFrom', function (fn = 'safeBatchTransferFrom(address,address,uint256[])') {
             describe('to contract', function () {
               testSuccessfulBatchTransfer(fn);

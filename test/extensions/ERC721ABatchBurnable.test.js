@@ -62,6 +62,10 @@ const createTestSuite = ({ contract, constructorArgs }) =>
         });
       });
 
+      it('batch burn nothing', async function () {
+        await this.erc721aBatchBurnable.connect(this.addr1).batchBurn([]);
+      });
+
       it('changes numberBurned', async function () {
         expect(await this.erc721aBatchBurnable.numberBurned(this.addr1.address)).to.equal(this.totalBurned);
         await this.erc721aBatchBurnable.connect(this.addr1).batchBurn([this.notBurnedTokenId4]);
