@@ -401,7 +401,7 @@ contract ERC721A is IERC721A {
                 // Invariant:
                 // There will always be an initialized ownership slot
                 // (i.e. `ownership.addr != address(0) && ownership.burned == false`)
-                // before an unintialized ownership slot
+                // before an uninitialized ownership slot
                 // (i.e. `ownership.addr == address(0) && ownership.burned == false`)
                 // Hence, `tokenId` will not underflow.
                 //
