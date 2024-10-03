@@ -51,6 +51,14 @@ npm install --save-dev erc721a
 
 ```
 
+Or, if you prefer to use yarn:
+
+```sh
+
+yarn add erc721a
+
+```
+
 <!-- USAGE EXAMPLES -->
 
 ## Usage
