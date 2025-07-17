@@ -8,6 +8,7 @@ import '../extensions/ERC721ABatchBurnable.sol';
 import './DirectBurnBitSetterHelper.sol';
 
 contract ERC721ABatchBurnableMock is ERC721ABatchBurnable, DirectBurnBitSetterHelper {
+
     constructor(string memory name_, string memory symbol_) ERC721A(name_, symbol_) {}
 
     function exists(uint256 tokenId) public view returns (bool) {
@@ -34,7 +35,13 @@ contract ERC721ABatchBurnableMock is ERC721ABatchBurnable, DirectBurnBitSetterHe
         return _numberBurned(owner);
     }
 
-    function initializeOwnershipAt(uint256 index) public {
-        _initializeOwnershipAt(index);
+function bulkBurn(address burner, uint256[] memory tokenIds, bool approvalCheck) public {
+    _batchBurn(burner, tokenIds, approvalCheck);
+}
+
+function initializeOwnershipAt(uint256 index) public {
+    _initializeOwnershipAt(index);
+}
+
     }
 }
