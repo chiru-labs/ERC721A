@@ -4,6 +4,7 @@ on:
     types: [published]
 jobs:
   build:
+    environment: production
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

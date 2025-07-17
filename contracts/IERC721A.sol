@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// ERC721A Contracts v4.2.3
+// ERC721A Contracts v4.3.0
 // Creator: Chiru Labs
 
 pragma solidity ^0.8.4;
@@ -78,6 +78,31 @@ interface IERC721A {
      * The `tokenIds` must be strictly ascending.
      */
     error TokenIdsNotStrictlyAscending();
+
+    /**
+     * `_sequentialUpTo()` must be greater than `_startTokenId()`.
+     */
+    error SequentialUpToTooSmall();
+
+    /**
+     * The `tokenId` of a sequential mint exceeds `_sequentialUpTo()`.
+     */
+    error SequentialMintExceedsLimit();
+
+    /**
+     * Spot minting requires a `tokenId` greater than `_sequentialUpTo()`.
+     */
+    error SpotMintTokenIdTooSmall();
+
+    /**
+     * Cannot mint over a token that already exists.
+     */
+    error TokenAlreadyExists();
+
+    /**
+     * The feature is not compatible with spot mints.
+     */
+    error NotCompatibleWithSpotMints();
 
     // =============================================================
     //                            STRUCTS

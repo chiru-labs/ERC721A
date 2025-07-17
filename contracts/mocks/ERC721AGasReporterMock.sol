@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// ERC721A Contracts v4.2.3
+// ERC721A Contracts v4.3.0
 // Creators: Chiru Labs
 
 pragma solidity ^0.8.4;
@@ -23,6 +23,14 @@ contract ERC721AGasReporterMock is ERC721A {
 
     function mintTen(address to) public {
         _mint(to, 10);
+    }
+
+    function safeMintHundred(address to) public {
+        _safeMint(to, 100);
+    }
+
+    function mintHundred(address to) public {
+        _mint(to, 100);
     }
 
     function transferTenAsc(address to) public {
@@ -67,6 +75,24 @@ contract ERC721AGasReporterMock is ERC721A {
             transferFrom(msg.sender, to, 8);
             transferFrom(msg.sender, to, 0);
             transferFrom(msg.sender, to, 9);
+        }
+    }
+
+    function batchTransferHundredUnoptimized(address to) public {
+        unchecked {
+            for (uint256 i; i != 100; ++i) {
+                transferFrom(msg.sender, to, i);
+            }
+        }
+    }
+
+    function batchTransferHundredOptimized(address to) public {
+        unchecked {
+            uint256[] memory tokenIds = new uint256[](100);
+            for (uint256 i; i != 100; ++i) {
+                tokenIds[i] = i;
+            }
+            _batchTransferFrom(msg.sender, msg.sender, to, tokenIds);
         }
     }
 }
